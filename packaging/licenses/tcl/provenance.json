@@ -1,0 +1,19 @@
+{
+  "component": "tcl",
+  "source": "official CPython Windows dependency distribution",
+  "repository": "https://github.com/python/cpython-bin-deps",
+  "ref": "tcltk-8.6.15.0",
+  "tree_sha": "5a51bb7b87efa119332c52b04a84c49d3042279c",
+  "path": "amd64/tcllicense.terms",
+  "blob_sha1": "393489a07af7eccf240029f62ce513e6fdc1e96e",
+  "sha256": "41613eabfc08921a7da9c4bfd7f3ce5d5406f55214b253d89f392ed86eebeb8f",
+  "source_url": "https://github.com/python/cpython-bin-deps/blob/tcltk-8.6.15.0/amd64/tcllicense.terms",
+  "cpython_selection_source": "https://github.com/python/cpython/blob/v3.13.18/PCbuild/get_externals.bat",
+  "retrieved_utc": "2026-11-05T18:01:23.248357+00:00",
+  "scope": "Portable license text from the exact official CPython external dependency; actual Windows bundle versions must still be inventoried on CI.",
+  "identical_architecture_notices": [
+    "amd64/tcllicense.terms",
+    "arm64/tcllicense.terms",
+    "win32/tcllicense.terms"
+  ]
+}

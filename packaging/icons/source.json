@@ -1,0 +1,7 @@
+{
+  "asset": "app-icon.png",
+  "purpose": "PLaMo for CP desktop application icon",
+  "generator": "built-in image_gen",
+  "transparent_background": true,
+  "prompt": "Use case: logo-brand. Asset type: production desktop application icon for PLaMo for CP, a local Japanese translation assistant for competitive programming, macOS and Windows. Create ONE polished, original application icon on a square 1024x1024 canvas. A cobalt-blue rounded-square tile with generous rounded corners, subtle rich blue gradient, and restrained soft depth. Center a large beautifully drawn white Japanese hiragana「あ」, crisply recognizable, accompanied by two simple white code angle brackets < and > at its left and right, balancing the composition. The あ is the dominant feature; all strokes bold and uncluttered so the icon is recognizable at 32px. A thoughtful modern native utility app aesthetic, quiet and professional. Straight-on view, flat graphic with just a little depth, centered and comfortably inset in the canvas. The rounded tile occupies about 88 percent of the canvas. Outside the rounded square must be genuinely transparent alpha, not a checkerboard or white background; preserve clean edges. Exact visible text: あ. No English lettering, no app name, no extra text, no logos belonging to PLaMo or PFN, no flags, no mascot, no mockup or surrounding scene, no separate alternatives. High quality finished icon, suitable to ship."
+}

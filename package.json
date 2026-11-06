@@ -1,0 +1,13 @@
+{
+  "name": "plamo-for-cp-browser-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/browser/*.test.mjs",
+    "test:real": "node tests/browser/real-model.mjs"
+  },
+  "devDependencies": {
+    "katex": "^0.19.1",
+    "playwright": "^1.56.1"
+  }
+}

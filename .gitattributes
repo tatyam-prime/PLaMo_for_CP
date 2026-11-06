@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Keep upstream license bytes intact for the recorded provenance hashes.
+packaging/licenses/** -text -whitespace

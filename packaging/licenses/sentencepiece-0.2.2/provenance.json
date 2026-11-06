@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "package": "sentencepiece",
+  "version": "0.2.2",
+  "repository": "https://github.com/google/sentencepiece",
+  "tag": "v0.2.2",
+  "commit": "e0cce7d37b065b5140349dbe12c6bcf6192fdd78",
+  "tag_api_url": "https://api.github.com/repos/google/sentencepiece/git/ref/tags/v0.2.2",
+  "tree_api_url": "https://api.github.com/repos/google/sentencepiece/git/trees/e0cce7d37b065b5140349dbe12c6bcf6192fdd78?recursive=1",
+  "fetched_at_utc": "2026-11-05T17:44:27.792820+00:00",
+  "verification": "Files downloaded verbatim from the pinned official repository commit; Git blob SHA-1 matched the complete GitHub Git tree response. SHA-256 records local file bytes.",
+  "notice_file": "No file named NOTICE occurs in the complete, nontruncated upstream tree at this commit.",
+  "files": [
+    {
+      "path": "LICENSE",
+      "source_url": "https://raw.githubusercontent.com/google/sentencepiece/e0cce7d37b065b5140349dbe12c6bcf6192fdd78/LICENSE",
+      "upstream_git_blob_sha1": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "third_party/darts_clone/LICENSE",
+      "source_url": "https://raw.githubusercontent.com/google/sentencepiece/e0cce7d37b065b5140349dbe12c6bcf6192fdd78/third_party/darts_clone/LICENSE",
+      "upstream_git_blob_sha1": "28203b3b2d937ad240a79425d6ffe15001d2a298",
+      "sha256": "155f59997298ee336602c49f9c1110f268ac394ca2197eb02647a3555935ad52",
+      "bytes": 1481
+    },
+    {
+      "path": "third_party/esaxx/LICENSE",
+      "source_url": "https://raw.githubusercontent.com/google/sentencepiece/e0cce7d37b065b5140349dbe12c6bcf6192fdd78/third_party/esaxx/LICENSE",
+      "upstream_git_blob_sha1": "07394df7c3732d308872d5c64e337c8739e4c017",
+      "sha256": "7c28553d1d3312d65fe309f76a22ebaf33a3d76c8c1e3b98a88ee4654ecb53db",
+      "bytes": 1112
+    },
+    {
+      "path": "third_party/protobuf-lite/LICENSE",
+      "source_url": "https://raw.githubusercontent.com/google/sentencepiece/e0cce7d37b065b5140349dbe12c6bcf6192fdd78/third_party/protobuf-lite/LICENSE",
+      "upstream_git_blob_sha1": "19b305b00060a774a9180fb916c14b49edb2008f",
+      "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+      "bytes": 1732
+    }
+  ],
+  "scope_note": "Includes all third_party LICENSE files present in this release tree; this record is not an inventory of external build-time dependencies."
+}

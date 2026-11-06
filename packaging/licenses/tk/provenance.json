@@ -1,0 +1,25 @@
+{
+  "component": "tk",
+  "source": "official CPython Windows dependency distribution",
+  "repository": "https://github.com/python/cpython-bin-deps",
+  "ref": "tcltk-8.6.15.0",
+  "tree_sha": "5a51bb7b87efa119332c52b04a84c49d3042279c",
+  "path": "amd64/tklicense.terms",
+  "blob_sha1": "393162fe6a21e09b0fbadd5945f5105e54dcac40",
+  "sha256": "0d1e4405f6273f091732764ed89b57066be63ce64869be6c71ea337dc4f2f9b5",
+  "source_url": "https://github.com/python/cpython-bin-deps/blob/tcltk-8.6.15.0/amd64/tklicense.terms",
+  "cpython_selection_source": "https://github.com/python/cpython/blob/v3.13.18/PCbuild/get_externals.bat",
+  "retrieved_utc": "2026-11-05T18:01:24.254645+00:00",
+  "scope": "Portable license text from the exact official CPython external dependency; actual Windows bundle versions must still be inventoried on CI.",
+  "identical_architecture_notices": [
+    "amd64/lib/tk8.6/demos/license.terms",
+    "amd64/lib/tk8.6/license.terms",
+    "amd64/tklicense.terms",
+    "arm64/lib/tk8.6/demos/license.terms",
+    "arm64/lib/tk8.6/license.terms",
+    "arm64/tklicense.terms",
+    "win32/lib/tk8.6/demos/license.terms",
+    "win32/lib/tk8.6/license.terms",
+    "win32/tklicense.terms"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "component": "libffi",
+  "source": "official CPython Windows dependency distribution",
+  "repository": "https://github.com/python/cpython-bin-deps",
+  "ref": "libffi-3.4.4",
+  "tree_sha": "94cb9a1c7feb608adf2b9f8fe2dbd6925ffbf90d",
+  "path": "LICENSE",
+  "blob_sha1": "75d1bce11f9118ccfd96b24a2e49af078da1b469",
+  "sha256": "2c9c2acb9743e6b007b91350475308aee44691d96aa20eacef8e199988c8c388",
+  "source_url": "https://github.com/python/cpython-bin-deps/blob/libffi-3.4.4/LICENSE",
+  "cpython_selection_source": "https://github.com/python/cpython/blob/v3.13.18/PCbuild/get_externals.bat",
+  "retrieved_utc": "2026-11-05T18:01:20.110778+00:00",
+  "scope": "Portable license text from the exact official CPython external dependency; actual Windows bundle versions must still be inventoried on CI."
+}

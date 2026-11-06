@@ -1,0 +1,7 @@
+{
+  "component": "SQLite",
+  "source_url": "https://www.sqlite.org/copyright.html",
+  "sha256": "44ca9f793055c8e32fc65f65a4f5bcf813a33f5bdaaa084067dd617a4ed3cc70",
+  "retrieved_utc": "2026-11-05T18:01:25.842253+00:00",
+  "scope": "Official SQLite public-domain dedication and copyright policy; no SQLite binaries are distributed by this notice supplement."
+}

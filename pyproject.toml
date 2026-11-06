@@ -1,0 +1,43 @@
+[project]
+name = "plamo-for-cp"
+version = "0.1.0"
+description = "Local PLaMo 3 Translate for competitive programming statements"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "fastapi>=0.121,<1",
+  "uvicorn>=0.38,<1",
+  "huggingface-hub>=1.33,<2",
+  "httpx==0.28.1",
+  "filelock>=3.20,<5",
+  "mlx-lm==0.32.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "mlx==0.32.3; sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "transformers==5.19.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "numba==0.68.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "ruff>=0.14,<1"]
+packaging = [
+  "pyinstaller==6.22.3",
+  "pyinstaller-hooks-contrib==2026.9",
+  "altgraph==0.17.5",
+  "setuptools==84.2.1",
+  "macholib==1.16.4; sys_platform == 'darwin'",
+]
+
+[project.scripts]
+plamo-cp = "plamo_cp.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["plamo_cp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100

@@ -1,0 +1,21 @@
+// ==UserScript==
+// @name         PLaMo for CP
+// @namespace    urn:plamo-for-cp
+// @version      0.4.12
+// @description  このパソコンの PLaMo で問題文や記事を翻訳します。数式とサンプルを保持します。
+// @match        https://*/*
+// @match        http://*/*
+// @connect      127.0.0.1
+// @run-at       document-idle
+// @noframes
+// @sandbox      DOM
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_deleteValue
+// @grant        GM_addValueChangeListener
+// @grant        GM_registerMenuCommand
+// @grant        GM_openInTab
+// @grant        GM_xmlhttpRequest
+// @downloadURL  __PLAMO_API__/install.user.js
+// @updateURL    __PLAMO_API__/install.user.js
+// ==/UserScript==

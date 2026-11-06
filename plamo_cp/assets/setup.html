@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PLaMo for CP — アプリの管理</title>
+  <style>
+    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#203244;background:#f4f6f9;line-height:1.65;color-scheme:light}*{box-sizing:border-box}body{margin:0}.shell{max-width:1060px;margin:auto;padding:26px 28px 55px}header,.section-heading,.row-heading,.actions{display:flex;align-items:center;gap:10px}header{justify-content:space-between}.brand{font-weight:750;letter-spacing:.02em}.badge,.tag{display:inline-block;border-radius:5px;padding:2px 8px;font-size:12px;background:#eaf0f7;color:#52667b}.badge.online{background:#e6f3eb;color:#236445}h1{font-size:28px;margin:24px 0 4px;letter-spacing:-.035em}h2{font-size:18px;margin:0}h3{font-size:16px;margin:0}p{margin:6px 0}.muted,.help{color:#66788a}.help{font-size:12px}.intro{font-size:14px;margin-bottom:19px}.card{background:#fff;border:1px solid #dce3ea;border-radius:12px;padding:20px 22px;margin:15px 0}.section-heading{justify-content:space-between;margin-bottom:11px}.section-heading p{margin:0}.summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}.summary dt{font-size:12px;color:#66788a}.summary dd{font-size:15px;font-weight:650;margin:3px 0 0}.summary dl{margin:0}.path{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;overflow-wrap:anywhere;white-space:pre-wrap;background:#f4f6f9;border:1px solid #e4e9ef;border-radius:6px;padding:10px 12px;margin:9px 0 12px;min-height:42px}.actions{flex-wrap:wrap}button,.button{display:inline-flex;align-items:center;justify-content:center;font:inherit;font-size:13px;font-weight:600;border:1px solid #bdcbd8;border-radius:6px;padding:8px 12px;cursor:pointer;text-decoration:none;background:white;color:#294d70}button.primary,.button.primary{background:#315fce;border-color:#315fce;color:white}button.danger{color:#a14038;border-color:#e3c5c1}button:hover,.button:hover{filter:brightness(.96)}button:disabled{opacity:.5;cursor:default}a{color:#315fce}.model-row{display:grid;grid-template-columns:minmax(150px,1fr) minmax(180px,1.2fr) auto;gap:14px;align-items:center;padding:15px 0;border-top:1px solid #e7ecf1}.model-row:first-child{border-top:0}.row-heading{flex-wrap:wrap;gap:7px}.model-row .actions{justify-content:flex-end}.model-description,.model-status,.model-size{font-size:12px;color:#66788a;margin-top:4px}.model-status{color:#425d74}.tag.recommended{background:#eaf0ff;color:#315fce}.tag.loaded{background:#e6f3eb;color:#236445}.notice{font-size:12px;color:#66788a;border-top:1px solid #e7ecf1;padding-top:12px;margin-top:6px}.status{border:1px solid #d7e3f1;border-radius:8px;padding:12px 14px;background:#eff5fc;margin:13px 0}.status.error,.connection-error{background:#fff1ee;color:#963b31;border-color:#efd3cd}.status.success{background:#edf7f0;color:#2a6744;border-color:#d8ebdf}.status-title{font-size:14px;font-weight:650}.status-detail{font-size:12px;margin-top:3px}.connection-error{border:1px solid #efd3cd;border-radius:8px;padding:13px;margin:15px 0;font-size:13px}progress{display:block;width:100%;height:7px;margin-top:10px;accent-color:#315fce}[hidden]{display:none!important}.cache-form{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:13px 0}label{display:block;font-size:12px;color:#52667b}select{display:block;font:inherit;font-size:13px;margin-top:4px;padding:7px 28px 7px 9px;border:1px solid #bdcbd8;border-radius:6px;background:white;color:#203244}.cache-stats{font-size:14px}.secondary{font-size:13px}.secondary h2{font-size:16px}.license-help{font-size:12px;margin-top:13px;color:#66788a}.license-help p{margin:4px 0}footer{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;font-size:12px;color:#718393;margin-top:23px}@media(max-width:720px){.shell{padding:20px 16px 40px}.card{padding:17px}.model-row{grid-template-columns:1fr 1fr}.model-row .actions{grid-column:1/-1;justify-content:flex-start}.summary{grid-template-columns:1fr;gap:9px}.summary dl{display:flex;align-items:baseline;gap:12px}.summary dt{min-width:80px}.summary dd{font-size:14px}h1{font-size:25px}.section-heading{align-items:flex-start;flex-wrap:wrap}}
+  </style>
+  <style>
+    .license-warning{background:#fff8e6;border:1px solid #e6ca82;border-left:4px solid #c79a32;border-radius:9px;padding:16px 20px;margin:18px 0;color:#5b491f;font-size:14px}.license-warning h2{font-size:16px;margin-bottom:8px}.license-warning p{margin:8px 0}.license-warning ul{margin:8px 0 0;padding-left:1.5em}.license-warning li{margin:5px 0}.license-warning a{color:#73520a;text-decoration:underline;text-underline-offset:2px}
+  </style>
+  <script src="/setup.js" defer></script>
+</head>
+<body>
+<main class="shell">
+  <header><div class="brand">PLaMo for CP</div><div id="connection" class="badge">接続を確認中…</div></header>
+  <h1>アプリの管理</h1>
+  <p class="intro muted">このパソコンのモデル・保存先・訳文キャッシュを管理します。<br>翻訳ボタンや用語集など、ブラウザー側の設定もここで変更できます。</p>
+  <div class="actions"><a class="button primary" href="/text">テキストを翻訳</a><span class="help">文章を貼り付けて、原文と日本語訳を並べて読めます。</span></div>
+  <div id="connection-error" class="connection-error" role="alert" hidden>アプリに接続できません。PLaMo for CP アプリを開いてから、このページを再読み込みしてください。</div>
+  <section class="card summary" aria-label="現在の状態">
+    <dl><dt>翻訳エンジン</dt><dd id="engine-state">確認しています…</dd></dl>
+    <dl><dt>選択中のモデル</dt><dd id="selected-model">—</dd></dl>
+    <dl><dt>このパソコン</dt><dd id="device">—</dd></dl>
+  </section>
+  <div id="message" class="status" role="status" aria-live="polite" hidden><div id="message-title" class="status-title"></div><div id="message-detail" class="status-detail"></div></div>
+  <section class="card" aria-labelledby="storage-heading">
+    <div class="section-heading"><h2 id="storage-heading">モデルの保存先</h2><span id="folder-type" class="help"></span></div>
+    <div id="folder" class="path">確認しています…</div>
+    <div class="actions"><button id="choose-folder" disabled>保存先を変更</button><button id="open-folder" disabled>フォルダーを開く</button></div>
+    <p class="help">保存先を変えても、取得済みモデルは自動移動しません。元のファイルは元のフォルダーに残ります。</p>
+    <p id="previous-folder" class="help" hidden></p>
+  </section>
+  <aside class="license-warning" role="note" aria-labelledby="license-warning-heading">
+    <h2 id="license-warning-heading">PLaMo 3 Translate の利用条件</h2>
+    <p>本ツールは，PLaMo 3 Translate をダウンロードして使用します．</p>
+    <p>PLaMo 3 Translate を使用するにあたり，<a href="https://plamo.preferredai.jp/info/plamo-community-license-ja" target="_blank" rel="noopener">PLaMoコミュニティライセンス契約</a> に同意・契約する必要があります．特に以下の点に注意してください．</p>
+    <ul>
+      <li><strong>訳文を公表する際には，PLaMo 3 Translate により翻訳されたことを明示すること．</strong></li>
+      <li>未成年者は，親権者又は法定代理人に契約の確認を取ること．</li>
+    </ul>
+  </aside>
+  <section class="card" aria-labelledby="model-heading">
+    <div class="section-heading"><h2 id="model-heading">翻訳モデル</h2><p class="help">標準は 2B。ダウンロードはボタンを押したときだけ始まります。</p></div>
+    <div id="models">モデルを確認しています…</div>
+    <div id="preparation" class="status" role="status" aria-live="polite" hidden><div id="state-title" class="status-title"></div><div id="state-detail" class="status-detail"></div><progress id="progress" hidden></progress></div>
+    <div id="download" class="status" role="status" aria-live="polite" hidden><div id="download-title" class="status-title"></div><div id="download-detail" class="status-detail"></div><progress id="download-progress" hidden></progress><div class="actions"><button id="cancel-download" type="button" hidden>ダウンロードを停止</button></div></div>
+    <p class="notice">モデルは PFN の公式配布元から直接ダウンロードします。モデルの利用には <a href="https://plamo.preferredai.jp/info/plamo-community-license-ja" target="_blank" rel="noopener">PLaMo Community License</a> が適用されます。このアプリにモデルの重みは含まれていません。</p>
+  </section>
+  <section class="card" aria-labelledby="cache-heading">
+    <div class="section-heading"><h2 id="cache-heading">訳文キャッシュ</h2><span id="cache-stats" class="cache-stats">確認しています…</span></div>
+    <p class="help">同じ文章の再翻訳を省くための保存です。7日を過ぎた訳文と、上限を超えた古い訳文は自動で削除します。モデルのデータ容量とは別です。</p>
+    <form id="cache-form" class="cache-form">
+      <label for="cache-kib">容量の上限<select id="cache-kib" disabled><option value="256">256 KiB</option><option value="512">512 KiB</option><option value="1024" selected>1 MiB</option><option value="2048">2 MiB</option><option value="4096">4 MiB</option><option value="8192">8 MiB</option><option value="16384">16 MiB</option><option value="32768">32 MiB</option><option value="65536">64 MiB</option></select></label>
+      <button id="save-cache" type="submit" disabled>変更を保存</button><button id="clear-cache" type="button" disabled>訳文キャッシュを消去</button>
+    </form>
+  </section>
+  <section id="browser-settings" class="card" aria-labelledby="browser-heading">
+    <div class="section-heading"><h2 id="browser-heading">ブラウザーの設定</h2><a class="button" href="/install.user.js">翻訳スクリプトをインストール</a></div>
+    <p id="browser-settings-placeholder" class="help">Tampermonkey に翻訳スクリプトをインストール・有効化すると、この場所に自動翻訳・用語集などの設定が表示されます。導入後はこのページを開き直してください。</p>
+  </section>
+  <section class="card secondary" aria-labelledby="help-heading">
+    <div class="section-heading"><h2 id="help-heading">導入・利用上の注意</h2><a href="https://www.tampermonkey.net/" target="_blank" rel="noopener">Tampermonkey を入手</a></div>
+    <p class="help">最初に Tampermonkey をブラウザーへ追加し、上の「翻訳スクリプトをインストール」から追加します。翻訳中はこのアプリを開いたままにしてください。</p>
+    <p class="help">Chrome では、拡張機能画面の Tampermonkey の詳細から「ユーザースクリプトを許可」を有効にしてください。見つからない場合は <a href="https://www.tampermonkey.net/faq.php?locale=ja&amp;q=Q209" target="_blank" rel="noopener">公式の設定手順</a>をご確認ください。</p>
+    <p class="help">以前の PLaMo for CP の Chrome 拡張をお使いの場合は、無効にしてから問題ページを開き直してください。</p>
+    <div class="license-help"><p><a href="https://plamo.preferredai.jp/info/plamo-community-license-ja" target="_blank" rel="noopener">モデルのライセンス・注意事項</a></p><p>モデル利用時はライセンス全文をご確認ください。18 歳未満の方は親権者等の同意が必要です。商用利用には用途・規模に応じた条件があります。</p><p>訳文には誤りが含まれることがあります。条件や数値は原文でも確認してください。</p></div>
+  </section>
+</main>
+</body>
+</html>

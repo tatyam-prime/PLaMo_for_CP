@@ -1,0 +1,87 @@
+name: Build desktop applications
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UV_PYTHON_DOWNLOADS: never
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13.18'
+          architecture: x64
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Install the hash-pinned uv bootstrap
+        run: 'python -m pip install --require-hashes --no-deps --only-binary=:all: -r packaging/uv-bootstrap.txt'
+      - name: Install locked runtime and build dependencies
+        run: uv sync --locked --group packaging --no-install-project --python 3.13.18
+      - name: Build Tampermonkey script
+        run: node scripts/build_userscript.mjs
+      - name: Prepare the pinned Windows inference runtime
+        run: uv run --no-sync python -m plamo_cp.llama_backend --output .local/windows-runtime/llama
+      - name: Run Python checks
+        run: uv run --no-sync python -m pytest -q
+      - name: Build standalone Windows application
+        run: uv run --no-sync python -m scripts.build_windows_app --installer
+      - name: Verify startup and bundled setup files without model downloads
+        run: uv run --no-sync python -m scripts.smoke_desktop_bundle "dist/windows/PLaMo for CP/PLaMo for CP.exe" --windows
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: PLaMo-for-CP-Windows-x64-unsigned
+          path: |
+            dist/windows/PLaMo-for-CP-Windows.zip
+            dist/windows/PLaMo-for-CP-Windows-Setup.exe
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: Windows-build-logs
+          path: .local/distribution-smoke
+
+  macos:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13.18'
+          architecture: arm64
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Install the hash-pinned uv bootstrap
+        run: 'python -m pip install --require-hashes --no-deps --only-binary=:all: -r packaging/uv-bootstrap.txt'
+      - name: Install locked runtime and build dependencies
+        run: uv sync --locked --group packaging --no-install-project --python 3.13.18
+      - name: Build Tampermonkey script
+        run: node scripts/build_userscript.mjs
+      - name: Run Python checks
+        run: uv run --no-sync python -m pytest -q
+      - name: Build standalone Mac application
+        run: uv run --no-sync python -m scripts.build_macos_app
+      - name: Verify startup and bundled setup files without model downloads
+        run: uv run --no-sync python -m scripts.smoke_desktop_bundle "dist/macos/PLaMo for CP.app/Contents/Resources/backend/plamo-cp-backend"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: PLaMo-for-CP-macOS-AppleSilicon-adhoc
+          path: dist/macos/PLaMo-for-CP-macOS-AppleSilicon.zip
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: macOS-build-logs
+          path: .local/distribution-smoke

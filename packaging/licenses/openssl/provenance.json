@@ -1,0 +1,19 @@
+{
+  "component": "openssl",
+  "source": "official CPython Windows dependency distribution",
+  "repository": "https://github.com/python/cpython-bin-deps",
+  "ref": "openssl-bin-3.5.9",
+  "tree_sha": "ddb46a415b4995440723183e644f8d2c346567a2",
+  "path": "amd64/LICENSE.txt",
+  "blob_sha1": "3e705150955c622ca1e9d2c71a9c3dfe2c830fcb",
+  "sha256": "ed72ce2b51ee58f117e5a021e2e04af158857f40269fbc03491f0b2a99dbcc96",
+  "source_url": "https://github.com/python/cpython-bin-deps/blob/openssl-bin-3.5.9/amd64/LICENSE.txt",
+  "cpython_selection_source": "https://github.com/python/cpython/blob/v3.13.18/PCbuild/get_externals.bat",
+  "retrieved_utc": "2026-11-05T18:01:22.383993+00:00",
+  "scope": "Portable license text from the exact official CPython external dependency; actual Windows bundle versions must still be inventoried on CI.",
+  "identical_architecture_notices": [
+    "amd64/LICENSE.txt",
+    "arm64/LICENSE.txt",
+    "win32/LICENSE.txt"
+  ]
+}
