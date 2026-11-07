@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "component": "zlib",
+  "version": "1.3.1",
+  "source": "official upstream zlib release",
+  "repository": "https://github.com/madler/zlib",
+  "tag": "v1.3.1",
+  "commit": "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf",
+  "fetched_at_utc": "2026-11-07T19:36:14Z",
+  "verification": "Files downloaded verbatim from the pinned official repository commit; Git blob SHA-1 matched the GitHub contents API. SHA-256 records local file bytes.",
+  "files": [
+    {
+      "path": "LICENSE",
+      "source_url": "https://raw.githubusercontent.com/madler/zlib/51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf/LICENSE",
+      "upstream_git_blob_sha1": "ab8ee6f71428c3e4646b12b64ad387cde33462e5",
+      "sha256": "845efc77857d485d91fb3e0b884aaa929368c717ae8186b66fe1ed2495753243",
+      "bytes": 1002
+    },
+    {
+      "path": "README",
+      "source_url": "https://raw.githubusercontent.com/madler/zlib/51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf/README",
+      "upstream_git_blob_sha1": "c5f917540b6fd2021bfa1bd16b52498a6ac3f69c",
+      "sha256": "d106dcdb2a0b3087cb3a2380b9f00a0bbadc7eb835cd80408f94a2d78d69727d",
+      "bytes": 5317
+    }
+  ],
+  "copyright_note": "The release LICENSE retains a 1995-2022 copyright line; its README contains the complete notice with the 1995-2024 line. Both upstream files are preserved without alteration.",
+  "windows_dependency_reference": {
+    "repository": "https://github.com/python/cpython-bin-deps",
+    "tag": "tcltk-8.6.15.0",
+    "commit": "5a51bb7b87efa119332c52b04a84c49d3042279c",
+    "path": "amd64/bin/zlib1.dll",
+    "source_url": "https://raw.githubusercontent.com/python/cpython-bin-deps/5a51bb7b87efa119332c52b04a84c49d3042279c/amd64/bin/zlib1.dll",
+    "upstream_git_blob_sha1": "2532af11931676e2fb0950a7308ba89bed9bc514",
+    "sha256": "1dd27f0411ebb31bd148a61589cee254410915f1e6c37aa3ffa52fac71a5426c",
+    "version_evidence": "The inspected official amd64 DLL contains '1.3.1' and 'deflate 1.3.1 Copyright 1995-2024 Jean-loup Gailly and Mark Adler' strings; the accompanying tcl86t.dll imports zlib1.dll.",
+    "cpython_selection_source": "https://github.com/python/cpython/blob/v3.13.17/PCbuild/get_externals.bat",
+    "cpython_installation_source": "https://github.com/python/cpython/blob/v3.13.17/Tools/msi/tcltk/tcltk_files.wxs"
+  },
+  "scope_note": "Portable upstream license texts for the zlib1.dll dependency supplied with CPython's Windows Tcl/Tk runtime. The reference DLL above was inspected separately; it is not a claim about the exact path or bytes selected by CI, which the failed build log did not record. No DLL is added or replaced by this supplement."
+}

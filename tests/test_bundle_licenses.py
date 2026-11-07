@@ -245,14 +245,17 @@ def test_windows_python_dll_notices_require_and_use_portable_official_supplement
         "sqlite3.dll",
         "tcl86t.dll",
         "tk86t.dll",
+        "zlib1.dll",
     ]
     for name in names:
         (prefix / "DLLs" / name).write_bytes(b"synthetic PE binary")
     inventory.analysis.binaries = [(name, str(prefix / "DLLs" / name), "BINARY") for name in names]
     with pytest.raises(RuntimeError, match="Native library openssl"):
         collect(inventory)
-    # A generic Python LICENSE must not silently satisfy an SSL/FFI/Tcl notice.
-    assert len(index(inventory)["missing_license_texts"]) == 5
+    # A generic Python LICENSE must not silently satisfy a native dependency's notice.
+    missing = index(inventory)["missing_license_texts"]
+    assert len(missing) == 6
+    assert "Native library zlib: zlib1.dll" in missing
     repository = Path(__file__).resolve().parent.parent
     collect(inventory, supplemental_dir=repository / "packaging/licenses")
     value = index(inventory)
@@ -263,6 +266,7 @@ def test_windows_python_dll_notices_require_and_use_portable_official_supplement
         "sqlite",
         "tcl",
         "tk",
+        "zlib",
     }
     for component in value["native_libraries"]:
         assert component["files"]
@@ -271,3 +275,24 @@ def test_windows_python_dll_notices_require_and_use_portable_official_supplement
         for record in component["files"]:
             payload = (inventory.output / record["path"]).read_bytes()
             assert hashlib.sha256(payload).hexdigest() == record["sha256"]
+            relative = Path(record["path"]).relative_to(
+                Path("native") / component["name"] / "upstream"
+            )
+            source = repository / "packaging/licenses" / component["name"] / relative
+            assert payload == source.read_bytes()
+
+
+def test_zlib_supplement_preserves_both_upstream_copyright_notices_and_hashes():
+    supplement = Path(__file__).resolve().parent.parent / "packaging/licenses/zlib"
+    provenance = json.loads((supplement / "provenance.json").read_text(encoding="utf-8"))
+    assert provenance["version"] == "1.3.1"
+    assert {record["path"] for record in provenance["files"]} == {"LICENSE", "README"}
+    for record in provenance["files"]:
+        payload = (supplement / record["path"]).read_bytes()
+        assert len(payload) == record["bytes"]
+        assert hashlib.sha256(payload).hexdigest() == record["sha256"]
+        git_blob = b"blob " + str(len(payload)).encode("ascii") + b"\0" + payload
+        assert hashlib.sha1(git_blob).hexdigest() == record["upstream_git_blob_sha1"]
+    # Upstream's standalone LICENSE has an older year than its complete README notice.
+    assert b"1995-2022 Jean-loup Gailly and Mark Adler" in (supplement / "LICENSE").read_bytes()
+    assert b"1995-2024 Jean-loup Gailly and Mark Adler" in (supplement / "README").read_bytes()
