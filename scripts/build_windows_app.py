@@ -14,6 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> None:
+    # Windows のリダイレクト先が cp1252 でも、日本語の成果物パスを保持する。
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "dist" / "windows")
     parser.add_argument("--runtime-dir", type=Path, default=ROOT / ".local/windows-runtime/llama")

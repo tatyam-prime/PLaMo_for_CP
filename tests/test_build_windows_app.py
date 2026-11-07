@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import io
 import shutil
 import sys
 from pathlib import Path
@@ -16,8 +17,11 @@ from scripts import (
 )
 
 
+@pytest.mark.parametrize("stdout_kind", ["capture", "stringio", "cp1252", "ascii"])
 @pytest.mark.parametrize("mutate", [False, True])
-def test_final_native_dlls_are_verified_before_archive_or_installer(tmp_path, monkeypatch, mutate):
+def test_final_native_dlls_are_verified_before_archive_or_installer(
+    tmp_path, monkeypatch, capsys, mutate, stdout_kind
+):
     root = tmp_path.resolve()
     native = root / "prepared-native"
     native.mkdir()
@@ -36,13 +40,23 @@ def test_final_native_dlls_are_verified_before_archive_or_installer(tmp_path, mo
     server = cpu / "llama-server.exe"
     server.write_bytes(b"fake executable; never run")
     output = root / "dist"
-    final = output / "PLaMo for 競プロ/_internal/native"
+    application = output / "PLaMo for 競プロ"
+    final = application / "_internal/native"
+    compiler = root / "ISCC.exe"
     calls = []
+    stdout = sys.stdout
+    if stdout_kind == "stringio":
+        stdout = io.StringIO()
+    elif stdout_kind != "capture":
+        stdout = io.TextIOWrapper(io.BytesIO(), encoding=stdout_kind, newline="\n")
+    monkeypatch.setattr(sys, "stdout", stdout)
 
     monkeypatch.setattr(build_windows_app, "ROOT", root)
     monkeypatch.setattr(sys, "platform", "win32")
     monkeypatch.setattr(
-        sys, "argv", ["build_windows_app", "--runtime-dir", str(cpu), "--output", str(output)]
+        sys,
+        "argv",
+        ["build_windows_app", "--runtime-dir", str(cpu), "--output", str(output), "--installer"],
     )
     original_find_spec = build_windows_app.importlib.util.find_spec
     monkeypatch.setattr(
@@ -62,10 +76,21 @@ def test_final_native_dlls_are_verified_before_archive_or_installer(tmp_path, mo
         "stage_python_package",
         lambda _root, destination, _pins: destination,
     )
+    monkeypatch.setattr(build_windows_app.shutil, "which", lambda _: str(compiler))
 
-    def run(arguments, **_kwargs):
+    def run(arguments, **kwargs):
         if arguments == [str(server), "--version"]:
             calls.append("version")
+            return
+        if arguments[0] == str(compiler):
+            assert arguments == [
+                str(compiler),
+                f"/DAppSource={application.resolve()}",
+                f"/DAppOutput={output.resolve()}",
+                str(root / "packaging/windows/installer.iss"),
+            ]
+            assert kwargs == {"check": True, "cwd": root}
+            calls.append("installer")
             return
         assert arguments[:3] == [sys.executable, "-m", "PyInstaller"]
         calls.append("pyinstaller")
@@ -85,7 +110,20 @@ def test_final_native_dlls_are_verified_before_archive_or_installer(tmp_path, mo
         assert calls == ["version", "pyinstaller"]
     else:
         build_windows_app.main()
-        assert calls == ["version", "pyinstaller", "archive"]
+        assert calls == ["version", "pyinstaller", "archive", "installer"]
+    assert sys.stdout is stdout
+    assert not stdout.closed
+    stdout.flush()
+    if stdout_kind == "capture":
+        printed = capsys.readouterr().out
+    elif stdout_kind == "stringio":
+        printed = stdout.getvalue()
+    else:
+        printed = stdout.buffer.getvalue().decode("utf-8")
+    expected = (
+        f"{application / 'PLaMo for 競プロ.exe'}\n{output / 'PLaMo-for-競プロ-Windows-Setup.exe'}\n"
+    )
+    assert printed == ("" if mutate else expected)
 
 
 def test_windows_exe_and_collect_explicitly_disable_binary_mutation():
