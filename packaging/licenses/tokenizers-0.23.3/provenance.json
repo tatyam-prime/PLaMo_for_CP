@@ -19,5 +19,5 @@
       "bytes": 11357
     }
   ],
-  "scope_note": "Official Python/Rust package LICENSE. bindings/node/LICENSE is MIT for the Node binding and is not part of the shipped Python binding. This record is not a transitive Rust-crate license inventory."
+  "scope_note": "Official Python/Rust package LICENSE. bindings/node/LICENSE is MIT for the Node binding and is not part of the shipped Python binding. See rust-provenance.json and rust/ for the separately verified, wheel-SBOM-pinned Rust dependency notices, including Rust-Onig and Oniguruma. That supplement does not assert that every SBOM component is linked into the binary."
 }

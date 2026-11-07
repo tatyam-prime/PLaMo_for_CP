@@ -1,0 +1,1317 @@
+{
+  "schema_version": 1,
+  "package": "safetensors",
+  "version": "0.8.0",
+  "fetched_at_utc": "2026-11-07T21:11:22.698636+00:00",
+  "verification": "Each selected official wheel matches uv.lock SHA-256. Each registry crate archive matches the SHA-256 in that wheel SBOM. Standalone documents are preserved verbatim; embedded notices are exact unmodified byte ranges, with full source-member SHA-256 and offsets recorded. Repository fallbacks use commits from the verified crate .cargo_vcs_info.json and Git-tree-verified blobs. No downloaded code was executed.",
+  "scope_note": "This is a bounded notice supplement for the registry components identified by these selected wheel SBOMs, not a general legal audit or proof that every listed crate or source file is linked into the binary. SBOMs can include build-only, feature-disabled and other-target components. Their notices are included conservatively rather than asserting that all components are bundled. Alternative upstream license texts are retained as published; their inclusion does not elect every alternative. Workspace components retain the Python distribution license. Future wheel versions or platforms require a fresh check.",
+  "selection_note": "Preserves standalone LICENSE/COPYING/NOTICE/COPYRIGHT documents, AUTHORS and UNLICENSE, plus identified embedded copyright-and-permission notices in crate C/Rust/assembly source. API implementation files such as objc2-foundation/src/copying.rs are not legal notice files. No runtime code, model weights, or dependency versions are changed.",
+  "wheels": [
+    {
+      "filename": "safetensors-0.8.0-cp310-abi3-macosx_11_0_arm64.whl",
+      "url": "https://files.pythonhosted.org/packages/f5/b1/fa7c600e7dceae12e9606c7578cbc9ff1e1ed55844883ee5c92205e86226/safetensors-0.8.0-cp310-abi3-macosx_11_0_arm64.whl",
+      "sha256": "c80201d22cbf405b80647a60ada77bba06c8fba2da2743ba1e89cdcc39a81f25",
+      "platform": "macos-arm64",
+      "sbom": {
+        "path": "sboms/macos-arm64/safetensors-python.cyclonedx.json",
+        "sha256": "c5a46fbdca16e0075c5befd574475c483897ad60a6367e5bede9c5375ecfa543",
+        "bytes": 47160,
+        "wheel_member": "safetensors-0.8.0.dist-info/sboms/safetensors-python.cyclonedx.json"
+      }
+    }
+  ],
+  "workspace_components": [
+    {
+      "name": "safetensors",
+      "version": "0.8.0",
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "license_source": "The Python distribution license (installed wheel or existing upstream LICENSE supplement) covers these workspace crates; no registry-archive hash is supplied by the SBOM."
+    }
+  ],
+  "reference_licenses": [
+    {
+      "path": "reference-licenses/LICENSE-MIT.txt",
+      "sha256": "b05785f9f18e6716bab63424b11454513b9943a222595b70411009202fc592b5",
+      "bytes": 1078,
+      "source_url": "https://raw.githubusercontent.com/spdx/license-list-data/d46e94e2c78ceede1cfc63cfa0396472d2798d4c/text/MIT.txt",
+      "repository_commit": "d46e94e2c78ceede1cfc63cfa0396472d2798d4c",
+      "upstream_tag": "v3.27.0",
+      "applies_to": [
+        "block2-0.6.2",
+        "dispatch2-0.3.1",
+        "objc2-0.6.4",
+        "objc2-core-foundation-0.3.2",
+        "objc2-encode-4.1.0",
+        "objc2-foundation-0.3.2",
+        "objc2-metal-0.3.2"
+      ],
+      "reason": "The pinned objc2 upstream LICENSE.md links to the standard MIT license but does not print its body or assert a copyright notice. Preserve that upstream document, original crate author metadata, and this unmodified SPDX reference text. Its template fields are deliberately not filled with invented copyright statements. This does not resolve or make a new assertion about the Apple SDK licensing discussion in the upstream document."
+    }
+  ],
+  "crates": [
+    {
+      "name": "allocator-api2",
+      "version": "0.2.21",
+      "archive_url": "https://static.crates.io/crates/allocator-api2/allocator-api2-0.2.21.crate",
+      "archive_sha256": "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923",
+      "archive_bytes": 63622,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/allocator-api2-0.2.21/LICENSE-APACHE",
+          "sha256": "20fe7b00e904ed690e3b9fd6073784d3fc428141dbd10b81c01fd143d0797f58",
+          "bytes": 9899,
+          "archive_member": "allocator-api2-0.2.21/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/allocator-api2-0.2.21/LICENSE-MIT",
+          "sha256": "36516aefdc84c5d5a1e7485425913a22dbda69eb1930c5e84d6ae4972b5194b9",
+          "bytes": 1046,
+          "archive_member": "allocator-api2-0.2.21/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "bitflags",
+      "version": "2.13.0",
+      "archive_url": "https://static.crates.io/crates/bitflags/bitflags-2.13.0.crate",
+      "archive_sha256": "b4388bee8683e3d04af747c73422af53102d2bd24d9eadb6cbc100baef4b43f8",
+      "archive_bytes": 51280,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/bitflags-2.13.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "bitflags-2.13.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/bitflags-2.13.0/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "archive_member": "bitflags-2.13.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "block2",
+      "version": "0.6.2",
+      "archive_url": "https://static.crates.io/crates/block2/block2-0.6.2.crate",
+      "archive_sha256": "cdeb9d870516001442e364c5220d3574d2da8dc765554b4a617230d33fa58ef5",
+      "archive_bytes": 34505,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/block2-0.6.2/upstream-metadata/.cargo_vcs_info.json",
+          "sha256": "5b87885cad87999d141e83cc8af4b073192f584b2b92cea77e2d87636621a264",
+          "bytes": 107,
+          "archive_member": "block2-0.6.2/.cargo_vcs_info.json"
+        },
+        {
+          "path": "rust/block2-0.6.2/upstream-metadata/Cargo.toml",
+          "sha256": "e325c51f01145af3e11f2ee5ce7c47f10697d936c1d90b9ee81a0cf4f700f6d7",
+          "bytes": 2463,
+          "archive_member": "block2-0.6.2/Cargo.toml"
+        },
+        {
+          "path": "rust/block2-0.6.2/upstream-repository/LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "bytes": 1339,
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/b4167b582b2f75f9a1be75495c41b765344fd03c/LICENSE.md",
+          "repository_commit": "b4167b582b2f75f9a1be75495c41b765344fd03c",
+          "upstream_git_blob_sha1": "540ae4c81adb5f64a9f61e222b688880da24300e"
+        }
+      ],
+      "repository_fallback": {
+        "repository": "https://github.com/madsmtm/objc2",
+        "commit": "b4167b582b2f75f9a1be75495c41b765344fd03c",
+        "path_in_vcs": "crates/block2",
+        "reason": "The crate archive omits standalone license files. .cargo_vcs_info.json in the SHA-256-verified crate pins this upstream commit. Git blob SHA-1s were checked against the complete, nontruncated official Git tree at that commit."
+      }
+    },
+    {
+      "name": "cfg-if",
+      "version": "1.0.4",
+      "archive_url": "https://static.crates.io/crates/cfg-if/cfg-if-1.0.4.crate",
+      "archive_sha256": "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801",
+      "archive_bytes": 9360,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/cfg-if-1.0.4/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "cfg-if-1.0.4/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/cfg-if-1.0.4/LICENSE-MIT",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "bytes": 1057,
+          "archive_member": "cfg-if-1.0.4/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "dispatch2",
+      "version": "0.3.1",
+      "archive_url": "https://static.crates.io/crates/dispatch2/dispatch2-0.3.1.crate",
+      "archive_sha256": "1e0e367e4e7da84520dedcac1901e4da967309406d1e51017ae1abfb97adbd38",
+      "archive_bytes": 55299,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Zlib OR Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/dispatch2-0.3.1/upstream-metadata/.cargo_vcs_info.json",
+          "sha256": "26f5e6d699ba3ce13b8eea253ad7a7f7feb9345e9da3c01bb9b9bd911a6a7dba",
+          "bytes": 110,
+          "archive_member": "dispatch2-0.3.1/.cargo_vcs_info.json"
+        },
+        {
+          "path": "rust/dispatch2-0.3.1/upstream-metadata/Cargo.toml",
+          "sha256": "f246cf8997c346fdcabb8925ad5be967f397fd8b92630ef7bcc9bdce5d33f775",
+          "bytes": 2545,
+          "archive_member": "dispatch2-0.3.1/Cargo.toml"
+        },
+        {
+          "path": "rust/dispatch2-0.3.1/upstream-repository/LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "bytes": 1339,
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
+          "repository_commit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+          "upstream_git_blob_sha1": "540ae4c81adb5f64a9f61e222b688880da24300e"
+        }
+      ],
+      "repository_fallback": {
+        "repository": "https://github.com/madsmtm/objc2",
+        "commit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+        "path_in_vcs": "crates/dispatch2",
+        "reason": "The crate archive omits standalone license files. .cargo_vcs_info.json in the SHA-256-verified crate pins this upstream commit. Git blob SHA-1s were checked against the complete, nontruncated official Git tree at that commit."
+      }
+    },
+    {
+      "name": "equivalent",
+      "version": "1.0.2",
+      "archive_url": "https://static.crates.io/crates/equivalent/equivalent-1.0.2.crate",
+      "archive_sha256": "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f",
+      "archive_bytes": 7419,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/equivalent-1.0.2/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "equivalent-1.0.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/equivalent-1.0.2/LICENSE-MIT",
+          "sha256": "7365cc8878a1d7ce155a58c4ca09c3d7a6be413efa5334a80ea842912b669349",
+          "bytes": 1049,
+          "archive_member": "equivalent-1.0.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "errno",
+      "version": "0.3.14",
+      "archive_url": "https://static.crates.io/crates/errno/errno-0.3.14.crate",
+      "archive_sha256": "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb",
+      "archive_bytes": 12002,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/errno-0.3.14/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "errno-0.3.14/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/errno-0.3.14/LICENSE-MIT",
+          "sha256": "8764a597675778ddfd4e25f81b08a05dbcf089ac05662df7613fe67f150e3aa2",
+          "bytes": 1054,
+          "archive_member": "errno-0.3.14/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "fastrand",
+      "version": "2.4.1",
+      "archive_url": "https://static.crates.io/crates/fastrand/fastrand-2.4.1.crate",
+      "archive_sha256": "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6",
+      "archive_bytes": 20773,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/fastrand-2.4.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "fastrand-2.4.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/fastrand-2.4.1/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "fastrand-2.4.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "foldhash",
+      "version": "0.2.0",
+      "archive_url": "https://static.crates.io/crates/foldhash/foldhash-0.2.0.crate",
+      "archive_sha256": "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb",
+      "archive_bytes": 23329,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Zlib"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/foldhash-0.2.0/LICENSE",
+          "sha256": "b1181a40b2a7b25cf66fd01481713bc1005df082c53ef73e851e55071b102744",
+          "bytes": 856,
+          "archive_member": "foldhash-0.2.0/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "getrandom",
+      "version": "0.4.2",
+      "archive_url": "https://static.crates.io/crates/getrandom/getrandom-0.4.2.crate",
+      "archive_sha256": "0de51e6874e94e7bf76d726fc5d13ba782deca734ff60d5bb2fb2607c7406555",
+      "archive_bytes": 53905,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/getrandom-0.4.2/LICENSE-APACHE",
+          "sha256": "aaff376532ea30a0cd5330b9502ad4a4c8bf769c539c87ffe78819d188a18ebf",
+          "bytes": 10849,
+          "archive_member": "getrandom-0.4.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/getrandom-0.4.2/LICENSE-MIT",
+          "sha256": "523a42c25d245dde9c015f882cec7f4555aad883382a6cf19b4b7d9b2cd5419b",
+          "bytes": 1130,
+          "archive_member": "getrandom-0.4.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "hashbrown",
+      "version": "0.16.1",
+      "archive_url": "https://static.crates.io/crates/hashbrown/hashbrown-0.16.1.crate",
+      "archive_sha256": "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100",
+      "archive_bytes": 147785,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/hashbrown-0.16.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "hashbrown-0.16.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/hashbrown-0.16.1/LICENSE-MIT",
+          "sha256": "ff8f68cb076caf8cefe7a6430d4ac086ce6af2ca8ce2c4e5a2004d4552ef52a2",
+          "bytes": 1060,
+          "archive_member": "hashbrown-0.16.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "heck",
+      "version": "0.5.0",
+      "archive_url": "https://static.crates.io/crates/heck/heck-0.5.0.crate",
+      "archive_sha256": "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea",
+      "archive_bytes": 11517,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/heck-0.5.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "heck-0.5.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/heck-0.5.0/LICENSE-MIT",
+          "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+          "bytes": 1071,
+          "archive_member": "heck-0.5.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "itoa",
+      "version": "1.0.18",
+      "archive_url": "https://static.crates.io/crates/itoa/itoa-1.0.18.crate",
+      "archive_sha256": "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682",
+      "archive_bytes": 15935,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/itoa-1.0.18/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "itoa-1.0.18/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/itoa-1.0.18/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "itoa-1.0.18/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "libc",
+      "version": "0.2.186",
+      "archive_url": "https://static.crates.io/crates/libc/libc-0.2.186.crate",
+      "archive_sha256": "68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66",
+      "archive_bytes": 821883,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/libc-0.2.186/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "libc-0.2.186/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/libc-0.2.186/LICENSE-MIT",
+          "sha256": "123a331b5dbf04c30097fa43b8f858bc85df671fe776de498d01f3d6b7c1f69e",
+          "bytes": 1066,
+          "archive_member": "libc-0.2.186/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "memchr",
+      "version": "2.8.1",
+      "archive_url": "https://static.crates.io/crates/memchr/memchr-2.8.1.crate",
+      "archive_sha256": "6b947ae49db0d222b1dbc6b113ce7248a3fc3a6ca21b696717bfc000ba4484d8",
+      "archive_bytes": 98743,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Unlicense OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/memchr-2.8.1/COPYING",
+          "sha256": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
+          "bytes": 126,
+          "archive_member": "memchr-2.8.1/COPYING"
+        },
+        {
+          "path": "rust/memchr-2.8.1/LICENSE-MIT",
+          "sha256": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
+          "bytes": 1081,
+          "archive_member": "memchr-2.8.1/LICENSE-MIT"
+        },
+        {
+          "path": "rust/memchr-2.8.1/UNLICENSE",
+          "sha256": "7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c",
+          "bytes": 1211,
+          "archive_member": "memchr-2.8.1/UNLICENSE"
+        }
+      ]
+    },
+    {
+      "name": "memmap2",
+      "version": "0.9.10",
+      "archive_url": "https://static.crates.io/crates/memmap2/memmap2-0.9.10.crate",
+      "archive_sha256": "714098028fe011992e1c3962653c96b2d578c4b4bce9036e15ff220319b1e0e3",
+      "archive_bytes": 34846,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/memmap2-0.9.10/LICENSE-APACHE",
+          "sha256": "04ea4849dba9dcae07113850c6f1b1a69052c625210639914eee352023f750ad",
+          "bytes": 10835,
+          "archive_member": "memmap2-0.9.10/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/memmap2-0.9.10/LICENSE-MIT",
+          "sha256": "0d25d03b5ab49576178ad0cae7a2648d12c17ad0452fe49c07e55e4b59aa5257",
+          "bytes": 1091,
+          "archive_member": "memmap2-0.9.10/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "objc2",
+      "version": "0.6.4",
+      "archive_url": "https://static.crates.io/crates/objc2/objc2-0.6.4.crate",
+      "archive_sha256": "3a12a8ed07aefc768292f076dc3ac8c48f3781c8f2d5851dd3d98950e8c5a89f",
+      "archive_bytes": 275200,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/objc2-0.6.4/upstream-metadata/.cargo_vcs_info.json",
+          "sha256": "45343a7cb8cebbb23c2804f99a14f01f6618ce0956dba62f387fb9ffaf00eff7",
+          "bytes": 106,
+          "archive_member": "objc2-0.6.4/.cargo_vcs_info.json"
+        },
+        {
+          "path": "rust/objc2-0.6.4/upstream-metadata/Cargo.toml",
+          "sha256": "74bfa13bee2c7362432f22886f9749743c78d32eed5916e26a06ff56ae84c901",
+          "bytes": 5073,
+          "archive_member": "objc2-0.6.4/Cargo.toml"
+        },
+        {
+          "path": "rust/objc2-0.6.4/upstream-repository/LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "bytes": 1339,
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
+          "repository_commit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+          "upstream_git_blob_sha1": "540ae4c81adb5f64a9f61e222b688880da24300e"
+        }
+      ],
+      "repository_fallback": {
+        "repository": "https://github.com/madsmtm/objc2",
+        "commit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+        "path_in_vcs": "crates/objc2",
+        "reason": "The crate archive omits standalone license files. .cargo_vcs_info.json in the SHA-256-verified crate pins this upstream commit. Git blob SHA-1s were checked against the complete, nontruncated official Git tree at that commit."
+      }
+    },
+    {
+      "name": "objc2-core-foundation",
+      "version": "0.3.2",
+      "archive_url": "https://static.crates.io/crates/objc2-core-foundation/objc2-core-foundation-0.3.2.crate",
+      "archive_sha256": "2a180dd8642fa45cdb7dd721cd4c11b1cadd4929ce112ebd8b9f5803cc79d536",
+      "archive_bytes": 180804,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Zlib OR Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/objc2-core-foundation-0.3.2/upstream-metadata/.cargo_vcs_info.json",
+          "sha256": "1c1a87985a2bd25015f5e2413f4041379bea0172b2fce88dae3e6482b50aab26",
+          "bytes": 132,
+          "archive_member": "objc2-core-foundation-0.3.2/.cargo_vcs_info.json"
+        },
+        {
+          "path": "rust/objc2-core-foundation-0.3.2/upstream-metadata/Cargo.toml",
+          "sha256": "c0f54260fa1396923f2db4edf1e2d54e8ab09dea214af4b8ce37aaefa7185e60",
+          "bytes": 4472,
+          "archive_member": "objc2-core-foundation-0.3.2/Cargo.toml"
+        },
+        {
+          "path": "rust/objc2-core-foundation-0.3.2/upstream-repository/LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "bytes": 1339,
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "repository_commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "upstream_git_blob_sha1": "540ae4c81adb5f64a9f61e222b688880da24300e"
+        }
+      ],
+      "repository_fallback": {
+        "repository": "https://github.com/madsmtm/objc2",
+        "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+        "path_in_vcs": "framework-crates/objc2-core-foundation",
+        "reason": "The crate archive omits standalone license files. .cargo_vcs_info.json in the SHA-256-verified crate pins this upstream commit. Git blob SHA-1s were checked against the complete, nontruncated official Git tree at that commit."
+      }
+    },
+    {
+      "name": "objc2-encode",
+      "version": "4.1.0",
+      "archive_url": "https://static.crates.io/crates/objc2-encode/objc2-encode-4.1.0.crate",
+      "archive_sha256": "ef25abbcd74fb2609453eb695bd2f860d389e457f67dc17cafc8b8cbc89d0c33",
+      "archive_bytes": 21004,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/objc2-encode-4.1.0/upstream-metadata/.cargo_vcs_info.json",
+          "sha256": "b23c761215887d90ac44e18b18c8b386f93139c65a4a14f110e22405830cb3f1",
+          "bytes": 113,
+          "archive_member": "objc2-encode-4.1.0/.cargo_vcs_info.json"
+        },
+        {
+          "path": "rust/objc2-encode-4.1.0/upstream-metadata/Cargo.toml",
+          "sha256": "cf9a8cc812710344d7fe618a5e615530baeeceae5c2826b9d5bb557dc419f159",
+          "bytes": 1850,
+          "archive_member": "objc2-encode-4.1.0/Cargo.toml"
+        },
+        {
+          "path": "rust/objc2-encode-4.1.0/upstream-repository/LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "bytes": 1339,
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
+          "repository_commit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+          "upstream_git_blob_sha1": "540ae4c81adb5f64a9f61e222b688880da24300e"
+        }
+      ],
+      "repository_fallback": {
+        "repository": "https://github.com/madsmtm/objc2",
+        "commit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+        "path_in_vcs": "crates/objc2-encode",
+        "reason": "The crate archive omits standalone license files. .cargo_vcs_info.json in the SHA-256-verified crate pins this upstream commit. Git blob SHA-1s were checked against the complete, nontruncated official Git tree at that commit."
+      }
+    },
+    {
+      "name": "objc2-foundation",
+      "version": "0.3.2",
+      "archive_url": "https://static.crates.io/crates/objc2-foundation/objc2-foundation-0.3.2.crate",
+      "archive_sha256": "e3e0adef53c21f888deb4fa59fc59f7eb17404926ee8a6f59f5df0fd7f9f3272",
+      "archive_bytes": 345384,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/objc2-foundation-0.3.2/upstream-metadata/.cargo_vcs_info.json",
+          "sha256": "de34f3c84d7cb1cafcedb4e83b7efdd64047872566827477b954f8a853536bb1",
+          "bytes": 127,
+          "archive_member": "objc2-foundation-0.3.2/.cargo_vcs_info.json"
+        },
+        {
+          "path": "rust/objc2-foundation-0.3.2/upstream-metadata/Cargo.toml",
+          "sha256": "eabbe24e325c7b474c6f5de2e955f4f942ecd385608e4b6609b89a1f68ef39cc",
+          "bytes": 11621,
+          "archive_member": "objc2-foundation-0.3.2/Cargo.toml"
+        },
+        {
+          "path": "rust/objc2-foundation-0.3.2/upstream-repository/LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "bytes": 1339,
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "repository_commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "upstream_git_blob_sha1": "540ae4c81adb5f64a9f61e222b688880da24300e"
+        }
+      ],
+      "repository_fallback": {
+        "repository": "https://github.com/madsmtm/objc2",
+        "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+        "path_in_vcs": "framework-crates/objc2-foundation",
+        "reason": "The crate archive omits standalone license files. .cargo_vcs_info.json in the SHA-256-verified crate pins this upstream commit. Git blob SHA-1s were checked against the complete, nontruncated official Git tree at that commit."
+      }
+    },
+    {
+      "name": "objc2-metal",
+      "version": "0.3.2",
+      "archive_url": "https://static.crates.io/crates/objc2-metal/objc2-metal-0.3.2.crate",
+      "archive_sha256": "a0125f776a10d00af4152d74616409f0d4a2053a6f57fa5b7d6aa2854ac04794",
+      "archive_bytes": 226999,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Zlib OR Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/objc2-metal-0.3.2/upstream-metadata/.cargo_vcs_info.json",
+          "sha256": "ea5eaec8d2785ebed65a43cdf097051d8900c7547797cea4bb3c7ba4476e052a",
+          "bytes": 122,
+          "archive_member": "objc2-metal-0.3.2/.cargo_vcs_info.json"
+        },
+        {
+          "path": "rust/objc2-metal-0.3.2/upstream-metadata/Cargo.toml",
+          "sha256": "8ea9d2d00d2e462d2f1e0a5bb242ccc8753c2bcd3441edd1d2cf05cba69092ff",
+          "bytes": 14425,
+          "archive_member": "objc2-metal-0.3.2/Cargo.toml"
+        },
+        {
+          "path": "rust/objc2-metal-0.3.2/upstream-repository/LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "bytes": 1339,
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "repository_commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "upstream_git_blob_sha1": "540ae4c81adb5f64a9f61e222b688880da24300e"
+        }
+      ],
+      "repository_fallback": {
+        "repository": "https://github.com/madsmtm/objc2",
+        "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+        "path_in_vcs": "framework-crates/objc2-metal",
+        "reason": "The crate archive omits standalone license files. .cargo_vcs_info.json in the SHA-256-verified crate pins this upstream commit. Git blob SHA-1s were checked against the complete, nontruncated official Git tree at that commit."
+      }
+    },
+    {
+      "name": "once_cell",
+      "version": "1.21.4",
+      "archive_url": "https://static.crates.io/crates/once_cell/once_cell-1.21.4.crate",
+      "archive_sha256": "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50",
+      "archive_bytes": 35010,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/once_cell-1.21.4/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "once_cell-1.21.4/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/once_cell-1.21.4/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "once_cell-1.21.4/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "proc-macro2",
+      "version": "1.0.106",
+      "archive_url": "https://static.crates.io/crates/proc-macro2/proc-macro2-1.0.106.crate",
+      "archive_sha256": "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934",
+      "archive_bytes": 59765,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/proc-macro2-1.0.106/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "proc-macro2-1.0.106/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/proc-macro2-1.0.106/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "proc-macro2-1.0.106/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "pyo3",
+      "version": "0.28.3",
+      "archive_url": "https://static.crates.io/crates/pyo3/pyo3-0.28.3.crate",
+      "archive_sha256": "91fd8e38a3b50ed1167fb981cd6fd60147e091784c427b8f7183a7ee32c31c12",
+      "archive_bytes": 1204476,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pyo3-0.28.3/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-0.28.3/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-0.28.3/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-0.28.3/LICENSE-MIT"
+        },
+        {
+          "path": "rust/pyo3-0.28.3/pyo3-runtime/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-0.28.3/pyo3-runtime/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-0.28.3/pyo3-runtime/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-0.28.3/pyo3-runtime/LICENSE-MIT"
+        },
+        {
+          "path": "rust/pyo3-0.28.3/source-notices/buffer.rs-d75c907dbb2451a3.txt",
+          "sha256": "d75c907dbb2451a343faf25059e8c53fb938140a7f175fa39df9d468286025c4",
+          "bytes": 1149,
+          "archive_excerpts": [
+            {
+              "member": "pyo3-0.28.3/src/buffer.rs",
+              "member_sha256": "a2a1698ef066cb37bbaddbc9022dfa042622d87e2703d54ad6ba77c339d4f8c2",
+              "offset": 0,
+              "bytes": 1149
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pyo3-build-config",
+      "version": "0.28.3",
+      "archive_url": "https://static.crates.io/crates/pyo3-build-config/pyo3-build-config-0.28.3.crate",
+      "archive_sha256": "e368e7ddfdeb98c9bca7f8383be1648fd84ab466bf2bc015e94008db6d35611e",
+      "archive_bytes": 35961,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pyo3-build-config-0.28.3/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-build-config-0.28.3/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-build-config-0.28.3/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-build-config-0.28.3/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "pyo3-ffi",
+      "version": "0.28.3",
+      "archive_url": "https://static.crates.io/crates/pyo3-ffi/pyo3-ffi-0.28.3.crate",
+      "archive_sha256": "7f29e10af80b1f7ccaf7f69eace800a03ecd13e883acfacc1e5d0988605f651e",
+      "archive_bytes": 80881,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pyo3-ffi-0.28.3/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-ffi-0.28.3/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-ffi-0.28.3/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-ffi-0.28.3/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "pyo3-macros",
+      "version": "0.28.3",
+      "archive_url": "https://static.crates.io/crates/pyo3-macros/pyo3-macros-0.28.3.crate",
+      "archive_sha256": "df6e520eff47c45997d2fc7dd8214b25dd1310918bbb2642156ef66a67f29813",
+      "archive_bytes": 8963,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pyo3-macros-0.28.3/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-macros-0.28.3/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-macros-0.28.3/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-macros-0.28.3/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "pyo3-macros-backend",
+      "version": "0.28.3",
+      "archive_url": "https://static.crates.io/crates/pyo3-macros-backend/pyo3-macros-backend-0.28.3.crate",
+      "archive_sha256": "c4cdc218d835738f81c2338f822078af45b4afdf8b2e33cbb5916f108b813acb",
+      "archive_bytes": 88063,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pyo3-macros-backend-0.28.3/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-macros-backend-0.28.3/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-macros-backend-0.28.3/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-macros-backend-0.28.3/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "quote",
+      "version": "1.0.45",
+      "archive_url": "https://static.crates.io/crates/quote/quote-1.0.45.crate",
+      "archive_sha256": "41f2619966050689382d2b44f664f4bc593e129785a36d6ee376ddf37259b924",
+      "archive_bytes": 31564,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/quote-1.0.45/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "quote-1.0.45/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/quote-1.0.45/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "quote-1.0.45/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "rustix",
+      "version": "1.1.4",
+      "archive_url": "https://static.crates.io/crates/rustix/rustix-1.1.4.crate",
+      "archive_sha256": "b6fe4565b9518b83ef4f91bb47ce29620ca828bd32cb7e408f0062e9930ba190",
+      "archive_bytes": 425241,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/rustix-1.1.4/COPYRIGHT",
+          "sha256": "377c2e7c53250cc5905c0b0532d35973392af16ffb9596a41d99d202cf3617c9",
+          "bytes": 853,
+          "archive_member": "rustix-1.1.4/COPYRIGHT"
+        },
+        {
+          "path": "rust/rustix-1.1.4/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "rustix-1.1.4/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/rustix-1.1.4/LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
+          "bytes": 12243,
+          "archive_member": "rustix-1.1.4/LICENSE-Apache-2.0_WITH_LLVM-exception"
+        },
+        {
+          "path": "rust/rustix-1.1.4/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "rustix-1.1.4/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "serde",
+      "version": "1.0.228",
+      "archive_url": "https://static.crates.io/crates/serde/serde-1.0.228.crate",
+      "archive_sha256": "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e",
+      "archive_bytes": 83652,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/serde-1.0.228/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "serde-1.0.228/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/serde-1.0.228/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "serde-1.0.228/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "serde_core",
+      "version": "1.0.228",
+      "archive_url": "https://static.crates.io/crates/serde_core/serde_core-1.0.228.crate",
+      "archive_sha256": "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad",
+      "archive_bytes": 63111,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/serde_core-1.0.228/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "serde_core-1.0.228/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/serde_core-1.0.228/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "serde_core-1.0.228/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "serde_derive",
+      "version": "1.0.228",
+      "archive_url": "https://static.crates.io/crates/serde_derive/serde_derive-1.0.228.crate",
+      "archive_sha256": "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79",
+      "archive_bytes": 59605,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/serde_derive-1.0.228/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "serde_derive-1.0.228/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/serde_derive-1.0.228/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "serde_derive-1.0.228/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "serde_json",
+      "version": "1.0.150",
+      "archive_url": "https://static.crates.io/crates/serde_json/serde_json-1.0.150.crate",
+      "archive_sha256": "e8014e44b4736ed0538adeecded0fce2a272f22dc9578a7eb6b2d9993c74cfb9",
+      "archive_bytes": 155574,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/serde_json-1.0.150/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "serde_json-1.0.150/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/serde_json-1.0.150/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "serde_json-1.0.150/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "syn",
+      "version": "2.0.117",
+      "archive_url": "https://static.crates.io/crates/syn/syn-2.0.117.crate",
+      "archive_sha256": "e665b8803e7b1d2a727f4023456bbbbe74da67099c585258af0ad9c5013b9b99",
+      "archive_bytes": 306011,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/syn-2.0.117/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "syn-2.0.117/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/syn-2.0.117/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "syn-2.0.117/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "target-lexicon",
+      "version": "0.13.5",
+      "archive_url": "https://static.crates.io/crates/target-lexicon/target-lexicon-0.13.5.crate",
+      "archive_sha256": "adb6935a6f5c20170eeceb1a3835a49e12e19d792f6dd344ccc76a985ca5a6ca",
+      "archive_bytes": 26928,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 WITH LLVM-exception"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/target-lexicon-0.13.5/LICENSE",
+          "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
+          "bytes": 12243,
+          "archive_member": "target-lexicon-0.13.5/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "tempfile",
+      "version": "3.27.0",
+      "archive_url": "https://static.crates.io/crates/tempfile/tempfile-3.27.0.crate",
+      "archive_sha256": "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd",
+      "archive_bytes": 44780,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/tempfile-3.27.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "tempfile-3.27.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/tempfile-3.27.0/LICENSE-MIT",
+          "sha256": "8b427f5bc501764575e52ba4f9d95673cf8f6d80a86d0d06599852e1a9a20a36",
+          "bytes": 1056,
+          "archive_member": "tempfile-3.27.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "unicode-ident",
+      "version": "1.0.24",
+      "archive_url": "https://static.crates.io/crates/unicode-ident/unicode-ident-1.0.24.crate",
+      "archive_sha256": "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75",
+      "archive_bytes": 49298,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "(MIT OR Apache-2.0) AND Unicode-3.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/unicode-ident-1.0.24/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "unicode-ident-1.0.24/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/unicode-ident-1.0.24/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "unicode-ident-1.0.24/LICENSE-MIT"
+        },
+        {
+          "path": "rust/unicode-ident-1.0.24/LICENSE-UNICODE",
+          "sha256": "f7db81051789b729fea528a63ec4c938fdcb93d9d61d97dc8cc2e9df6d47f2a1",
+          "bytes": 1995,
+          "archive_member": "unicode-ident-1.0.24/LICENSE-UNICODE"
+        }
+      ]
+    },
+    {
+      "name": "zmij",
+      "version": "1.0.21",
+      "archive_url": "https://static.crates.io/crates/zmij/zmij-1.0.21.crate",
+      "archive_sha256": "b8848ee67ecc8aedbaf3e4122217aff892639231befc6a1b58d29fff4c2cabaa",
+      "archive_bytes": 26665,
+      "sboms": [
+        "sboms/macos-arm64/safetensors-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/zmij-1.0.21/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "zmij-1.0.21/LICENSE-MIT"
+        }
+      ]
+    }
+  ]
+}

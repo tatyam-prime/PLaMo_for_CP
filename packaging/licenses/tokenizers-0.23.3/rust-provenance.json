@@ -1,0 +1,4255 @@
+{
+  "schema_version": 1,
+  "package": "tokenizers",
+  "version": "0.23.3",
+  "fetched_at_utc": "2026-11-07T21:11:22.698636+00:00",
+  "verification": "Each selected official wheel matches uv.lock SHA-256. Each registry crate archive matches the SHA-256 in that wheel SBOM. Standalone documents are preserved verbatim; embedded notices are exact unmodified byte ranges, with full source-member SHA-256 and offsets recorded. Repository fallbacks use commits from the verified crate .cargo_vcs_info.json and Git-tree-verified blobs. No downloaded code was executed.",
+  "scope_note": "This is a bounded notice supplement for the registry components identified by these selected wheel SBOMs, not a general legal audit or proof that every listed crate or source file is linked into the binary. SBOMs can include build-only, feature-disabled and other-target components. Their notices are included conservatively rather than asserting that all components are bundled. Alternative upstream license texts are retained as published; their inclusion does not elect every alternative. Workspace components retain the Python distribution license. Future wheel versions or platforms require a fresh check.",
+  "selection_note": "Preserves standalone LICENSE/COPYING/NOTICE/COPYRIGHT documents, AUTHORS and UNLICENSE, plus identified embedded copyright-and-permission notices in crate C/Rust/assembly source. API implementation files such as objc2-foundation/src/copying.rs are not legal notice files. No runtime code, model weights, or dependency versions are changed.",
+  "wheels": [
+    {
+      "filename": "tokenizers-0.23.3-cp310-abi3-macosx_11_0_arm64.whl",
+      "url": "https://files.pythonhosted.org/packages/b2/72/01e49f032bb346e5aaf06c10c74fe8aeec847173adbadd66eb7c53054bf2/tokenizers-0.23.3-cp310-abi3-macosx_11_0_arm64.whl",
+      "sha256": "68649e97d5b43c44c031d8d848874a6eecae8f8fe40ea989aa777a5a83aca716",
+      "platform": "macos-arm64",
+      "sbom": {
+        "path": "sboms/macos-arm64/tokenizers-python.cyclonedx.json",
+        "sha256": "a65f99f1429fe5c517147b92427c5da5b86c040aa16236b3efb7f279477a8af2",
+        "bytes": 151312,
+        "wheel_member": "tokenizers-0.23.3.dist-info/sboms/tokenizers-python.cyclonedx.json"
+      }
+    }
+  ],
+  "workspace_components": [
+    {
+      "name": "tokenizers",
+      "version": "0.23.2",
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "license_source": "The Python distribution license (installed wheel or existing upstream LICENSE supplement) covers these workspace crates; no registry-archive hash is supplied by the SBOM."
+    }
+  ],
+  "reference_licenses": [],
+  "crates": [
+    {
+      "name": "ahash",
+      "version": "0.8.12",
+      "archive_url": "https://static.crates.io/crates/ahash/ahash-0.8.12.crate",
+      "archive_sha256": "5a15f179cd60c4584b8a8c596927aadc462e27f2ca70c04e0071964a73ba7a75",
+      "archive_bytes": 43413,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/ahash-0.8.12/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "ahash-0.8.12/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/ahash-0.8.12/LICENSE-MIT",
+          "sha256": "0444c6991eead6822f7b9102e654448d51624431119546492e8b231db42c48bb",
+          "bytes": 1057,
+          "archive_member": "ahash-0.8.12/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "aho-corasick",
+      "version": "1.1.5",
+      "archive_url": "https://static.crates.io/crates/aho-corasick/aho-corasick-1.1.5.crate",
+      "archive_sha256": "c982642fa9e8606056828ee9a8505737230110bb1099153c79efe865c59d12ba",
+      "archive_bytes": 184315,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Unlicense OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/aho-corasick-1.1.5/COPYING",
+          "sha256": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
+          "bytes": 126,
+          "archive_member": "aho-corasick-1.1.5/COPYING"
+        },
+        {
+          "path": "rust/aho-corasick-1.1.5/LICENSE-MIT",
+          "sha256": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
+          "bytes": 1081,
+          "archive_member": "aho-corasick-1.1.5/LICENSE-MIT"
+        },
+        {
+          "path": "rust/aho-corasick-1.1.5/UNLICENSE",
+          "sha256": "7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c",
+          "bytes": 1211,
+          "archive_member": "aho-corasick-1.1.5/UNLICENSE"
+        }
+      ]
+    },
+    {
+      "name": "anstream",
+      "version": "1.0.0",
+      "archive_url": "https://static.crates.io/crates/anstream/anstream-1.0.0.crate",
+      "archive_sha256": "824a212faf96e9acacdbd09febd34438f8f711fb84e09a8916013cd7815ca28d",
+      "archive_bytes": 28916,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/anstream-1.0.0/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "anstream-1.0.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/anstream-1.0.0/LICENSE-MIT",
+          "sha256": "6efb0476a1cc085077ed49357026d8c173bf33017278ef440f222fb9cbcb66e6",
+          "bytes": 1062,
+          "archive_member": "anstream-1.0.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "anstyle",
+      "version": "1.0.14",
+      "archive_url": "https://static.crates.io/crates/anstyle/anstyle-1.0.14.crate",
+      "archive_sha256": "940b3a0ca603d1eade50a4846a2afffd5ef57a9feac2c0e2ec2e14f9ead76000",
+      "archive_bytes": 17787,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/anstyle-1.0.14/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "anstyle-1.0.14/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/anstyle-1.0.14/LICENSE-MIT",
+          "sha256": "6efb0476a1cc085077ed49357026d8c173bf33017278ef440f222fb9cbcb66e6",
+          "bytes": 1062,
+          "archive_member": "anstyle-1.0.14/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "anstyle-parse",
+      "version": "1.0.0",
+      "archive_url": "https://static.crates.io/crates/anstyle-parse/anstyle-parse-1.0.0.crate",
+      "archive_sha256": "52ce7f38b242319f7cabaa6813055467063ecdc9d355bbb4ce0c68908cd8130e",
+      "archive_bytes": 22042,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/anstyle-parse-1.0.0/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "anstyle-parse-1.0.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/anstyle-parse-1.0.0/LICENSE-MIT",
+          "sha256": "6efb0476a1cc085077ed49357026d8c173bf33017278ef440f222fb9cbcb66e6",
+          "bytes": 1062,
+          "archive_member": "anstyle-parse-1.0.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "anstyle-query",
+      "version": "1.1.5",
+      "archive_url": "https://static.crates.io/crates/anstyle-query/anstyle-query-1.1.5.crate",
+      "archive_sha256": "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc",
+      "archive_bytes": 10264,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/anstyle-query-1.1.5/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "anstyle-query-1.1.5/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/anstyle-query-1.1.5/LICENSE-MIT",
+          "sha256": "6efb0476a1cc085077ed49357026d8c173bf33017278ef440f222fb9cbcb66e6",
+          "bytes": 1062,
+          "archive_member": "anstyle-query-1.1.5/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "autocfg",
+      "version": "1.5.1",
+      "archive_url": "https://static.crates.io/crates/autocfg/autocfg-1.5.1.crate",
+      "archive_sha256": "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53",
+      "archive_bytes": 18911,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/autocfg-1.5.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "autocfg-1.5.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/autocfg-1.5.1/LICENSE-MIT",
+          "sha256": "27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac",
+          "bytes": 1054,
+          "archive_member": "autocfg-1.5.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "base64",
+      "version": "0.13.1",
+      "archive_url": "https://static.crates.io/crates/base64/base64-0.13.1.crate",
+      "archive_sha256": "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8",
+      "archive_bytes": 61002,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/base64-0.13.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "base64-0.13.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/base64-0.13.1/LICENSE-MIT",
+          "sha256": "0dd882e53de11566d50f8e8e2d5a651bcf3fabee4987d70f306233cf39094ba7",
+          "bytes": 1076,
+          "archive_member": "base64-0.13.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "bitflags",
+      "version": "1.3.2",
+      "archive_url": "https://static.crates.io/crates/bitflags/bitflags-1.3.2.crate",
+      "archive_sha256": "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a",
+      "archive_bytes": 23021,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/bitflags-1.3.2/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "bitflags-1.3.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/bitflags-1.3.2/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "archive_member": "bitflags-1.3.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "bitflags",
+      "version": "2.13.1",
+      "archive_url": "https://static.crates.io/crates/bitflags/bitflags-2.13.1.crate",
+      "archive_sha256": "b588b76d00fde79687d7646a9b5bdf3cc0f655e0bbd080335a95d7e96f3587da",
+      "archive_bytes": 51395,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/bitflags-2.13.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "bitflags-2.13.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/bitflags-2.13.1/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "archive_member": "bitflags-2.13.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "castaway",
+      "version": "0.2.4",
+      "archive_url": "https://static.crates.io/crates/castaway/castaway-0.2.4.crate",
+      "archive_sha256": "dec551ab6e7578819132c713a93c022a05d60159dc86e7a7050223577484c55a",
+      "archive_bytes": 12546,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/castaway-0.2.4/LICENSE",
+          "sha256": "f98e09091d5ae02b2f2ec1ead4f7f28c4c44d1cb98b078739ba67091637e170c",
+          "bytes": 1075,
+          "archive_member": "castaway-0.2.4/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "cc",
+      "version": "1.4.4",
+      "archive_url": "https://static.crates.io/crates/cc/cc-1.4.4.crate",
+      "archive_sha256": "0ad534f4357a5264cce5019c989cf66a4f0dc4e0d1b1d15f8aacec0ff7360273",
+      "archive_bytes": 100602,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/cc-1.4.4/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "cc-1.4.4/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/cc-1.4.4/LICENSE-MIT",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "bytes": 1057,
+          "archive_member": "cc-1.4.4/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "cfg-if",
+      "version": "1.0.4",
+      "archive_url": "https://static.crates.io/crates/cfg-if/cfg-if-1.0.4.crate",
+      "archive_sha256": "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801",
+      "archive_bytes": 9360,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/cfg-if-1.0.4/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "cfg-if-1.0.4/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/cfg-if-1.0.4/LICENSE-MIT",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "bytes": 1057,
+          "archive_member": "cfg-if-1.0.4/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "colorchoice",
+      "version": "1.0.5",
+      "archive_url": "https://static.crates.io/crates/colorchoice/colorchoice-1.0.5.crate",
+      "archive_sha256": "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570",
+      "archive_bytes": 8187,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/colorchoice-1.0.5/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "colorchoice-1.0.5/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/colorchoice-1.0.5/LICENSE-MIT",
+          "sha256": "6efb0476a1cc085077ed49357026d8c173bf33017278ef440f222fb9cbcb66e6",
+          "bytes": 1062,
+          "archive_member": "colorchoice-1.0.5/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "compact_str",
+      "version": "0.9.1",
+      "archive_url": "https://static.crates.io/crates/compact_str/compact_str-0.9.1.crate",
+      "archive_sha256": "9dfdd1c2274d9aa354115b09dc9a901d6c5576818cdf70d14cae2bdb47df00ab",
+      "archive_bytes": 88299,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/compact_str-0.9.1/LICENSE",
+          "sha256": "0d52feec79589df30138dad3800323fe5686b764b73347330a2dfef8ac83efe8",
+          "bytes": 1073,
+          "archive_member": "compact_str-0.9.1/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "console",
+      "version": "0.16.4",
+      "archive_url": "https://static.crates.io/crates/console/console-0.16.4.crate",
+      "archive_sha256": "4fe5f465a4f6fee88fad41b85d990f84c835335e85b5d9e6e63e0d06d28cba7c",
+      "archive_bytes": 34353,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/console-0.16.4/LICENSE",
+          "sha256": "2022c11b24fc1e50fa06a5959e40198a3464f560729ad3d00139abb8a328362d",
+          "bytes": 1112,
+          "archive_member": "console-0.16.4/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "crossbeam-deque",
+      "version": "0.8.7",
+      "archive_url": "https://static.crates.io/crates/crossbeam-deque/crossbeam-deque-0.8.7.crate",
+      "archive_sha256": "5181e0de7b61eb03a81e347d6dd8797bae9da5146707b51077e2d71a54ec0ceb",
+      "archive_bytes": 24141,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/crossbeam-deque-0.8.7/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "crossbeam-deque-0.8.7/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/crossbeam-deque-0.8.7/LICENSE-MIT",
+          "sha256": "5734ed989dfca1f625b40281ee9f4530f91b2411ec01cb748223e7eb87e201ab",
+          "bytes": 1099,
+          "archive_member": "crossbeam-deque-0.8.7/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "crossbeam-epoch",
+      "version": "0.9.20",
+      "archive_url": "https://static.crates.io/crates/crossbeam-epoch/crossbeam-epoch-0.9.20.crate",
+      "archive_sha256": "2d6914041f254d6e9176c01941b21115dcfb7089e55135a35411081bd106ef3f",
+      "archive_bytes": 47545,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/crossbeam-epoch-0.9.20/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "crossbeam-epoch-0.9.20/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/crossbeam-epoch-0.9.20/LICENSE-MIT",
+          "sha256": "5734ed989dfca1f625b40281ee9f4530f91b2411ec01cb748223e7eb87e201ab",
+          "bytes": 1099,
+          "archive_member": "crossbeam-epoch-0.9.20/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "crossbeam-utils",
+      "version": "0.8.22",
+      "archive_url": "https://static.crates.io/crates/crossbeam-utils/crossbeam-utils-0.8.22.crate",
+      "archive_sha256": "61803da095bee82a81bb1a452ecc25d3b2f1416d1897eb86430c6159ef717c17",
+      "archive_bytes": 46874,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/crossbeam-utils-0.8.22/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "crossbeam-utils-0.8.22/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/crossbeam-utils-0.8.22/LICENSE-MIT",
+          "sha256": "5734ed989dfca1f625b40281ee9f4530f91b2411ec01cb748223e7eb87e201ab",
+          "bytes": 1099,
+          "archive_member": "crossbeam-utils-0.8.22/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "daachorse",
+      "version": "3.0.3",
+      "archive_url": "https://static.crates.io/crates/daachorse/daachorse-3.0.3.crate",
+      "archive_sha256": "5614204febbc33cc07a2806aa6440b904ac012b68eecc37f4493ea4a76455a3d",
+      "archive_bytes": 94191,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/daachorse-3.0.3/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "daachorse-3.0.3/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/daachorse-3.0.3/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "daachorse-3.0.3/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "darling",
+      "version": "0.20.11",
+      "archive_url": "https://static.crates.io/crates/darling/darling-0.20.11.crate",
+      "archive_sha256": "fc7f46116c46ff9ab3eb1597a45688b6715c6e628b5c133e288e709a29bcb4ee",
+      "archive_bytes": 37614,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/darling-0.20.11/LICENSE",
+          "sha256": "8ea93490d74a5a1b1af3ff71d786271b3f1e5f0bea79ac16e02ec533cef040d6",
+          "bytes": 1067,
+          "archive_member": "darling-0.20.11/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "darling_core",
+      "version": "0.20.11",
+      "archive_url": "https://static.crates.io/crates/darling_core/darling_core-0.20.11.crate",
+      "archive_sha256": "0d00b9596d185e565c2207a0b01f8bd1a135483d02d9b7b0a54b11da8d53412e",
+      "archive_bytes": 68006,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/darling_core-0.20.11/LICENSE",
+          "sha256": "8ea93490d74a5a1b1af3ff71d786271b3f1e5f0bea79ac16e02ec533cef040d6",
+          "bytes": 1067,
+          "archive_member": "darling_core-0.20.11/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "darling_macro",
+      "version": "0.20.11",
+      "archive_url": "https://static.crates.io/crates/darling_macro/darling_macro-0.20.11.crate",
+      "archive_sha256": "fc34b93ccb385b40dc71c6fceac4b2ad23662c7eeb248cf10d529b7e055b6ead",
+      "archive_bytes": 2532,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/darling_macro-0.20.11/LICENSE",
+          "sha256": "8ea93490d74a5a1b1af3ff71d786271b3f1e5f0bea79ac16e02ec533cef040d6",
+          "bytes": 1067,
+          "archive_member": "darling_macro-0.20.11/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "dary_heap",
+      "version": "0.3.9",
+      "archive_url": "https://static.crates.io/crates/dary_heap/dary_heap-0.3.9.crate",
+      "archive_sha256": "8b1e3a325bc115f096c8b77bbf027a7c2592230e70be2d985be950d3d5e60ebe",
+      "archive_bytes": 27054,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/dary_heap-0.3.9/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "dary_heap-0.3.9/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/dary_heap-0.3.9/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "dary_heap-0.3.9/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "defmt",
+      "version": "1.1.1",
+      "archive_url": "https://static.crates.io/crates/defmt/defmt-1.1.1.crate",
+      "archive_sha256": "e2953bfe4f93bbd20cc71198842756f77d161884c99ebbabc41d80231ded88d1",
+      "archive_bytes": 34207,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/defmt-1.1.1/LICENSE-APACHE",
+          "sha256": "8173d5c29b4f956d532781d2b86e4e30f83e6b7878dce18c919451d6ba707c90",
+          "bytes": 10850,
+          "archive_member": "defmt-1.1.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/defmt-1.1.1/LICENSE-MIT",
+          "sha256": "2710a622a896bba67356913d4d0492cab5465f61b2ecce6d880aeb483834fb50",
+          "bytes": 1053,
+          "archive_member": "defmt-1.1.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "defmt-macros",
+      "version": "1.1.1",
+      "archive_url": "https://static.crates.io/crates/defmt-macros/defmt-macros-1.1.1.crate",
+      "archive_sha256": "bad9c72e7ca2137e0dc3813245a0d282fd6daad32fd800af018306a9169b5fe8",
+      "archive_bytes": 27937,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/defmt-macros-1.1.1/LICENSE-APACHE",
+          "sha256": "8173d5c29b4f956d532781d2b86e4e30f83e6b7878dce18c919451d6ba707c90",
+          "bytes": 10850,
+          "archive_member": "defmt-macros-1.1.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/defmt-macros-1.1.1/LICENSE-MIT",
+          "sha256": "2710a622a896bba67356913d4d0492cab5465f61b2ecce6d880aeb483834fb50",
+          "bytes": 1053,
+          "archive_member": "defmt-macros-1.1.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "defmt-parser",
+      "version": "1.0.0",
+      "archive_url": "https://static.crates.io/crates/defmt-parser/defmt-parser-1.0.0.crate",
+      "archive_sha256": "10d60334b3b2e7c9d91ef8150abfb6fa4c1c39ebbcf4a81c2e346aad939fee3e",
+      "archive_bytes": 10881,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/defmt-parser-1.0.0/upstream-metadata/.cargo_vcs_info.json",
+          "sha256": "7ab8f01085721143c43db5db2528806f393df2058d03c5b8da20634e14886a05",
+          "bytes": 100,
+          "archive_member": "defmt-parser-1.0.0/.cargo_vcs_info.json"
+        },
+        {
+          "path": "rust/defmt-parser-1.0.0/upstream-metadata/Cargo.toml",
+          "sha256": "c4c4df5b09e53450267eacadf1f7f6a0d3d5fc463bc450e199f0d06eba8e6ab3",
+          "bytes": 1129,
+          "archive_member": "defmt-parser-1.0.0/Cargo.toml"
+        },
+        {
+          "path": "rust/defmt-parser-1.0.0/upstream-repository/LICENSE-APACHE",
+          "sha256": "8173d5c29b4f956d532781d2b86e4e30f83e6b7878dce18c919451d6ba707c90",
+          "bytes": 10850,
+          "source_url": "https://raw.githubusercontent.com/knurling-rs/defmt/4a8cdb44891ed57b8ff5a023b6bec7137c48708f/LICENSE-APACHE",
+          "repository_commit": "4a8cdb44891ed57b8ff5a023b6bec7137c48708f",
+          "upstream_git_blob_sha1": "11069edd79019f7dafbe3138841cf289209270dd"
+        },
+        {
+          "path": "rust/defmt-parser-1.0.0/upstream-repository/LICENSE-MIT",
+          "sha256": "2710a622a896bba67356913d4d0492cab5465f61b2ecce6d880aeb483834fb50",
+          "bytes": 1053,
+          "source_url": "https://raw.githubusercontent.com/knurling-rs/defmt/4a8cdb44891ed57b8ff5a023b6bec7137c48708f/LICENSE-MIT",
+          "repository_commit": "4a8cdb44891ed57b8ff5a023b6bec7137c48708f",
+          "upstream_git_blob_sha1": "e68a7ab37c8accca023db5f1505d48e4375d4324"
+        }
+      ],
+      "repository_fallback": {
+        "repository": "https://github.com/knurling-rs/defmt",
+        "commit": "4a8cdb44891ed57b8ff5a023b6bec7137c48708f",
+        "path_in_vcs": "parser",
+        "reason": "The crate archive omits standalone license files. .cargo_vcs_info.json in the SHA-256-verified crate pins this upstream commit. Git blob SHA-1s were checked against the complete, nontruncated official Git tree at that commit."
+      }
+    },
+    {
+      "name": "derive_builder",
+      "version": "0.20.2",
+      "archive_url": "https://static.crates.io/crates/derive_builder/derive_builder-0.20.2.crate",
+      "archive_sha256": "507dfb09ea8b7fa618fcf76e953f4f5e192547945816d5358edffe39f6f94947",
+      "archive_bytes": 36661,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/derive_builder-0.20.2/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "derive_builder-0.20.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/derive_builder-0.20.2/LICENSE-MIT",
+          "sha256": "8c9612877aacfa1b42f5e80b679e6c3c93a7ba2bb99dfaf6e87e200dca4b4e6c",
+          "bytes": 1099,
+          "archive_member": "derive_builder-0.20.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "derive_builder_core",
+      "version": "0.20.2",
+      "archive_url": "https://static.crates.io/crates/derive_builder_core/derive_builder_core-0.20.2.crate",
+      "archive_sha256": "2d5bcf7b024d6835cfb3d473887cd966994907effbe9227e8c8219824d06c4e8",
+      "archive_bytes": 31397,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/derive_builder_core-0.20.2/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "derive_builder_core-0.20.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/derive_builder_core-0.20.2/LICENSE-MIT",
+          "sha256": "8c9612877aacfa1b42f5e80b679e6c3c93a7ba2bb99dfaf6e87e200dca4b4e6c",
+          "bytes": 1099,
+          "archive_member": "derive_builder_core-0.20.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "derive_builder_macro",
+      "version": "0.20.2",
+      "archive_url": "https://static.crates.io/crates/derive_builder_macro/derive_builder_macro-0.20.2.crate",
+      "archive_sha256": "ab63b0e2bf4d5928aff72e83a7dace85d7bba5fe12dcc3c5a572d78caffd3f3c",
+      "archive_bytes": 6360,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/derive_builder_macro-0.20.2/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "derive_builder_macro-0.20.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/derive_builder_macro-0.20.2/LICENSE-MIT",
+          "sha256": "8c9612877aacfa1b42f5e80b679e6c3c93a7ba2bb99dfaf6e87e200dca4b4e6c",
+          "bytes": 1099,
+          "archive_member": "derive_builder_macro-0.20.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "either",
+      "version": "1.18.0",
+      "archive_url": "https://static.crates.io/crates/either/either-1.18.0.crate",
+      "archive_sha256": "252afb9ae5eaa683babdc6a068b3f5726eb19e05070c731f9b2a23a7c3e8ed34",
+      "archive_bytes": 22357,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/either-1.18.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "either-1.18.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/either-1.18.0/LICENSE-MIT",
+          "sha256": "7576269ea71f767b99297934c0b2367532690f8c4badc695edf8e04ab6a1e545",
+          "bytes": 1043,
+          "archive_member": "either-1.18.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "env_filter",
+      "version": "2.0.0",
+      "archive_url": "https://static.crates.io/crates/env_filter/env_filter-2.0.0.crate",
+      "archive_sha256": "900d271a03799a1ee8d1ca9b19893b48ca674a9284fefcfb85f05e74ed314217",
+      "archive_bytes": 15184,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/env_filter-2.0.0/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "env_filter-2.0.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/env_filter-2.0.0/LICENSE-MIT",
+          "sha256": "6efb0476a1cc085077ed49357026d8c173bf33017278ef440f222fb9cbcb66e6",
+          "bytes": 1062,
+          "archive_member": "env_filter-2.0.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "env_logger",
+      "version": "0.11.11",
+      "archive_url": "https://static.crates.io/crates/env_logger/env_logger-0.11.11.crate",
+      "archive_sha256": "de671bd27a75a797dc9ae289ba1e77276e75e2026408aab65185384e2d5cd3f6",
+      "archive_bytes": 31884,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/env_logger-0.11.11/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "env_logger-0.11.11/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/env_logger-0.11.11/LICENSE-MIT",
+          "sha256": "6efb0476a1cc085077ed49357026d8c173bf33017278ef440f222fb9cbcb66e6",
+          "bytes": 1062,
+          "archive_member": "env_logger-0.11.11/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "errno",
+      "version": "0.3.14",
+      "archive_url": "https://static.crates.io/crates/errno/errno-0.3.14.crate",
+      "archive_sha256": "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb",
+      "archive_bytes": 12002,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/errno-0.3.14/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "errno-0.3.14/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/errno-0.3.14/LICENSE-MIT",
+          "sha256": "8764a597675778ddfd4e25f81b08a05dbcf089ac05662df7613fe67f150e3aa2",
+          "bytes": 1054,
+          "archive_member": "errno-0.3.14/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "esaxx-rs",
+      "version": "0.1.10",
+      "archive_url": "https://static.crates.io/crates/esaxx-rs/esaxx-rs-0.1.10.crate",
+      "archive_sha256": "d817e038c30374a4bcb22f94d0a8a0e216958d4c3dcde369b1439fec4bdda6e6",
+      "archive_bytes": 175210,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/esaxx-rs-0.1.10/LICENSE",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "bytes": 11357,
+          "archive_member": "esaxx-rs-0.1.10/LICENSE"
+        },
+        {
+          "path": "rust/esaxx-rs-0.1.10/source-notices/esaxx.cpp-8aac061b3fa2f67a.txt",
+          "sha256": "8aac061b3fa2f67ac89b68e26eb02bc76a35c33b6cce73e9aa764f2b9df0ab9d",
+          "bytes": 1234,
+          "archive_excerpts": [
+            {
+              "member": "esaxx-rs-0.1.10/src/esaxx.cpp",
+              "member_sha256": "f4e0d8591fe22022872785cbd6395d22637deef787355af52c5e2b9e67005bba",
+              "offset": 13517,
+              "bytes": 1234
+            },
+            {
+              "member": "esaxx-rs-0.1.10/src/esaxx.cpp",
+              "member_sha256": "f4e0d8591fe22022872785cbd6395d22637deef787355af52c5e2b9e67005bba",
+              "offset": 18116,
+              "bytes": 1234
+            }
+          ]
+        },
+        {
+          "path": "rust/esaxx-rs-0.1.10/source-notices/esaxx.cpp-c09f3834a1f86881.txt",
+          "sha256": "c09f3834a1f86881258ba19056861ec716446c755f69616423b1af1257d49f35",
+          "bytes": 1246,
+          "archive_excerpts": [
+            {
+              "member": "esaxx-rs-0.1.10/src/esaxx.cpp",
+              "member_sha256": "f4e0d8591fe22022872785cbd6395d22637deef787355af52c5e2b9e67005bba",
+              "offset": 7,
+              "bytes": 1246
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "find-msvc-tools",
+      "version": "0.1.11",
+      "archive_url": "https://static.crates.io/crates/find-msvc-tools/find-msvc-tools-0.1.11.crate",
+      "archive_sha256": "d45db016d36b838f563236e9193d0ee6ce38f3f68b6c94e914b4929c96bbb890",
+      "archive_bytes": 31517,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/find-msvc-tools-0.1.11/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "find-msvc-tools-0.1.11/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/find-msvc-tools-0.1.11/LICENSE-MIT",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "bytes": 1057,
+          "archive_member": "find-msvc-tools-0.1.11/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "fnv",
+      "version": "1.0.7",
+      "archive_url": "https://static.crates.io/crates/fnv/fnv-1.0.7.crate",
+      "archive_sha256": "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1",
+      "archive_bytes": 11266,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0  OR  MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/fnv-1.0.7/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "fnv-1.0.7/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/fnv-1.0.7/LICENSE-MIT",
+          "sha256": "65fdb6c76cd61612070c066eec9ecdb30ee74fb27859d0d9af58b9f499fd0c3e",
+          "bytes": 1056,
+          "archive_member": "fnv-1.0.7/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "futures-channel",
+      "version": "0.3.34",
+      "archive_url": "https://static.crates.io/crates/futures-channel/futures-channel-0.3.34.crate",
+      "archive_sha256": "b1f9e3d69d39e4862ffed03ed071a76f9a13ba1d9109d355b0f0aa6b15e393c4",
+      "archive_bytes": 33165,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/futures-channel-0.3.34/LICENSE-APACHE",
+          "sha256": "275c491d6d1160553c32fd6127061d7f9606c3ea25abfad6ca3f6ed088785427",
+          "bytes": 10874,
+          "archive_member": "futures-channel-0.3.34/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/futures-channel-0.3.34/LICENSE-MIT",
+          "sha256": "6652c868f35dfe5e8ef636810a4e576b9d663f3a17fb0f5613ad73583e1b88fd",
+          "bytes": 1094,
+          "archive_member": "futures-channel-0.3.34/LICENSE-MIT"
+        },
+        {
+          "path": "rust/futures-channel-0.3.34/source-notices/queue.rs-9aa540d518486b91.txt",
+          "sha256": "9aa540d518486b915a8d422db43288c62ccb11758672d7e97de4b619d3237917",
+          "bytes": 1570,
+          "archive_excerpts": [
+            {
+              "member": "futures-channel-0.3.34/src/mpsc/queue.rs",
+              "member_sha256": "22034085dc22050b708a37854e215fc7cbb16d65edc60370cb5d8f4b7faca18e",
+              "offset": 0,
+              "bytes": 1570
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "futures-core",
+      "version": "0.3.34",
+      "archive_url": "https://static.crates.io/crates/futures-core/futures-core-0.3.34.crate",
+      "archive_sha256": "92d699e522242e69e3003b94ecc1f960f3a5e015aa7c5d7486e65ad01dd94f5e",
+      "archive_bytes": 14692,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/futures-core-0.3.34/LICENSE-APACHE",
+          "sha256": "275c491d6d1160553c32fd6127061d7f9606c3ea25abfad6ca3f6ed088785427",
+          "bytes": 10874,
+          "archive_member": "futures-core-0.3.34/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/futures-core-0.3.34/LICENSE-MIT",
+          "sha256": "6652c868f35dfe5e8ef636810a4e576b9d663f3a17fb0f5613ad73583e1b88fd",
+          "bytes": 1094,
+          "archive_member": "futures-core-0.3.34/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "futures-macro",
+      "version": "0.3.34",
+      "archive_url": "https://static.crates.io/crates/futures-macro/futures-macro-0.3.34.crate",
+      "archive_sha256": "9fb9654ba8355388abeb8dcb4fc62f511300867002afc858860463bdd9fe0c44",
+      "archive_bytes": 11926,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/futures-macro-0.3.34/LICENSE-APACHE",
+          "sha256": "275c491d6d1160553c32fd6127061d7f9606c3ea25abfad6ca3f6ed088785427",
+          "bytes": 10874,
+          "archive_member": "futures-macro-0.3.34/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/futures-macro-0.3.34/LICENSE-MIT",
+          "sha256": "6652c868f35dfe5e8ef636810a4e576b9d663f3a17fb0f5613ad73583e1b88fd",
+          "bytes": 1094,
+          "archive_member": "futures-macro-0.3.34/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "futures-task",
+      "version": "0.3.34",
+      "archive_url": "https://static.crates.io/crates/futures-task/futures-task-0.3.34.crate",
+      "archive_sha256": "cd417de3d1d015fc3bfd2b1ea46dfc7bab72ef86f1cc7cc9c78e728b34a6d1fd",
+      "archive_bytes": 11376,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/futures-task-0.3.34/LICENSE-APACHE",
+          "sha256": "275c491d6d1160553c32fd6127061d7f9606c3ea25abfad6ca3f6ed088785427",
+          "bytes": 10874,
+          "archive_member": "futures-task-0.3.34/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/futures-task-0.3.34/LICENSE-MIT",
+          "sha256": "6652c868f35dfe5e8ef636810a4e576b9d663f3a17fb0f5613ad73583e1b88fd",
+          "bytes": 1094,
+          "archive_member": "futures-task-0.3.34/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "futures-util",
+      "version": "0.3.34",
+      "archive_url": "https://static.crates.io/crates/futures-util/futures-util-0.3.34.crate",
+      "archive_sha256": "0d50a92467f8ba5dd6e3ee5d4bd04d73ab2e4e1c44474a0674821dfce14b79bc",
+      "archive_bytes": 169782,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/futures-util-0.3.34/LICENSE-APACHE",
+          "sha256": "275c491d6d1160553c32fd6127061d7f9606c3ea25abfad6ca3f6ed088785427",
+          "bytes": 10874,
+          "archive_member": "futures-util-0.3.34/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/futures-util-0.3.34/LICENSE-MIT",
+          "sha256": "6652c868f35dfe5e8ef636810a4e576b9d663f3a17fb0f5613ad73583e1b88fd",
+          "bytes": 1094,
+          "archive_member": "futures-util-0.3.34/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "getrandom",
+      "version": "0.3.4",
+      "archive_url": "https://static.crates.io/crates/getrandom/getrandom-0.3.4.crate",
+      "archive_sha256": "899def5c37c4fd7b2664648c28120ecec138e4d395b459e5ca34f9cce2dd77fd",
+      "archive_bytes": 50932,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/getrandom-0.3.4/LICENSE-APACHE",
+          "sha256": "aaff376532ea30a0cd5330b9502ad4a4c8bf769c539c87ffe78819d188a18ebf",
+          "bytes": 10849,
+          "archive_member": "getrandom-0.3.4/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/getrandom-0.3.4/LICENSE-MIT",
+          "sha256": "29e9fe5074bd27e0e5d5d110394fbbcd841baee2651a3c4b4560a632702cede4",
+          "bytes": 1130,
+          "archive_member": "getrandom-0.3.4/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "heck",
+      "version": "0.5.0",
+      "archive_url": "https://static.crates.io/crates/heck/heck-0.5.0.crate",
+      "archive_sha256": "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea",
+      "archive_bytes": 11517,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/heck-0.5.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "heck-0.5.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/heck-0.5.0/LICENSE-MIT",
+          "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+          "bytes": 1071,
+          "archive_member": "heck-0.5.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "ident_case",
+      "version": "1.0.1",
+      "archive_url": "https://static.crates.io/crates/ident_case/ident_case-1.0.1.crate",
+      "archive_sha256": "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39",
+      "archive_bytes": 3492,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/ident_case-1.0.1/LICENSE",
+          "sha256": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1",
+          "bytes": 1036,
+          "archive_member": "ident_case-1.0.1/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "indicatif",
+      "version": "0.18.6",
+      "archive_url": "https://static.crates.io/crates/indicatif/indicatif-0.18.6.crate",
+      "archive_sha256": "9433806cd6b4ec1aba79c021c7e4c58fb4c3b9977c085062e611ac929998fb0c",
+      "archive_bytes": 70598,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/indicatif-0.18.6/LICENSE",
+          "sha256": "2022c11b24fc1e50fa06a5959e40198a3464f560729ad3d00139abb8a328362d",
+          "bytes": 1112,
+          "archive_member": "indicatif-0.18.6/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "is_terminal_polyfill",
+      "version": "1.70.2",
+      "archive_url": "https://static.crates.io/crates/is_terminal_polyfill/is_terminal_polyfill-1.70.2.crate",
+      "archive_sha256": "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695",
+      "archive_bytes": 7548,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/is_terminal_polyfill-1.70.2/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "is_terminal_polyfill-1.70.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/is_terminal_polyfill-1.70.2/LICENSE-MIT",
+          "sha256": "6efb0476a1cc085077ed49357026d8c173bf33017278ef440f222fb9cbcb66e6",
+          "bytes": 1062,
+          "archive_member": "is_terminal_polyfill-1.70.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "itertools",
+      "version": "0.14.0",
+      "archive_url": "https://static.crates.io/crates/itertools/itertools-0.14.0.crate",
+      "archive_sha256": "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285",
+      "archive_bytes": 152715,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/itertools-0.14.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "itertools-0.14.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/itertools-0.14.0/LICENSE-MIT",
+          "sha256": "7576269ea71f767b99297934c0b2367532690f8c4badc695edf8e04ab6a1e545",
+          "bytes": 1043,
+          "archive_member": "itertools-0.14.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "itoa",
+      "version": "1.0.18",
+      "archive_url": "https://static.crates.io/crates/itoa/itoa-1.0.18.crate",
+      "archive_sha256": "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682",
+      "archive_bytes": 15935,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/itoa-1.0.18/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "itoa-1.0.18/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/itoa-1.0.18/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "itoa-1.0.18/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "jiff",
+      "version": "0.2.35",
+      "archive_url": "https://static.crates.io/crates/jiff/jiff-0.2.35.crate",
+      "archive_sha256": "668b7183bd07af9a4885f5c35b0cc5c83c4607a913c16b7e17291832910d2dcc",
+      "archive_bytes": 676554,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Unlicense OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/jiff-0.2.35/COPYING",
+          "sha256": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
+          "bytes": 126,
+          "archive_member": "jiff-0.2.35/COPYING"
+        },
+        {
+          "path": "rust/jiff-0.2.35/LICENSE-MIT",
+          "sha256": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
+          "bytes": 1081,
+          "archive_member": "jiff-0.2.35/LICENSE-MIT"
+        },
+        {
+          "path": "rust/jiff-0.2.35/UNLICENSE",
+          "sha256": "7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c",
+          "bytes": 1211,
+          "archive_member": "jiff-0.2.35/UNLICENSE"
+        }
+      ]
+    },
+    {
+      "name": "jiff-core",
+      "version": "0.1.0",
+      "archive_url": "https://static.crates.io/crates/jiff-core/jiff-core-0.1.0.crate",
+      "archive_sha256": "7feca88439efe53da3754500c1851dedf3cb36c524dd5cf8225cc0794de95d09",
+      "archive_bytes": 127943,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Unlicense OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/jiff-core-0.1.0/COPYING",
+          "sha256": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
+          "bytes": 126,
+          "archive_member": "jiff-core-0.1.0/COPYING"
+        },
+        {
+          "path": "rust/jiff-core-0.1.0/LICENSE-MIT",
+          "sha256": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
+          "bytes": 1081,
+          "archive_member": "jiff-core-0.1.0/LICENSE-MIT"
+        },
+        {
+          "path": "rust/jiff-core-0.1.0/UNLICENSE",
+          "sha256": "7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c",
+          "bytes": 1211,
+          "archive_member": "jiff-core-0.1.0/UNLICENSE"
+        }
+      ]
+    },
+    {
+      "name": "libc",
+      "version": "0.2.189",
+      "archive_url": "https://static.crates.io/crates/libc/libc-0.2.189.crate",
+      "archive_sha256": "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2",
+      "archive_bytes": 851502,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/libc-0.2.189/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "libc-0.2.189/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/libc-0.2.189/LICENSE-MIT",
+          "sha256": "123a331b5dbf04c30097fa43b8f858bc85df671fe776de498d01f3d6b7c1f69e",
+          "bytes": 1066,
+          "archive_member": "libc-0.2.189/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "version": "0.4.34",
+      "archive_url": "https://static.crates.io/crates/log/log-0.4.34.crate",
+      "archive_sha256": "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6",
+      "archive_bytes": 53395,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/log-0.4.34/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "log-0.4.34/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/log-0.4.34/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "archive_member": "log-0.4.34/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "macro_rules_attribute",
+      "version": "0.2.3",
+      "archive_url": "https://static.crates.io/crates/macro_rules_attribute/macro_rules_attribute-0.2.3.crate",
+      "archive_sha256": "b3ae8f6d608c795738406608304d30a2dfbdc8e58e44f7ba43236da5208ded3c",
+      "archive_bytes": 15329,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT OR Zlib"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/macro_rules_attribute-0.2.3/LICENSE-APACHE",
+          "sha256": "388e98b08de12ba8a9d4575883c8b0386c747cea188ed459380fc58d60da15c9",
+          "bytes": 11385,
+          "archive_member": "macro_rules_attribute-0.2.3/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/macro_rules_attribute-0.2.3/LICENSE-MIT",
+          "sha256": "603fb27ef3266ea516872eefd9ae587746b8c34614a35c0fb24e4e9e0c17e137",
+          "bytes": 1112,
+          "archive_member": "macro_rules_attribute-0.2.3/LICENSE-MIT"
+        },
+        {
+          "path": "rust/macro_rules_attribute-0.2.3/LICENSE-ZLIB",
+          "sha256": "1c41c0e19caa2c20b0adfeb8219b606b21b7c63914aa3ae74ae3e091d7ce09ca",
+          "bytes": 899,
+          "archive_member": "macro_rules_attribute-0.2.3/LICENSE-ZLIB"
+        }
+      ]
+    },
+    {
+      "name": "macro_rules_attribute-proc_macro",
+      "version": "0.2.3",
+      "archive_url": "https://static.crates.io/crates/macro_rules_attribute-proc_macro/macro_rules_attribute-proc_macro-0.2.3.crate",
+      "archive_sha256": "fc04a4c58212d57930a24bf47d3fa87485264a3a054e9c10e042eb373573ad3c",
+      "archive_bytes": 8272,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT OR Zlib"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/macro_rules_attribute-proc_macro-0.2.3/LICENSE-APACHE",
+          "sha256": "388e98b08de12ba8a9d4575883c8b0386c747cea188ed459380fc58d60da15c9",
+          "bytes": 11385,
+          "archive_member": "macro_rules_attribute-proc_macro-0.2.3/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/macro_rules_attribute-proc_macro-0.2.3/LICENSE-MIT",
+          "sha256": "603fb27ef3266ea516872eefd9ae587746b8c34614a35c0fb24e4e9e0c17e137",
+          "bytes": 1112,
+          "archive_member": "macro_rules_attribute-proc_macro-0.2.3/LICENSE-MIT"
+        },
+        {
+          "path": "rust/macro_rules_attribute-proc_macro-0.2.3/LICENSE-ZLIB",
+          "sha256": "1c41c0e19caa2c20b0adfeb8219b606b21b7c63914aa3ae74ae3e091d7ce09ca",
+          "bytes": 899,
+          "archive_member": "macro_rules_attribute-proc_macro-0.2.3/LICENSE-ZLIB"
+        }
+      ]
+    },
+    {
+      "name": "matrixmultiply",
+      "version": "0.3.11",
+      "archive_url": "https://static.crates.io/crates/matrixmultiply/matrixmultiply-0.3.11.crate",
+      "archive_sha256": "3f607c237553f086e7043417a51df26b2eb899d3caff94e6a67592ff992fedc7",
+      "archive_bytes": 51167,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/matrixmultiply-0.3.11/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "matrixmultiply-0.3.11/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/matrixmultiply-0.3.11/LICENSE-MIT",
+          "sha256": "792d075c7bad6dac258a44e799eb64cbf465e24d9932d27669be08c5ec957e27",
+          "bytes": 1159,
+          "archive_member": "matrixmultiply-0.3.11/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "memchr",
+      "version": "2.8.3",
+      "archive_url": "https://static.crates.io/crates/memchr/memchr-2.8.3.crate",
+      "archive_sha256": "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98",
+      "archive_bytes": 99165,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Unlicense OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/memchr-2.8.3/COPYING",
+          "sha256": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
+          "bytes": 126,
+          "archive_member": "memchr-2.8.3/COPYING"
+        },
+        {
+          "path": "rust/memchr-2.8.3/LICENSE-MIT",
+          "sha256": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
+          "bytes": 1081,
+          "archive_member": "memchr-2.8.3/LICENSE-MIT"
+        },
+        {
+          "path": "rust/memchr-2.8.3/UNLICENSE",
+          "sha256": "7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c",
+          "bytes": 1211,
+          "archive_member": "memchr-2.8.3/UNLICENSE"
+        }
+      ]
+    },
+    {
+      "name": "minimal-lexical",
+      "version": "0.2.1",
+      "archive_url": "https://static.crates.io/crates/minimal-lexical/minimal-lexical-0.2.1.crate",
+      "archive_sha256": "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a",
+      "archive_bytes": 94841,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/minimal-lexical-0.2.1/LICENSE-APACHE",
+          "sha256": "8173d5c29b4f956d532781d2b86e4e30f83e6b7878dce18c919451d6ba707c90",
+          "bytes": 10850,
+          "archive_member": "minimal-lexical-0.2.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/minimal-lexical-0.2.1/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "minimal-lexical-0.2.1/LICENSE-MIT"
+        },
+        {
+          "path": "rust/minimal-lexical-0.2.1/LICENSE.md",
+          "sha256": "dbe1fff0fb1314b6af94f161511406275cf01c5a32441fbf24528a57a051d599",
+          "bytes": 2003,
+          "archive_member": "minimal-lexical-0.2.1/LICENSE.md"
+        },
+        {
+          "path": "rust/minimal-lexical-0.2.1/source-notices/libm.rs-0c3d0381d2cd647b.txt",
+          "sha256": "0c3d0381d2cd647be68590170490be5f624c962d9f95eb698489e578c1de8f05",
+          "bytes": 379,
+          "archive_excerpts": [
+            {
+              "member": "minimal-lexical-0.2.1/src/libm.rs",
+              "member_sha256": "ed5a3856eaa44a8a05aa123e27c2048b92ff42e4af1ef3f9fa1aff2a50190f4a",
+              "offset": 476,
+              "bytes": 379
+            },
+            {
+              "member": "minimal-lexical-0.2.1/src/libm.rs",
+              "member_sha256": "ed5a3856eaa44a8a05aa123e27c2048b92ff42e4af1ef3f9fa1aff2a50190f4a",
+              "offset": 10895,
+              "bytes": 379
+            }
+          ]
+        },
+        {
+          "path": "rust/minimal-lexical-0.2.1/source-notices/libm.rs-15e78071c8347a68.txt",
+          "sha256": "15e78071c8347a689c48ec92bbdd5eba7bd8dc74f86ee3e7ad31d34b24fefe83",
+          "bytes": 320,
+          "archive_excerpts": [
+            {
+              "member": "minimal-lexical-0.2.1/src/libm.rs",
+              "member_sha256": "ed5a3856eaa44a8a05aa123e27c2048b92ff42e4af1ef3f9fa1aff2a50190f4a",
+              "offset": 15328,
+              "bytes": 320
+            }
+          ]
+        },
+        {
+          "path": "rust/minimal-lexical-0.2.1/source-notices/libm.rs-74344ebf347f27ca.txt",
+          "sha256": "74344ebf347f27ca446e00f1c1921f705546f4b20e0fb31c183cd2c8464b1bc5",
+          "bytes": 380,
+          "archive_excerpts": [
+            {
+              "member": "minimal-lexical-0.2.1/src/libm.rs",
+              "member_sha256": "ed5a3856eaa44a8a05aa123e27c2048b92ff42e4af1ef3f9fa1aff2a50190f4a",
+              "offset": 30225,
+              "bytes": 380
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mio",
+      "version": "1.2.3",
+      "archive_url": "https://static.crates.io/crates/mio/mio-1.2.3.crate",
+      "archive_sha256": "4b18443e9c262bfe8fa82f51666e2642c53393f7e5c27b3e1aeab922cff5b9d8",
+      "archive_bytes": 110455,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/mio-1.2.3/LICENSE",
+          "sha256": "07919255c7e04793d8ea760d6c2ce32d19f9ff02bdbdde3ce90b1e1880929a9b",
+          "bytes": 1082,
+          "archive_member": "mio-1.2.3/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "monostate",
+      "version": "0.1.18",
+      "archive_url": "https://static.crates.io/crates/monostate/monostate-0.1.18.crate",
+      "archive_sha256": "3341a273f6c9d5bef1908f17b7267bbab0e95c9bf69a0d4dcf8e9e1b2c76ef67",
+      "archive_bytes": 15992,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/monostate-0.1.18/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "monostate-0.1.18/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/monostate-0.1.18/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "monostate-0.1.18/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "monostate-impl",
+      "version": "0.1.18",
+      "archive_url": "https://static.crates.io/crates/monostate-impl/monostate-impl-0.1.18.crate",
+      "archive_sha256": "e4db6d5580af57bf992f59068d4ea26fd518574ff48d7639b255a36f9de6e7e9",
+      "archive_bytes": 7862,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/monostate-impl-0.1.18/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "monostate-impl-0.1.18/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/monostate-impl-0.1.18/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "monostate-impl-0.1.18/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "ndarray",
+      "version": "0.16.1",
+      "archive_url": "https://static.crates.io/crates/ndarray/ndarray-0.16.1.crate",
+      "archive_sha256": "882ed72dce9365842bf196bdeedf5055305f11fc8c03dee7bb0194a6cad34841",
+      "archive_bytes": 291026,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/ndarray-0.16.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "ndarray-0.16.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/ndarray-0.16.1/LICENSE-MIT",
+          "sha256": "1fd6747d2c8e80f9fa766f57c5888864774621deb85cc2838ccaed727db32d45",
+          "bytes": 1119,
+          "archive_member": "ndarray-0.16.1/LICENSE-MIT"
+        },
+        {
+          "path": "rust/ndarray-0.16.1/source-notices/rk_step.rs-42de6889ca1d5691.txt",
+          "sha256": "42de6889ca1d56910a70517d10846e11d85e2f702340698971074ce29aed51d8",
+          "bytes": 8389,
+          "archive_excerpts": [
+            {
+              "member": "ndarray-0.16.1/src/doc/ndarray_for_numpy_users/rk_step.rs",
+              "member_sha256": "a86bcdc2083a89e1a88a3d6700f590f058285a4e0ecf1a936adf21681c966654",
+              "offset": 0,
+              "bytes": 8389
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ndarray",
+      "version": "0.17.2",
+      "archive_url": "https://static.crates.io/crates/ndarray/ndarray-0.17.2.crate",
+      "archive_sha256": "520080814a7a6b4a6e9070823bb24b4531daac8c4627e08ba5de8c5ef2f2752d",
+      "archive_bytes": 243631,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/ndarray-0.17.2/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "ndarray-0.17.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/ndarray-0.17.2/LICENSE-MIT",
+          "sha256": "1fd6747d2c8e80f9fa766f57c5888864774621deb85cc2838ccaed727db32d45",
+          "bytes": 1119,
+          "archive_member": "ndarray-0.17.2/LICENSE-MIT"
+        },
+        {
+          "path": "rust/ndarray-0.17.2/source-notices/rk_step.rs-6844abe811e9a454.txt",
+          "sha256": "6844abe811e9a4541a4ebf893f6b6558da3479bbe3621590b224c90b24318f5d",
+          "bytes": 8417,
+          "archive_excerpts": [
+            {
+              "member": "ndarray-0.17.2/src/doc/ndarray_for_numpy_users/rk_step.rs",
+              "member_sha256": "1a906f6e6ff2547ae76a8cfc9e3f76acbacaa5d52895d2ba2ef0bd5eec3fad4e",
+              "offset": 0,
+              "bytes": 8417
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "nom",
+      "version": "7.1.3",
+      "archive_url": "https://static.crates.io/crates/nom/nom-7.1.3.crate",
+      "archive_sha256": "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a",
+      "archive_bytes": 117570,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/nom-7.1.3/LICENSE",
+          "sha256": "4dbda04344456f09a7a588140455413a9ac59b6b26a1ef7cdf9c800c012d87f0",
+          "bytes": 1065,
+          "archive_member": "nom-7.1.3/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "num-complex",
+      "version": "0.4.6",
+      "archive_url": "https://static.crates.io/crates/num-complex/num-complex-0.4.6.crate",
+      "archive_sha256": "73f88a1307638156682bada9d7604135552957b7818057dcef22705b4d509495",
+      "archive_bytes": 30352,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/num-complex-0.4.6/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "num-complex-0.4.6/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/num-complex-0.4.6/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "archive_member": "num-complex-0.4.6/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "num-integer",
+      "version": "0.1.47",
+      "archive_url": "https://static.crates.io/crates/num-integer/num-integer-0.1.47.crate",
+      "archive_sha256": "7ce2d95d4b3734dc35aa2f45e1aa22cd416814592a4f9d9205e11affd5b8e10b",
+      "archive_bytes": 23502,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/num-integer-0.1.47/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "num-integer-0.1.47/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/num-integer-0.1.47/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "archive_member": "num-integer-0.1.47/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "num-traits",
+      "version": "0.2.19",
+      "archive_url": "https://static.crates.io/crates/num-traits/num-traits-0.2.19.crate",
+      "archive_sha256": "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841",
+      "archive_bytes": 51631,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/num-traits-0.2.19/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "num-traits-0.2.19/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/num-traits-0.2.19/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "archive_member": "num-traits-0.2.19/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "numpy",
+      "version": "0.29.0",
+      "archive_url": "https://static.crates.io/crates/numpy/numpy-0.29.0.crate",
+      "archive_sha256": "6a5b15d63a5ff39e378daed0e1340d3a5964703ea9712eb09a0dc66fade996f4",
+      "archive_bytes": 86464,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "BSD-2-Clause"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/numpy-0.29.0/LICENSE",
+          "sha256": "57088c28c5ea50e729a06c3b04de70c41e496a5b753d75a744e2abbf60a2448f",
+          "bytes": 1321,
+          "archive_member": "numpy-0.29.0/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "once_cell",
+      "version": "1.21.4",
+      "archive_url": "https://static.crates.io/crates/once_cell/once_cell-1.21.4.crate",
+      "archive_sha256": "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50",
+      "archive_bytes": 35010,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/once_cell-1.21.4/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "once_cell-1.21.4/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/once_cell-1.21.4/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "once_cell-1.21.4/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "onig",
+      "version": "6.5.3",
+      "archive_url": "https://static.crates.io/crates/onig/onig-6.5.3.crate",
+      "archive_sha256": "0cc3cbf698f9438986c11a880c90a6d04b9de27575afd28bbf45b154b6c709e2",
+      "archive_bytes": 32075,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/onig-6.5.3/LICENSE.md",
+          "sha256": "e9c1238c5beb73c6cc130160418968058b21d486a7a445f0ceff27d51fbfdc44",
+          "bytes": 1456,
+          "archive_member": "onig-6.5.3/LICENSE.md"
+        }
+      ]
+    },
+    {
+      "name": "onig_sys",
+      "version": "69.9.3",
+      "archive_url": "https://static.crates.io/crates/onig_sys/onig_sys-69.9.3.crate",
+      "archive_sha256": "1e68317604e77e53b85896388e1a803c1d21b74c899ec9e5e1112db90735edd7",
+      "archive_bytes": 657340,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/onig_sys-69.9.3/LICENSE.md",
+          "sha256": "71f321038b088358004bee991635ac09e4c703bec467d3c30c06992c0595f189",
+          "bytes": 1511,
+          "archive_member": "onig_sys-69.9.3/LICENSE.md"
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/oniguruma/AUTHORS",
+          "sha256": "172a2a72c080d3067969599308c91385af86fdeb2419f8ad687883ca5a8ff912",
+          "bytes": 32,
+          "archive_member": "onig_sys-69.9.3/oniguruma/AUTHORS"
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/oniguruma/COPYING",
+          "sha256": "70ba5469ea0bab6e18a32d7009068f996503168d27be57747e08da34337ff26f",
+          "bytes": 1340,
+          "archive_member": "onig_sys-69.9.3/oniguruma/COPYING"
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/source-notices/ascii.c-1fd03d341763ea52.txt",
+          "sha256": "1fd03d341763ea5260d3b0c1d93aeebdd4dd242ca78afec9f89d7bb55e008486",
+          "bytes": 1355,
+          "archive_excerpts": [
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/ascii.c",
+              "member_sha256": "f734cc6e17a9c423d15db4509beba03c13d67dc6baf93f43184068a65082ace8",
+              "offset": 196,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/oniguruma.h",
+              "member_sha256": "bceb20b139315fbe2fb02e58f3b499107d5d4c2dc9953c677c332ccb1cb305ef",
+              "offset": 239,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regcomp.c",
+              "member_sha256": "0f22d86a07412093ce12df15d0b88db02fa21bf409d623738102c805b2580a49",
+              "offset": 198,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regexec.c",
+              "member_sha256": "51d9456a6b8fc4330b4f5030642265fd7e12524f05223b446b3444bd3fecf03c",
+              "offset": 198,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regint.h",
+              "member_sha256": "676be021dafaf99eaab375b283fb42dc59a31a33d68a6d42dbb15d08defbfd3b",
+              "offset": 231,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regparse.c",
+              "member_sha256": "f4b5ef44a888c7150a304d27aef2ffe85d4f8fb2cee220240644be4c62a905d3",
+              "offset": 199,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regsyntax.c",
+              "member_sha256": "11e750804c89ff3a4524c70c4bec8caa77da04c12c161385a6d701460456277c",
+              "offset": 200,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/utf16_be.c",
+              "member_sha256": "2f5690e7ebdd6cddebe53e9a5479fd5c4b4b1bd1f40321e20a83f6114e2632ac",
+              "offset": 199,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/utf16_le.c",
+              "member_sha256": "7420d3f24620f50489e6b335885f2ca59f004a8862e8e87db506d269d773155c",
+              "offset": 199,
+              "bytes": 1355
+            }
+          ]
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/source-notices/big5.c-bdaf51a0bcb3d2d6.txt",
+          "sha256": "bdaf51a0bcb3d2d67d2111ae1bb6b2cb6df9009d0e9804f83d3002e6943bcf6e",
+          "bytes": 1355,
+          "archive_excerpts": [
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/big5.c",
+              "member_sha256": "a1c9632424195311fa77ac84256d6a6520f5467a00df1deeb3346f0d2644149f",
+              "offset": 195,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/euc_jp.c",
+              "member_sha256": "239b94398eda31e64a7085c96f184340be3f85c764ab08cffdc5e82d4f20f097",
+              "offset": 197,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/euc_kr.c",
+              "member_sha256": "e00e279fd2eb8ca712aa497ebd597d59a58263eafc758ac9d2fd7b864b46cb22",
+              "offset": 197,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/euc_tw.c",
+              "member_sha256": "ea95ea5bc4b399164d8700830371efde8b458e1fee0bb67d86bf0dff20f939de",
+              "offset": 197,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_1.c",
+              "member_sha256": "5502a794476910c0c1aed97829baa7481e3d5f6fcb9bbe68952c16788187b84c",
+              "offset": 200,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_10.c",
+              "member_sha256": "f0a1cb8e2ec648d7d33fb47b8834c6f9d4c958f89a8c0f2a4a686873d1c6d3f9",
+              "offset": 201,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_13.c",
+              "member_sha256": "4e6ae959854e31ef609e2eccd99bd2f20583d70552790032138532fefadfcccf",
+              "offset": 201,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_14.c",
+              "member_sha256": "2fe72a025c89b3d5ed5fece798a3c00c5e7c008e7265b541fad6e15ec81cbfac",
+              "offset": 201,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_15.c",
+              "member_sha256": "9b3e2d2516bdf266ed40461c040db495762a04810687528bbbdb85e4435665a5",
+              "offset": 201,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_16.c",
+              "member_sha256": "a2aa13344c1e2da01dd4295d9bb9aaff642857ab5d6fc9724ce501540a96fe2f",
+              "offset": 201,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_2.c",
+              "member_sha256": "394d0b706b1be6de42918f9461828035c1a3ab9233dc436272ed8fb5034a38cc",
+              "offset": 200,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_3.c",
+              "member_sha256": "28bcf8b89d67e826ca45410d9e160645af277aad059118fd66ec9385ea254482",
+              "offset": 200,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_4.c",
+              "member_sha256": "98cf5fc6f68a3af2d077a9eb5e61f68d622833e1312a71dd5be3d573d588155e",
+              "offset": 200,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_5.c",
+              "member_sha256": "41df6d443d1516dca6c18e42af8bfef1689f307315fa46b85110f234e1decca6",
+              "offset": 200,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_7.c",
+              "member_sha256": "6d952dcd5fdc3fb69f5b58e44fbcf6d66589af7607dba65bb1c5b9b7cf6450d3",
+              "offset": 200,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_9.c",
+              "member_sha256": "92072e3802041eb1ba138e79b458084391705f1cba27272d365c74656a6f1b1a",
+              "offset": 200,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/koi8.c",
+              "member_sha256": "5b4b5daedb41f26102923e22f8869fb8552a9930f19ccaece9c8a4a8239c3070",
+              "offset": 195,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/koi8_r.c",
+              "member_sha256": "dfaf7d0bd8b680e8fe4e85ab71deaf27a63b781dd4abcb484931a8a362926a19",
+              "offset": 197,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/onigposix.h",
+              "member_sha256": "a4002b01d62f5c91d851190b9225737ad059a85cfa2a04ca6d1d4ff67f4a08de",
+              "offset": 239,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regenc.c",
+              "member_sha256": "cc33829f2a4279c96ca96d97c6d29d9f6ac65dc7ea0c5494f3b34bc43566585e",
+              "offset": 197,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regenc.h",
+              "member_sha256": "da808283c9d13aa641a3507d86098273afeb723da9ab2eadae176a388dec4564",
+              "offset": 231,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regposerr.c",
+              "member_sha256": "acd75268d3b4b38a606893c9be01a351e58b0e73cdbec9a151c3318b33ee7a8f",
+              "offset": 199,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regversion.c",
+              "member_sha256": "f2a0cc84446e64d202bd9627f4c9924c4d338f0c2ed9fc642a9caefe2757301d",
+              "offset": 201,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/sjis.c",
+              "member_sha256": "bfe3420942bcdcd31142763310acc9d0acb2ab8020bd6f1395e57e86900b578e",
+              "offset": 195,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/unicode.c",
+              "member_sha256": "381aacfe8feaf7d307c0a729bbb2a903e706866cb3c99a5422f003ff7fa97dff",
+              "offset": 198,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/utf32_be.c",
+              "member_sha256": "3e07ba968d71b5695b429f6d9dbee179db26a24c2e1f44fc938f6147b09af94d",
+              "offset": 199,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/utf32_le.c",
+              "member_sha256": "e0aa493bd75bc8580cb9f9daf1c6eda7f248fbc29d64ffcc414350f0e8f76f0b",
+              "offset": 199,
+              "bytes": 1355
+            }
+          ]
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/source-notices/cp1251.c-8bfc7882a4088068.txt",
+          "sha256": "8bfc7882a408806822c231859987baf1792d8318811ee487f3c6043ff6387eb9",
+          "bytes": 1423,
+          "archive_excerpts": [
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/cp1251.c",
+              "member_sha256": "93fed3c57fddfcdb8fa9bac6f17369b5b83eea2116d1ac4fcd378168602f6d47",
+              "offset": 197,
+              "bytes": 1423
+            }
+          ]
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/source-notices/gb18030.c-dd36a2e6a824afb9.txt",
+          "sha256": "dd36a2e6a824afb91674897fecd3e12a32b0611948e57814b111214fe3dfa191",
+          "bytes": 1422,
+          "archive_excerpts": [
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/gb18030.c",
+              "member_sha256": "4cc1b23f96320b3b2400e5d16832d952dbdb24bd761b52c75bd2ff0d7c260175",
+              "offset": 198,
+              "bytes": 1422
+            }
+          ]
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/source-notices/iso8859_11.c-3756c04aca7c3856.txt",
+          "sha256": "3756c04aca7c38565818929cd094b88158fec9f80e2b0db67d03c7c7b2fdb310",
+          "bytes": 1355,
+          "archive_excerpts": [
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_11.c",
+              "member_sha256": "51193c21da366f7f88ed8e500accf2a938c6e15d9c3b9d912970066967f29ad8",
+              "offset": 201,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_6.c",
+              "member_sha256": "b904d04267b21a4775cf97bb5746c09f2bf8987df562f95be5785351db7427d9",
+              "offset": 200,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/iso8859_8.c",
+              "member_sha256": "a127aff89565bdfdc75094ad8dbe436bc071ea6fc29282b1a20a188b0a8a730d",
+              "offset": 200,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/oniggnu.h",
+              "member_sha256": "fdb9bfc28287f7573a5ccad2ba45c7759aa2cbc11c57b05b86908809e1ac5f9a",
+              "offset": 233,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regext.c",
+              "member_sha256": "53683bb1c4d1b787856cce013cc01fa54b917997e96d4471b1c74915bf0b7c00",
+              "offset": 197,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/reggnu.c",
+              "member_sha256": "18bad41679c188eaa4a0f436fab2bec726076f1e8a6225536fc08fe69d91dd5d",
+              "offset": 197,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regtrav.c",
+              "member_sha256": "bb70c4886681a3c17d312f3e23a17f75a613bb8dfc90bfcbb562a71809159a0d",
+              "offset": 198,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/utf8.c",
+              "member_sha256": "8927e4b2e64fd188592a95ecf56f2d6c7bb0bcb5721b6d2fd446c20c10a7ddf4",
+              "offset": 195,
+              "bytes": 1355
+            }
+          ]
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/source-notices/mktable.c-b20b07c31c5255a0.txt",
+          "sha256": "b20b07c31c5255a088a9da3571e01badef9e0e2c7301cc1bb0fd2e260ef21ad8",
+          "bytes": 1355,
+          "archive_excerpts": [
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/mktable.c",
+              "member_sha256": "b7bbbdfd212f3efeec26b70d8fae535a3ebc77c64a9964047729022716297820",
+              "offset": 156,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regerror.c",
+              "member_sha256": "eced9d8be1c24c88dbb490668eadac75903e4bdce5f89fda6815f5c4f1ddccc0",
+              "offset": 199,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regparse.h",
+              "member_sha256": "a34f5de2e0d8f65923ac4aa93bfabdc93d952d01b8c9f1c489d3cc25e9c040a3",
+              "offset": 237,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/regposix.c",
+              "member_sha256": "dcd79452de0aa87363d3f0aac5096934418dc811c44c9de7275e16988ae73479",
+              "offset": 198,
+              "bytes": 1355
+            }
+          ]
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/source-notices/onig_init.c-96e1e49369e1273f.txt",
+          "sha256": "96e1e49369e1273f9ba5edb7f55a29d36b422713ba3a9e5f9e768ca212834f86",
+          "bytes": 1355,
+          "archive_excerpts": [
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/onig_init.c",
+              "member_sha256": "89f37f5b5f5961493bec99aacf1d828f1dd7d70830eed2aaff86247f4d4a4ce3",
+              "offset": 200,
+              "bytes": 1355
+            }
+          ]
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/source-notices/unicode_egcb_data.c-2773b11f3cdb58d6.txt",
+          "sha256": "2773b11f3cdb58d6b0bea0042d5c3e1ab6effd468b8253a6d7150258ffbabd5a",
+          "bytes": 1355,
+          "archive_excerpts": [
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/unicode_egcb_data.c",
+              "member_sha256": "21663445ace4f64775506f3fc53332a96e1b2b9f509b63eeb5462913daeb6d73",
+              "offset": 67,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/unicode_fold1_key.c",
+              "member_sha256": "1a965892c78598ed0d7c7adad0021dc774d6278c727692b8b2300804de70f043",
+              "offset": 359,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/unicode_fold2_key.c",
+              "member_sha256": "70b6f9185984408b308bb9d441333c5be95d36853fa60294ec0d08c274d5088c",
+              "offset": 359,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/unicode_fold3_key.c",
+              "member_sha256": "1e026d61dbd1e1300feecfeb5788f62cd2e388cf9a0c3b666e389bc3cf449369",
+              "offset": 361,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/unicode_fold_data.c",
+              "member_sha256": "690b14e8f84ff1345ec38657ab41a0c630dea37b99fb39519d9789ddf2558a55",
+              "offset": 60,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/unicode_unfold_key.c",
+              "member_sha256": "521fc37c8626e811c3c8042b848c4289f775dbae58b8422dfc5ad1447e2e98a9",
+              "offset": 365,
+              "bytes": 1355
+            }
+          ]
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/source-notices/unicode_property_data.c-3edecc8a3ddded6f.txt",
+          "sha256": "3edecc8a3ddded6febf3813b49426888d9d68d2a31bf1eb85428267f8cd8a49b",
+          "bytes": 1355,
+          "archive_excerpts": [
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/unicode_property_data.c",
+              "member_sha256": "6f69e9852bf746acfc3847c9789225d4ba1f085f1852ca00fcab7fa912982f52",
+              "offset": 2101,
+              "bytes": 1355
+            },
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/unicode_property_data_posix.c",
+              "member_sha256": "27bf4f37819b67b43d2a223a0a251978335d1c44a0ec02b4f907fba32b002058",
+              "offset": 2095,
+              "bytes": 1355
+            }
+          ]
+        },
+        {
+          "path": "rust/onig_sys-69.9.3/source-notices/unicode_wb_data.c-df8b203cd8e4cb15.txt",
+          "sha256": "df8b203cd8e4cb15faab849bf3d538dcd2b837965760d4ff972f1088ba5f0d64",
+          "bytes": 1355,
+          "archive_excerpts": [
+            {
+              "member": "onig_sys-69.9.3/oniguruma/src/unicode_wb_data.c",
+              "member_sha256": "9530ddf3208658a05bf33d36249bc6b9d8e500f54cfa2c8552762d42314244ba",
+              "offset": 63,
+              "bytes": 1355
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "paste",
+      "version": "1.0.15",
+      "archive_url": "https://static.crates.io/crates/paste/paste-1.0.15.crate",
+      "archive_sha256": "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a",
+      "archive_bytes": 18374,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/paste-1.0.15/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "paste-1.0.15/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/paste-1.0.15/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "paste-1.0.15/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "pastey",
+      "version": "0.2.3",
+      "archive_url": "https://static.crates.io/crates/pastey/pastey-0.2.3.crate",
+      "archive_sha256": "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4",
+      "archive_bytes": 20361,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pastey-0.2.3/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "pastey-0.2.3/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pastey-0.2.3/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "pastey-0.2.3/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "pin-project-lite",
+      "version": "0.2.17",
+      "archive_url": "https://static.crates.io/crates/pin-project-lite/pin-project-lite-0.2.17.crate",
+      "archive_sha256": "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd",
+      "archive_bytes": 31034,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pin-project-lite-0.2.17/LICENSE-APACHE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "bytes": 10174,
+          "archive_member": "pin-project-lite-0.2.17/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pin-project-lite-0.2.17/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "pin-project-lite-0.2.17/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "pkg-config",
+      "version": "0.3.34",
+      "archive_url": "https://static.crates.io/crates/pkg-config/pkg-config-0.3.34.crate",
+      "archive_sha256": "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548",
+      "archive_bytes": 21370,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pkg-config-0.3.34/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "pkg-config-0.3.34/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pkg-config-0.3.34/LICENSE-MIT",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "bytes": 1057,
+          "archive_member": "pkg-config-0.3.34/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "portable-atomic",
+      "version": "1.15.0",
+      "archive_url": "https://static.crates.io/crates/portable-atomic/portable-atomic-1.15.0.crate",
+      "archive_sha256": "05c8b63e8d9609db387f0324918f81d68fe27748f084ef092fb35954d0539a85",
+      "archive_bytes": 202705,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/portable-atomic-1.15.0/LICENSE-APACHE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "bytes": 10174,
+          "archive_member": "portable-atomic-1.15.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/portable-atomic-1.15.0/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "portable-atomic-1.15.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "ppv-lite86",
+      "version": "0.2.21",
+      "archive_url": "https://static.crates.io/crates/ppv-lite86/ppv-lite86-0.2.21.crate",
+      "archive_sha256": "85eae3c4ed2f50dcfe72643da4befc30deadb458a9b590d720cde2f2b1e97da9",
+      "archive_bytes": 22522,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/ppv-lite86-0.2.21/LICENSE-APACHE",
+          "sha256": "0218327e7a480793ffdd4eb792379a9709e5c135c7ba267f709d6f6d4d70af0a",
+          "bytes": 10854,
+          "archive_member": "ppv-lite86-0.2.21/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/ppv-lite86-0.2.21/LICENSE-MIT",
+          "sha256": "4cada0bd02ea3692eee6f16400d86c6508bbd3bafb2b65fed0419f36d4f83e8f",
+          "bytes": 1076,
+          "archive_member": "ppv-lite86-0.2.21/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "proc-macro2",
+      "version": "1.0.107",
+      "archive_url": "https://static.crates.io/crates/proc-macro2/proc-macro2-1.0.107.crate",
+      "archive_sha256": "985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9",
+      "archive_bytes": 59588,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/proc-macro2-1.0.107/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "proc-macro2-1.0.107/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/proc-macro2-1.0.107/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "proc-macro2-1.0.107/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "pyo3",
+      "version": "0.29.2",
+      "archive_url": "https://static.crates.io/crates/pyo3/pyo3-0.29.2.crate",
+      "archive_sha256": "4688ddedf473e32662b9b067670129a8afb8c18e351482c70d62ba4a88171e8b",
+      "archive_bytes": 1255741,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pyo3-0.29.2/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-0.29.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-0.29.2/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-0.29.2/LICENSE-MIT"
+        },
+        {
+          "path": "rust/pyo3-0.29.2/pyo3-runtime/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-0.29.2/pyo3-runtime/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-0.29.2/pyo3-runtime/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-0.29.2/pyo3-runtime/LICENSE-MIT"
+        },
+        {
+          "path": "rust/pyo3-0.29.2/source-notices/buffer.rs-8f6e03d56112ba81.txt",
+          "sha256": "8f6e03d56112ba81f8fa421c8f42806795a7e8ad5ccfd5f5eee21198c52928ce",
+          "bytes": 1244,
+          "archive_excerpts": [
+            {
+              "member": "pyo3-0.29.2/src/buffer.rs",
+              "member_sha256": "c22b7d5dab213b2bd08bbfaf2931e66d6c9c0943eda3b7a67397efadcfbc0ab6",
+              "offset": 0,
+              "bytes": 1244
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pyo3-async-runtimes",
+      "version": "0.29.0",
+      "archive_url": "https://static.crates.io/crates/pyo3-async-runtimes/pyo3-async-runtimes-0.29.0.crate",
+      "archive_sha256": "b3ef68daa7316a3fac65e5e18b2203f010346de1c1c53456811a2624673ab046",
+      "archive_bytes": 51487,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pyo3-async-runtimes-0.29.0/LICENSE",
+          "sha256": "71073d492e996de196dbe1eb1e4c94c27c014c841b288161265b2efd06d0af28",
+          "bytes": 10781,
+          "archive_member": "pyo3-async-runtimes-0.29.0/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "pyo3-build-config",
+      "version": "0.29.2",
+      "archive_url": "https://static.crates.io/crates/pyo3-build-config/pyo3-build-config-0.29.2.crate",
+      "archive_sha256": "f41027e41b4bd03f6e60f9f417fe24a6341a6bb744edd62b6f709f2a52ea30e9",
+      "archive_bytes": 41104,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pyo3-build-config-0.29.2/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-build-config-0.29.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-build-config-0.29.2/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-build-config-0.29.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "pyo3-ffi",
+      "version": "0.29.2",
+      "archive_url": "https://static.crates.io/crates/pyo3-ffi/pyo3-ffi-0.29.2.crate",
+      "archive_sha256": "e591a95526fead067432c3b3a33fc74770b87b1e04e73671090d9c2055a2b327",
+      "archive_bytes": 90029,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pyo3-ffi-0.29.2/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-ffi-0.29.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-ffi-0.29.2/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-ffi-0.29.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "pyo3-macros",
+      "version": "0.29.2",
+      "archive_url": "https://static.crates.io/crates/pyo3-macros/pyo3-macros-0.29.2.crate",
+      "archive_sha256": "73225868fc1cd84eef2c3c230ddb91273bf1de46aeb8a4248da76d32a0924a1c",
+      "archive_bytes": 9044,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pyo3-macros-0.29.2/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-macros-0.29.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-macros-0.29.2/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-macros-0.29.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "pyo3-macros-backend",
+      "version": "0.29.2",
+      "archive_url": "https://static.crates.io/crates/pyo3-macros-backend/pyo3-macros-backend-0.29.2.crate",
+      "archive_sha256": "571575aa3749fa6216757dd47d2a3e7ef360f329a40f0666a9fbd14889024952",
+      "archive_bytes": 93749,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/pyo3-macros-backend-0.29.2/LICENSE-APACHE",
+          "sha256": "32c76dbe0e73d79100d5ece77c158399f2e2541bc5c78548a4ba45c1cb53c5c9",
+          "bytes": 9807,
+          "archive_member": "pyo3-macros-backend-0.29.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/pyo3-macros-backend-0.29.2/LICENSE-MIT",
+          "sha256": "afcbe3b2e6b37172b5a9ca869ee4c0b8cdc09316e5d4384864154482c33e5af6",
+          "bytes": 1107,
+          "archive_member": "pyo3-macros-backend-0.29.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "quote",
+      "version": "1.0.47",
+      "archive_url": "https://static.crates.io/crates/quote/quote-1.0.47.crate",
+      "archive_sha256": "1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001",
+      "archive_bytes": 31622,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/quote-1.0.47/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "quote-1.0.47/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/quote-1.0.47/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "quote-1.0.47/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "rand",
+      "version": "0.9.5",
+      "archive_url": "https://static.crates.io/crates/rand/rand-0.9.5.crate",
+      "archive_sha256": "b9ef1d0d795eb7d84685bca4f72f3649f064e6641543d3a8c415898726a57b41",
+      "archive_bytes": 100216,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/rand-0.9.5/COPYRIGHT",
+          "sha256": "90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5",
+          "bytes": 569,
+          "archive_member": "rand-0.9.5/COPYRIGHT"
+        },
+        {
+          "path": "rust/rand-0.9.5/LICENSE-APACHE",
+          "sha256": "35242e7a83f69875e6edeff02291e688c97caafe2f8902e4e19b49d3e78b4cab",
+          "bytes": 9724,
+          "archive_member": "rand-0.9.5/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/rand-0.9.5/LICENSE-MIT",
+          "sha256": "209fbbe0ad52d9235e37badf9cadfe4dbdc87203179c0899e738b39ade42177b",
+          "bytes": 1117,
+          "archive_member": "rand-0.9.5/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "rand_chacha",
+      "version": "0.9.0",
+      "archive_url": "https://static.crates.io/crates/rand_chacha/rand_chacha-0.9.0.crate",
+      "archive_sha256": "d3022b5f1df60f26e1ffddd6c66e8aa15de382ae63b3a0c1bfc0e4d3e3f325cb",
+      "archive_bytes": 18258,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/rand_chacha-0.9.0/COPYRIGHT",
+          "sha256": "90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5",
+          "bytes": 569,
+          "archive_member": "rand_chacha-0.9.0/COPYRIGHT"
+        },
+        {
+          "path": "rust/rand_chacha-0.9.0/LICENSE-APACHE",
+          "sha256": "35242e7a83f69875e6edeff02291e688c97caafe2f8902e4e19b49d3e78b4cab",
+          "bytes": 9724,
+          "archive_member": "rand_chacha-0.9.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/rand_chacha-0.9.0/LICENSE-MIT",
+          "sha256": "209fbbe0ad52d9235e37badf9cadfe4dbdc87203179c0899e738b39ade42177b",
+          "bytes": 1117,
+          "archive_member": "rand_chacha-0.9.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "rand_core",
+      "version": "0.9.5",
+      "archive_url": "https://static.crates.io/crates/rand_core/rand_core-0.9.5.crate",
+      "archive_sha256": "76afc826de14238e6e8c374ddcc1fa19e374fd8dd986b0d2af0d02377261d83c",
+      "archive_bytes": 24129,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/rand_core-0.9.5/COPYRIGHT",
+          "sha256": "90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5",
+          "bytes": 569,
+          "archive_member": "rand_core-0.9.5/COPYRIGHT"
+        },
+        {
+          "path": "rust/rand_core-0.9.5/LICENSE-APACHE",
+          "sha256": "6df43f6f4b5d4587f3d8d71e45532c688fd168afa5fe89d571cb32fa09c4ef51",
+          "bytes": 10282,
+          "archive_member": "rand_core-0.9.5/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/rand_core-0.9.5/LICENSE-MIT",
+          "sha256": "209fbbe0ad52d9235e37badf9cadfe4dbdc87203179c0899e738b39ade42177b",
+          "bytes": 1117,
+          "archive_member": "rand_core-0.9.5/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "rawpointer",
+      "version": "0.2.1",
+      "archive_url": "https://static.crates.io/crates/rawpointer/rawpointer-0.2.1.crate",
+      "archive_sha256": "60a357793950651c4ed0f3f52338f53b2f809f32d83a07f72909fa13e4c6c1e3",
+      "archive_bytes": 7490,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/rawpointer-0.2.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "rawpointer-0.2.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/rawpointer-0.2.1/LICENSE-MIT",
+          "sha256": "7576269ea71f767b99297934c0b2367532690f8c4badc695edf8e04ab6a1e545",
+          "bytes": 1043,
+          "archive_member": "rawpointer-0.2.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "rayon",
+      "version": "1.12.0",
+      "archive_url": "https://static.crates.io/crates/rayon/rayon-1.12.0.crate",
+      "archive_sha256": "fb39b166781f92d482534ef4b4b1b2568f42613b53e5b6c160e24cfbfa30926d",
+      "archive_bytes": 183391,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/rayon-1.12.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "rayon-1.12.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/rayon-1.12.0/LICENSE-MIT",
+          "sha256": "0621878e61f0d0fda054bcbe02df75192c28bde1ecc8289cbd86aeba2dd72720",
+          "bytes": 1071,
+          "archive_member": "rayon-1.12.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "rayon-cond",
+      "version": "0.4.0",
+      "archive_url": "https://static.crates.io/crates/rayon-cond/rayon-cond-0.4.0.crate",
+      "archive_sha256": "2964d0cf57a3e7a06e8183d14a8b527195c706b7983549cd5462d5aa3747438f",
+      "archive_bytes": 10659,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/rayon-cond-0.4.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "rayon-cond-0.4.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/rayon-cond-0.4.0/LICENSE-MIT",
+          "sha256": "27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac",
+          "bytes": 1054,
+          "archive_member": "rayon-cond-0.4.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "rayon-core",
+      "version": "1.13.0",
+      "archive_url": "https://static.crates.io/crates/rayon-core/rayon-core-1.13.0.crate",
+      "archive_sha256": "22e18b0f0062d30d4230b2e85ff77fdfe4326feb054b9783a3460d8435c8ab91",
+      "archive_bytes": 73151,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/rayon-core-1.13.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "rayon-core-1.13.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/rayon-core-1.13.0/LICENSE-MIT",
+          "sha256": "0621878e61f0d0fda054bcbe02df75192c28bde1ecc8289cbd86aeba2dd72720",
+          "bytes": 1071,
+          "archive_member": "rayon-core-1.13.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "regex",
+      "version": "1.13.1",
+      "archive_url": "https://static.crates.io/crates/regex/regex-1.13.1.crate",
+      "archive_sha256": "f020237b6c8eed93db2e2cb53c00c60a8e1bc73da7d073199a1180401450218d",
+      "archive_bytes": 157118,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/regex-1.13.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "regex-1.13.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/regex-1.13.1/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "archive_member": "regex-1.13.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "regex-automata",
+      "version": "0.4.18",
+      "archive_url": "https://static.crates.io/crates/regex-automata/regex-automata-0.4.18.crate",
+      "archive_sha256": "ad8553b9b26413251cbf30e620595c7a41b3887f03da04579c0e6b0d6a06b4b2",
+      "archive_bytes": 628707,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/regex-automata-0.4.18/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "regex-automata-0.4.18/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/regex-automata-0.4.18/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "archive_member": "regex-automata-0.4.18/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "regex-syntax",
+      "version": "0.8.11",
+      "archive_url": "https://static.crates.io/crates/regex-syntax/regex-syntax-0.8.11.crate",
+      "archive_sha256": "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4",
+      "archive_bytes": 359055,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/regex-syntax-0.8.11/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "regex-syntax-0.8.11/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/regex-syntax-0.8.11/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "archive_member": "regex-syntax-0.8.11/LICENSE-MIT"
+        },
+        {
+          "path": "rust/regex-syntax-0.8.11/src/unicode_tables/LICENSE-UNICODE",
+          "sha256": "74db5baf44a41b1000312c673544b3374e4198af5605c7f9080a402cec42cfa3",
+          "bytes": 2847,
+          "archive_member": "regex-syntax-0.8.11/src/unicode_tables/LICENSE-UNICODE"
+        }
+      ]
+    },
+    {
+      "name": "rustc-hash",
+      "version": "2.1.3",
+      "archive_url": "https://static.crates.io/crates/rustc-hash/rustc-hash-2.1.3.crate",
+      "archive_sha256": "6b1e7f9a428571be2dc5bc0505c13fb6bf936822b894ec87abf8a08a4e51742d",
+      "archive_bytes": 14811,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/rustc-hash-2.1.3/LICENSE-APACHE",
+          "sha256": "95bd3988beee069fa2848f648dab43cc6e0b2add2ad6bcb17360caf749802bcc",
+          "bytes": 9722,
+          "archive_member": "rustc-hash-2.1.3/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/rustc-hash-2.1.3/LICENSE-MIT",
+          "sha256": "30fefc3a7d6a0041541858293bcbea2dde4caa4c0a5802f996a7f7e8c0085652",
+          "bytes": 1022,
+          "archive_member": "rustc-hash-2.1.3/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "rustversion",
+      "version": "1.0.23",
+      "archive_url": "https://static.crates.io/crates/rustversion/rustversion-1.0.23.crate",
+      "archive_sha256": "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f",
+      "archive_bytes": 21013,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/rustversion-1.0.23/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "rustversion-1.0.23/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/rustversion-1.0.23/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "rustversion-1.0.23/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "ryu",
+      "version": "1.0.23",
+      "archive_url": "https://static.crates.io/crates/ryu/ryu-1.0.23.crate",
+      "archive_sha256": "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f",
+      "archive_bytes": 52823,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 OR BSL-1.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/ryu-1.0.23/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "ryu-1.0.23/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/ryu-1.0.23/LICENSE-BOOST",
+          "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566",
+          "bytes": 1338,
+          "archive_member": "ryu-1.0.23/LICENSE-BOOST"
+        }
+      ]
+    },
+    {
+      "name": "serde",
+      "version": "1.0.229",
+      "archive_url": "https://static.crates.io/crates/serde/serde-1.0.229.crate",
+      "archive_sha256": "4148590afebada386688f18773da617792bf2ef03ffc1e4cbd2b1d45b023e0ba",
+      "archive_bytes": 83669,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/serde-1.0.229/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "serde-1.0.229/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/serde-1.0.229/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "serde-1.0.229/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "serde_core",
+      "version": "1.0.229",
+      "archive_url": "https://static.crates.io/crates/serde_core/serde_core-1.0.229.crate",
+      "archive_sha256": "67dca2c9c51e58a4791a4b1ed58308b39c64224d349a935ab5039aa360942a48",
+      "archive_bytes": 63100,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/serde_core-1.0.229/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "serde_core-1.0.229/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/serde_core-1.0.229/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "serde_core-1.0.229/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "serde_derive",
+      "version": "1.0.229",
+      "archive_url": "https://static.crates.io/crates/serde_derive/serde_derive-1.0.229.crate",
+      "archive_sha256": "e7a5d71263a5a7d47b41f6b3f06ba276f10cc18b0931f1799f710578e2309348",
+      "archive_bytes": 59864,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/serde_derive-1.0.229/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "serde_derive-1.0.229/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/serde_derive-1.0.229/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "serde_derive-1.0.229/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "serde_json",
+      "version": "1.0.151",
+      "archive_url": "https://static.crates.io/crates/serde_json/serde_json-1.0.151.crate",
+      "archive_sha256": "c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14",
+      "archive_bytes": 156556,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/serde_json-1.0.151/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "serde_json-1.0.151/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/serde_json-1.0.151/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "serde_json-1.0.151/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "shlex",
+      "version": "2.0.1",
+      "archive_url": "https://static.crates.io/crates/shlex/shlex-2.0.1.crate",
+      "archive_sha256": "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba",
+      "archive_bytes": 19332,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/shlex-2.0.1/LICENSE-APACHE",
+          "sha256": "553fffcd9b1cb158bc3e9edc35da85ca5c3b3d7d2e61c883ebcfa8a65814b583",
+          "bytes": 566,
+          "archive_member": "shlex-2.0.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/shlex-2.0.1/LICENSE-MIT",
+          "sha256": "4455bf75a91154108304cb283e0fea9948c14f13e20d60887cf2552449dea3b1",
+          "bytes": 1092,
+          "archive_member": "shlex-2.0.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "signal-hook-registry",
+      "version": "1.4.8",
+      "archive_url": "https://static.crates.io/crates/signal-hook-registry/signal-hook-registry-1.4.8.crate",
+      "archive_sha256": "c4db69cba1110affc0e9f7bcd48bbf87b3f4fc7c61fc9155afd4c469eb3d6c1b",
+      "archive_bytes": 21668,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/signal-hook-registry-1.4.8/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "signal-hook-registry-1.4.8/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/signal-hook-registry-1.4.8/LICENSE-MIT",
+          "sha256": "503558bfefe66ca15e4e3f7955b3cb0ec87fd52f29bf24b336af7bd00e946d5c",
+          "bytes": 1068,
+          "archive_member": "signal-hook-registry-1.4.8/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "slab",
+      "version": "0.4.12",
+      "archive_url": "https://static.crates.io/crates/slab/slab-0.4.12.crate",
+      "archive_sha256": "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5",
+      "archive_bytes": 19080,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/slab-0.4.12/LICENSE",
+          "sha256": "8ce0830173fdac609dfb4ea603fdc002c2f4af0dc9b1a005653f5da9cf534b18",
+          "bytes": 1055,
+          "archive_member": "slab-0.4.12/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "smallvec",
+      "version": "1.16.0",
+      "archive_url": "https://static.crates.io/crates/smallvec/smallvec-1.16.0.crate",
+      "archive_sha256": "b9be42f50aa861c555654aa3a37f52f4b1074bacf4e48fe0ef7fa584e80f1f0f",
+      "archive_bytes": 32647,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/smallvec-1.16.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "smallvec-1.16.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/smallvec-1.16.0/LICENSE-MIT",
+          "sha256": "0b28172679e0009b655da42797c03fd163a3379d5cfa67ba1f1655e974a2a1a9",
+          "bytes": 1072,
+          "archive_member": "smallvec-1.16.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "spm_precompiled",
+      "version": "0.1.4",
+      "archive_url": "https://static.crates.io/crates/spm_precompiled/spm_precompiled-0.1.4.crate",
+      "archive_sha256": "5851699c4033c63636f7ea4cf7b7c1f1bf06d0cc03cfb42e711de5a5c46cf326",
+      "archive_bytes": 557527,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/spm_precompiled-0.1.4/LICENSE",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "bytes": 11357,
+          "archive_member": "spm_precompiled-0.1.4/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "static_assertions",
+      "version": "1.1.0",
+      "archive_url": "https://static.crates.io/crates/static_assertions/static_assertions-1.1.0.crate",
+      "archive_sha256": "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f",
+      "archive_bytes": 18480,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/static_assertions-1.1.0/LICENSE-APACHE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "bytes": 11358,
+          "archive_member": "static_assertions-1.1.0/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/static_assertions-1.1.0/LICENSE-MIT",
+          "sha256": "ea084a2373ebc1f0902c09266e7bf25a05ab3814c1805bb017ffa7308f90c061",
+          "bytes": 1072,
+          "archive_member": "static_assertions-1.1.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "strsim",
+      "version": "0.11.1",
+      "archive_url": "https://static.crates.io/crates/strsim/strsim-0.11.1.crate",
+      "archive_sha256": "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f",
+      "archive_bytes": 14266,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/strsim-0.11.1/LICENSE",
+          "sha256": "1e697ce8d21401fbf1bddd9b5c3fd4c4c79ae1e3bdf51f81761c85e11d5a89cd",
+          "bytes": 1166,
+          "archive_member": "strsim-0.11.1/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "syn",
+      "version": "2.0.119",
+      "archive_url": "https://static.crates.io/crates/syn/syn-2.0.119.crate",
+      "archive_sha256": "872831b642d1a07999a962a351ed35b955ea2cfc8f3862091e2a240a84f17297",
+      "archive_bytes": 307407,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/syn-2.0.119/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "syn-2.0.119/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/syn-2.0.119/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "syn-2.0.119/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "syn",
+      "version": "3.0.4",
+      "archive_url": "https://static.crates.io/crates/syn/syn-3.0.4.crate",
+      "archive_sha256": "e6275cddf4610d1775e6d1fe9469b2e77d0f39fd98fb7450901b821e0c53649f",
+      "archive_bytes": 313047,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/syn-3.0.4/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "syn-3.0.4/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/syn-3.0.4/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "syn-3.0.4/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "target-lexicon",
+      "version": "0.13.5",
+      "archive_url": "https://static.crates.io/crates/target-lexicon/target-lexicon-0.13.5.crate",
+      "archive_sha256": "adb6935a6f5c20170eeceb1a3835a49e12e19d792f6dd344ccc76a985ca5a6ca",
+      "archive_bytes": 26928,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 WITH LLVM-exception"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/target-lexicon-0.13.5/LICENSE",
+          "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
+          "bytes": 12243,
+          "archive_member": "target-lexicon-0.13.5/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "thiserror",
+      "version": "2.0.20",
+      "archive_url": "https://static.crates.io/crates/thiserror/thiserror-2.0.20.crate",
+      "archive_sha256": "ec86235f5fcc2a73650310756d2ac5b138a5780bbbdfae3eeccec992c435ba4f",
+      "archive_bytes": 28969,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/thiserror-2.0.20/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "thiserror-2.0.20/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/thiserror-2.0.20/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "thiserror-2.0.20/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "thiserror-impl",
+      "version": "2.0.20",
+      "archive_url": "https://static.crates.io/crates/thiserror-impl/thiserror-impl-2.0.20.crate",
+      "archive_sha256": "bc04cd3e1236dd4a98afca4569f2deb3f120e5422a4023be2cb683f8486292af",
+      "archive_bytes": 21436,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/thiserror-impl-2.0.20/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "thiserror-impl-2.0.20/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/thiserror-impl-2.0.20/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "thiserror-impl-2.0.20/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "tokio",
+      "version": "1.53.1",
+      "archive_url": "https://static.crates.io/crates/tokio/tokio-1.53.1.crate",
+      "archive_sha256": "202caea871b69668250d242070849eb495be178ed697a3e98aebce5bc81a0bed",
+      "archive_bytes": 920101,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/tokio-1.53.1/LICENSE",
+          "sha256": "253cd04c6714889df2d32f3f64d669179a1c95c76ac43c40882c52eb06bc3552",
+          "bytes": 1070,
+          "archive_member": "tokio-1.53.1/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "tokio-macros",
+      "version": "2.7.2",
+      "archive_url": "https://static.crates.io/crates/tokio-macros/tokio-macros-2.7.2.crate",
+      "archive_sha256": "78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e",
+      "archive_bytes": 16081,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/tokio-macros-2.7.2/LICENSE",
+          "sha256": "0b83dc40cba89b9922bb84b0a9c7d2768ce37c1d7e138b7424fd4549915778c9",
+          "bytes": 1102,
+          "archive_member": "tokio-macros-2.7.2/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "unicode-ident",
+      "version": "1.0.24",
+      "archive_url": "https://static.crates.io/crates/unicode-ident/unicode-ident-1.0.24.crate",
+      "archive_sha256": "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75",
+      "archive_bytes": 49298,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "(MIT OR Apache-2.0) AND Unicode-3.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/unicode-ident-1.0.24/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "unicode-ident-1.0.24/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/unicode-ident-1.0.24/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "unicode-ident-1.0.24/LICENSE-MIT"
+        },
+        {
+          "path": "rust/unicode-ident-1.0.24/LICENSE-UNICODE",
+          "sha256": "f7db81051789b729fea528a63ec4c938fdcb93d9d61d97dc8cc2e9df6d47f2a1",
+          "bytes": 1995,
+          "archive_member": "unicode-ident-1.0.24/LICENSE-UNICODE"
+        }
+      ]
+    },
+    {
+      "name": "unicode-normalization-alignments",
+      "version": "0.1.12",
+      "archive_url": "https://static.crates.io/crates/unicode-normalization-alignments/unicode-normalization-alignments-0.1.12.crate",
+      "archive_sha256": "43f613e4fa046e69818dd287fdc4bc78175ff20331479dab6e1b0f98d57062de",
+      "archive_bytes": 91546,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/unicode-normalization-alignments-0.1.12/COPYRIGHT",
+          "sha256": "23860c2a7b5d96b21569afedf033469bab9fe14a1b24a35068b8641c578ce24d",
+          "bytes": 321,
+          "archive_member": "unicode-normalization-alignments-0.1.12/COPYRIGHT"
+        },
+        {
+          "path": "rust/unicode-normalization-alignments-0.1.12/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "unicode-normalization-alignments-0.1.12/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/unicode-normalization-alignments-0.1.12/LICENSE-MIT",
+          "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+          "bytes": 1071,
+          "archive_member": "unicode-normalization-alignments-0.1.12/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "unicode-segmentation",
+      "version": "1.13.3",
+      "archive_url": "https://static.crates.io/crates/unicode-segmentation/unicode-segmentation-1.13.3.crate",
+      "archive_sha256": "c6f5d3c3b1bf09027a88a6bc961fc00497d651009560b5463668dc81b0fa87a8",
+      "archive_bytes": 112325,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/unicode-segmentation-1.13.3/COPYRIGHT",
+          "sha256": "23860c2a7b5d96b21569afedf033469bab9fe14a1b24a35068b8641c578ce24d",
+          "bytes": 321,
+          "archive_member": "unicode-segmentation-1.13.3/COPYRIGHT"
+        },
+        {
+          "path": "rust/unicode-segmentation-1.13.3/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "unicode-segmentation-1.13.3/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/unicode-segmentation-1.13.3/LICENSE-MIT",
+          "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+          "bytes": 1071,
+          "archive_member": "unicode-segmentation-1.13.3/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "unicode-width",
+      "version": "0.2.2",
+      "archive_url": "https://static.crates.io/crates/unicode-width/unicode-width-0.2.2.crate",
+      "archive_sha256": "b4ac048d71ede7ee76d585517add45da530660ef4390e49b098733c6e897f254",
+      "archive_bytes": 282768,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/unicode-width-0.2.2/COPYRIGHT",
+          "sha256": "23860c2a7b5d96b21569afedf033469bab9fe14a1b24a35068b8641c578ce24d",
+          "bytes": 321,
+          "archive_member": "unicode-width-0.2.2/COPYRIGHT"
+        },
+        {
+          "path": "rust/unicode-width-0.2.2/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "unicode-width-0.2.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/unicode-width-0.2.2/LICENSE-MIT",
+          "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+          "bytes": 1071,
+          "archive_member": "unicode-width-0.2.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "unicode_categories",
+      "version": "0.1.1",
+      "archive_url": "https://static.crates.io/crates/unicode_categories/unicode_categories-0.1.1.crate",
+      "archive_sha256": "39ec24b3121d976906ece63c9daad25b85969647682eee313cb5779fdd69e14e",
+      "archive_bytes": 87298,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/unicode_categories-0.1.1/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "archive_member": "unicode_categories-0.1.1/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/unicode_categories-0.1.1/LICENSE-MIT",
+          "sha256": "98a817e7b85e5fe4e79d165c656a4a139793b8b643d0f3d9cbcc3538ef82ec82",
+          "bytes": 1077,
+          "archive_member": "unicode_categories-0.1.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "unit-prefix",
+      "version": "0.5.2",
+      "archive_url": "https://static.crates.io/crates/unit-prefix/unit-prefix-0.5.2.crate",
+      "archive_sha256": "81e544489bf3d8ef66c953931f56617f423cd4b5494be343d9b9d3dda037b9a3",
+      "archive_bytes": 8041,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/unit-prefix-0.5.2/LICENSE",
+          "sha256": "b39b7556926992260c18201e59f9478217ed593602099546581b4092a4b9e10e",
+          "bytes": 1087,
+          "archive_member": "unit-prefix-0.5.2/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "utf8parse",
+      "version": "0.2.2",
+      "archive_url": "https://static.crates.io/crates/utf8parse/utf8parse-0.2.2.crate",
+      "archive_sha256": "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821",
+      "archive_bytes": 13499,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/utf8parse-0.2.2/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "archive_member": "utf8parse-0.2.2/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/utf8parse-0.2.2/LICENSE-MIT",
+          "sha256": "e4c9b06fa850cb9b540a5e400e9f6394cf15efcf4098144de477d1d3dae10150",
+          "bytes": 1052,
+          "archive_member": "utf8parse-0.2.2/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "version_check",
+      "version": "0.9.5",
+      "archive_url": "https://static.crates.io/crates/version_check/version_check-0.9.5.crate",
+      "archive_sha256": "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a",
+      "archive_bytes": 15554,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/version_check-0.9.5/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "archive_member": "version_check-0.9.5/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/version_check-0.9.5/LICENSE-MIT",
+          "sha256": "b7e650f3fce5c53249d1cdc608b54df156a97edd636cf9d23498d0cfe7aec63e",
+          "bytes": 1085,
+          "archive_member": "version_check-0.9.5/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "zerocopy",
+      "version": "0.8.56",
+      "archive_url": "https://static.crates.io/crates/zerocopy/zerocopy-0.8.56.crate",
+      "archive_sha256": "556764e583adb45a9f8d413c2a147fa7e8d821e48e12b14fd560b607998b75eb",
+      "archive_bytes": 284907,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "BSD-2-Clause OR Apache-2.0 OR MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/zerocopy-0.8.56/LICENSE-APACHE",
+          "sha256": "9d185ac6703c4b0453974c0d85e9eee43e6941009296bb1f5eb0b54e2329e9f3",
+          "bytes": 11350,
+          "archive_member": "zerocopy-0.8.56/LICENSE-APACHE"
+        },
+        {
+          "path": "rust/zerocopy-0.8.56/LICENSE-BSD",
+          "sha256": "83c1763356e822adde0a2cae748d938a73fdc263849ccff6b27776dff213bd32",
+          "bytes": 1275,
+          "archive_member": "zerocopy-0.8.56/LICENSE-BSD"
+        },
+        {
+          "path": "rust/zerocopy-0.8.56/LICENSE-MIT",
+          "sha256": "1a2f5c12ddc934d58956aa5dbdd3255fe55fd957633ab7d0d39e4f0daa73f7df",
+          "bytes": 1060,
+          "archive_member": "zerocopy-0.8.56/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "zmij",
+      "version": "1.0.23",
+      "archive_url": "https://static.crates.io/crates/zmij/zmij-1.0.23.crate",
+      "archive_sha256": "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b",
+      "archive_bytes": 28612,
+      "sboms": [
+        "sboms/macos-arm64/tokenizers-python.cyclonedx.json"
+      ],
+      "declared_licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "files": [
+        {
+          "path": "rust/zmij-1.0.23/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "archive_member": "zmij-1.0.23/LICENSE-MIT"
+        }
+      ]
+    }
+  ]
+}

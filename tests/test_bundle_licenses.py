@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import tomllib
 from pathlib import Path, PurePosixPath
 from types import SimpleNamespace
 
@@ -296,3 +297,227 @@ def test_zlib_supplement_preserves_both_upstream_copyright_notices_and_hashes():
     # Upstream's standalone LICENSE has an older year than its complete README notice.
     assert b"1995-2022 Jean-loup Gailly and Mark Adler" in (supplement / "LICENSE").read_bytes()
     assert b"1995-2024 Jean-loup Gailly and Mark Adler" in (supplement / "README").read_bytes()
+
+
+RUST_SUPPLEMENTS = [
+    (
+        "tokenizers",
+        "0.23.3",
+        126,
+        {"macos-arm64": "a65f99f1429fe5c517147b92427c5da5b86c040aa16236b3efb7f279477a8af2"},
+    ),
+    (
+        "safetensors",
+        "0.8.0",
+        39,
+        {"macos-arm64": "c5a46fbdca16e0075c5befd574475c483897ad60a6367e5bede9c5375ecfa543"},
+    ),
+    (
+        "hf-xet",
+        "1.8.0",
+        258,
+        {
+            "macos-arm64": "be8904db442fd90b8fc2b250b20083f31ea0bacbbb3bd27fa7eb97aa5ee03770",
+            "windows-amd64": "c5baa830d3d74900f7ec933fda48ebf5eebe35fa2657e7ab9860feddab7d392c",
+        },
+    ),
+    (
+        "pydantic_core",
+        "2.50.2",
+        101,
+        {
+            "macos-arm64": "22a4854711adf5f22542c9f07c6e9f5fd95954779dd0e01c18c46fb5dfde60e3",
+            "windows-amd64": "3b8a1c35a92151ec75aeb6aa2fa8e9c2f438493eb28094d2d7c358b01954abb4",
+        },
+    ),
+]
+
+
+def verified_supplement_bytes(directory, record):
+    relative = PurePosixPath(record["path"])
+    assert not relative.is_absolute() and ".." not in relative.parts
+    payload = directory.joinpath(*relative.parts).read_bytes()
+    assert len(payload) == record["bytes"]
+    assert hashlib.sha256(payload).hexdigest() == record["sha256"]
+    return payload
+
+
+@pytest.mark.parametrize("name,version,crate_count,sbom_hashes", RUST_SUPPLEMENTS)
+def test_rust_notice_bytes_and_crate_sources_match_frozen_wheel_sboms(
+    name, version, crate_count, sbom_hashes
+):
+    repository = Path(__file__).resolve().parent.parent
+    supplement = repository / "packaging/licenses" / f"{name}-{version}"
+    provenance = json.loads((supplement / "rust-provenance.json").read_bytes())
+    assert (provenance["package"], provenance["version"]) == (name, version)
+    locked = next(
+        package
+        for package in tomllib.loads((repository / "uv.lock").read_text())["package"]
+        if package["name"] == name.replace("_", "-")
+    )
+    assert locked["version"] == version  # 依存の版を更新したら、必要な表示を再確認する。
+    wheel_hashes = {wheel["url"]: wheel["hash"] for wheel in locked["wheels"]}
+    expected, expected_sboms = {}, {}
+    accounted = {"rust-provenance.json"}
+    assert {wheel["platform"] for wheel in provenance["wheels"]} == set(sbom_hashes)
+    for wheel in provenance["wheels"]:
+        assert wheel_hashes[wheel["url"]] == f"sha256:{wheel['sha256']}"
+        assert wheel["url"].endswith("/" + wheel["filename"])
+        document = wheel["sbom"]
+        assert document["sha256"] == sbom_hashes[wheel["platform"]]
+        sbom = json.loads(verified_supplement_bytes(supplement, document))
+        accounted.add(document["path"])
+        for component in sbom["components"]:
+            hashes = [h["content"] for h in component.get("hashes", []) if h["alg"] == "SHA-256"]
+            if not hashes:
+                assert component["bom-ref"].startswith("path+file:")
+                continue  # ワークスペース内の crate は Python 配布物の既存ライセンスに従う。
+            assert len(hashes) == 1
+            identity = (component["name"], component["version"])
+            assert expected.setdefault(identity, hashes[0]) == hashes[0]
+            expected_sboms.setdefault(identity, set()).add(document["path"])
+    crates = {(crate["name"], crate["version"]): crate for crate in provenance["crates"]}
+    assert len(crates) == len(provenance["crates"]) == crate_count
+    assert set(crates) == set(expected)
+    for identity, crate in crates.items():
+        crate_id = "-".join(identity)
+        assert crate["archive_sha256"] == expected[identity]
+        assert crate["archive_url"] == (
+            f"https://static.crates.io/crates/{identity[0]}/{crate_id}.crate"
+        )
+        assert set(crate["sboms"]) == expected_sboms[identity]
+        assert crate["files"]
+        for document in crate["files"]:
+            payload = verified_supplement_bytes(supplement, document)
+            assert document["path"].startswith(f"rust/{crate_id}/")
+            assert document["path"] not in accounted
+            accounted.add(document["path"])
+            if "archive_member" in document:
+                assert document["archive_member"].startswith(crate_id + "/")
+            elif "archive_excerpts" in document:
+                assert document["archive_excerpts"]
+                for source in document["archive_excerpts"]:
+                    assert source["member"].startswith(crate_id + "/")
+                    assert source["offset"] >= 0 and source["bytes"] == len(payload)
+                    assert len(bytes.fromhex(source["member_sha256"])) == 32
+            else:
+                blob = b"blob " + str(len(payload)).encode("ascii") + b"\0" + payload
+                assert hashlib.sha1(blob).hexdigest() == document["upstream_git_blob_sha1"]
+                fallback = crate["repository_fallback"]
+                assert document["repository_commit"] == fallback["commit"]
+                vcs = json.loads(
+                    (
+                        supplement / f"rust/{crate_id}/upstream-metadata/.cargo_vcs_info.json"
+                    ).read_bytes()
+                )
+                assert vcs["git"]["sha1"] == fallback["commit"]
+                assert document["source_url"].startswith(
+                    fallback["repository"].replace("github.com", "raw.githubusercontent.com")
+                    + "/"
+                    + fallback["commit"]
+                    + "/"
+                )
+    for document in provenance["reference_licenses"]:
+        verified_supplement_bytes(supplement, document)
+        assert document["applies_to"]
+        assert all(tuple(identity.rsplit("-", 1)) in crates for identity in document["applies_to"])
+        accounted.add(document["path"])
+    if name == "tokenizers":
+        accounted.update({"LICENSE", "provenance.json"})
+    assert accounted == {
+        path.relative_to(supplement).as_posix() for path in supplement.rglob("*") if path.is_file()
+    }
+
+
+@pytest.mark.parametrize("name,version,_count,_hashes", RUST_SUPPLEMENTS)
+def test_frozen_rust_supplements_are_in_pyinstaller_toc_and_index_for_exact_selected_version(
+    inventory, name, version, _count, _hashes
+):
+    repository = Path(__file__).resolve().parent.parent
+    supplement = repository / "packaging/licenses" / f"{name}-{version}"
+    # wheel 側に表示があっても、推移的な依存の補完文書を省略しない。
+    package = Distribution(
+        inventory.root,
+        name,
+        {f"{name}/native.so": b"synthetic native extension", f"{name}/LICENSE": b"wheel notice"},
+        version=version,
+    )
+    inventory.distributions.append(package)
+    inventory.analysis.binaries = [
+        (f"{name}/native.so", str(inventory.root / name / "native.so"), "EXTENSION")
+    ]
+    records = collect(inventory, supplemental_dir=supplement.parent)
+    bundled = next(item for item in index(inventory)["distributions"] if item["name"] == name)
+    assert bundled["bundled_targets"] == [f"{name}/native.so"]
+    prefix = f"python/{name}-{version}/upstream/"
+    expected = {
+        prefix + path.relative_to(supplement).as_posix(): path.read_bytes()
+        for path in supplement.rglob("*")
+        if path.is_file()
+    }
+    supplemental = {
+        item["path"]: item for item in bundled["files"] if item["origin"] == "supplemental"
+    }
+    assert set(supplemental) == set(expected)
+    toc = {target: (Path(source), kind) for target, source, kind in records}
+    for relative, payload in expected.items():
+        assert hashlib.sha256(payload).hexdigest() == supplemental[relative]["sha256"]
+        source, kind = toc[f"third_party_licenses/{relative}"]
+        assert kind == "DATA" and source.read_bytes() == payload
+    package.version = version + ".post1"
+    collect(inventory, supplemental_dir=supplement.parent)
+    newer = next(item for item in index(inventory)["distributions"] if item["name"] == name)
+    assert not any(item["origin"] == "supplemental" for item in newer["files"])
+    inventory.analysis.binaries = []
+    assert not any(
+        name in target
+        for target, _source, _kind in collect(inventory, supplemental_dir=supplement.parent)
+    )
+
+
+@pytest.mark.parametrize(
+    "relative,sha256,copyright_holder",
+    [
+        (
+            "rust/onig-6.5.3/LICENSE.md",
+            "e9c1238c5beb73c6cc130160418968058b21d486a7a445f0ceff27d51fbfdc44",
+            b"2015 Will Speak",
+        ),
+        (
+            "rust/onig_sys-69.9.3/LICENSE.md",
+            "71f321038b088358004bee991635ac09e4c703bec467d3c30c06992c0595f189",
+            b"Ivan Ivashchenko",
+        ),
+        (
+            "rust/onig_sys-69.9.3/oniguruma/COPYING",
+            "70ba5469ea0bab6e18a32d7009068f996503168d27be57747e08da34337ff26f",
+            b"2002-2021  K.Kosako",
+        ),
+        (
+            "rust/onig_sys-69.9.3/source-notices/cp1251.c-8bfc7882a4088068.txt",
+            "8bfc7882a408806822c231859987baf1792d8318811ee487f3c6043ff6387eb9",
+            b"2006-2020  Byte",
+        ),
+        (
+            "rust/onig_sys-69.9.3/source-notices/gb18030.c-dd36a2e6a824afb9.txt",
+            "dd36a2e6a824afb91674897fecd3e12a32b0611948e57814b111214fe3dfa191",
+            b"KUBO Takehiro",
+        ),
+        (
+            "rust/esaxx-rs-0.1.10/source-notices/esaxx.cpp-c09f3834a1f86881.txt",
+            "c09f3834a1f86881258ba19056861ec716446c755f69616423b1af1257d49f35",
+            b"Yuta Mori",
+        ),
+        (
+            "rust/esaxx-rs-0.1.10/source-notices/esaxx.cpp-8aac061b3fa2f67a.txt",
+            "8aac061b3fa2f67ac89b68e26eb02bc76a35c33b6cce73e9aa764f2b9df0ab9d",
+            b"Daisuke Okanohara",
+        ),
+    ],
+)
+def test_rust_onig_and_esaxx_individual_notice_texts_are_pinned(relative, sha256, copyright_holder):
+    supplement = Path(__file__).resolve().parent.parent / "packaging/licenses/tokenizers-0.23.3"
+    payload = (supplement / relative).read_bytes()
+    assert hashlib.sha256(payload).hexdigest() == sha256
+    assert copyright_holder in payload
+    assert b"SOFTWARE" in payload and b"LIAB" in payload
