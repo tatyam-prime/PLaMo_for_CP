@@ -24,6 +24,7 @@ from .desktop import (
     log_directory,
     service_state,
 )
+from .http_cancel import CancellableSocket
 
 SETUP_URL = f"http://127.0.0.1:{DEFAULT_PORT}/"
 APP_USER_MODEL_ID = "PLaMoForCP.Desktop"
@@ -92,6 +93,9 @@ class SettingsSummaryPoller:
         timer.start()
         try:
             connection.connect()
+            connection.sock = CancellableSocket(
+                connection.sock, lambda: self._closed.is_set() or expired.is_set()
+            )
             active_socket = connection.sock
             with self._lock:
                 if self._connection is connection:

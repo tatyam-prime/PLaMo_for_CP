@@ -20,6 +20,8 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
+from .http_cancel import CancellableSocket
+
 MAX_PARALLEL = 32
 MAX_HTTP_BYTES = 2 * 1024 * 1024
 RELEASE_TIMEOUT = 30
@@ -57,6 +59,7 @@ class RequestControl:
         self.cancelled = cancelled
         self.shutdown = shutdown or threading.Event()
         self._aborted = threading.Event()
+        self._disconnect = threading.Event()
         self._lock = threading.Lock()
         self._connection = None
         self._socket = None
@@ -83,6 +86,7 @@ class RequestControl:
                     return
                 self._unsafe_release = True
             stream, connection = self._socket, self._connection
+        self._disconnect.set()
         if stream is not None:
             try:
                 stream.shutdown(socket.SHUT_RDWR)
@@ -111,6 +115,9 @@ class RequestControl:
             connection.connect()
             connection.auto_open = 0  # A cancellation must never silently reconnect.
             with self._lock:
+                self.check()
+                # 未 ACK の completion は、KV 予約を安全に解放できるまで切断しない。
+                connection.sock = CancellableSocket(connection.sock, self._disconnect.is_set)
                 self._socket = connection.sock
             self.check()
             connection.sock.settimeout(read_timeout)

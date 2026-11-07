@@ -3,6 +3,8 @@ from __future__ import annotations
 import sys
 from types import SimpleNamespace
 
+import pytest
+
 from plamo_cp import windows_app
 
 
@@ -198,6 +200,7 @@ def test_summary_transport_rejects_redirects_and_oversized_bodies(monkeypatch):
             pass
 
     monkeypatch.setattr(windows_app.http.client, "HTTPConnection", Connection)
+    monkeypatch.setattr(windows_app, "CancellableSocket", lambda stream, _cancelled: stream)
     poller = windows_app.SettingsSummaryPoller()
     with pytest.raises(ValueError):
         poller._read_json("/api/health")
@@ -244,6 +247,7 @@ def test_summary_transport_deadline_aborts_a_stalled_read(monkeypatch):
             pass
 
     monkeypatch.setattr(windows_app.http.client, "HTTPConnection", Connection)
+    monkeypatch.setattr(windows_app, "CancellableSocket", lambda stream, _cancelled: stream)
     monkeypatch.setattr(windows_app, "HEALTH_TIMEOUT", 0.02)
     poller = windows_app.SettingsSummaryPoller()
     with pytest.raises(ValueError):
@@ -252,15 +256,20 @@ def test_summary_transport_deadline_aborts_a_stalled_read(monkeypatch):
     poller.close()
 
 
+@pytest.mark.parametrize("shutdown_wakes_reader", [True, False])
 def test_summary_cancel_interrupts_connection_close_body_without_stopping_another_client(
-    monkeypatch,
+    monkeypatch, shutdown_wakes_reader
 ):
     import http.client
+    import socket
     import threading
     import time
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
     monkeypatch.setattr(windows_app, "HEALTH_TIMEOUT", 5)
+    if not shutdown_wakes_reader:
+        # Exercise cancellation even when local shutdown does not wake select().
+        monkeypatch.setattr(socket.socket, "shutdown", lambda *_: None)
     gates = [threading.Event(), threading.Event()]
     started = [threading.Event(), threading.Event()]
     request_lock = threading.Lock()

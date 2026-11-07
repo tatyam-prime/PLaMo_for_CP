@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import queue
+import socket
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -221,7 +222,13 @@ def test_empty_work_never_creates_a_request_and_bad_cost_does_not_block_next_wor
 
 
 @pytest.mark.parametrize("stage", ["tokenize", "headers", "first-token"])
-def test_socket_cancellation_interrupts_each_prefill_stage_without_waiting_for_server(stage):
+@pytest.mark.parametrize("shutdown_wakes_reader", [True, False])
+def test_socket_cancellation_interrupts_each_prefill_stage_without_waiting_for_server(
+    stage, shutdown_wakes_reader, monkeypatch
+):
+    if not shutdown_wakes_reader:
+        # Winsock need not wake a timed receive's select() on local shutdown.
+        monkeypatch.setattr(socket.socket, "shutdown", lambda *_: None)
     entered, begin, finish = threading.Event(), threading.Event(), threading.Event()
 
     class Handler(BaseHTTPRequestHandler):
@@ -308,6 +315,7 @@ def test_private_connections_clear_socket_ownership_and_never_reuse_health_pool(
             pass
 
     monkeypatch.setattr(jobs.http.client, "HTTPConnection", Connection)
+    monkeypatch.setattr(jobs, "CancellableSocket", lambda stream, _cancelled: stream)
     first = jobs.RequestControl(
         "http://127.0.0.1:8765", {"authorization": "Bearer private"}, threading.Event()
     )
