@@ -159,7 +159,7 @@ test('generated Tampermonkey artifact embeds canonical core exactly and limits G
   try {
     const canonical = await readFile(new URL('../../browser/translator.js', import.meta.url), 'utf8');
     const pipeline = await readFile(new URL('../../plamo_cp/assets/translation-jobs.js', import.meta.url), 'utf8');
-    assert.ok(harness.source.includes(canonical.replace("const API = 'http://127.0.0.1:8765';", `const API = '${harness.api}';`)));
+    assert.ok(harness.source.includes(canonical.replace("const API = 'http://127.0.0.1:44894';", `const API = '${harness.api}';`)));
     assert.ok(harness.source.includes(pipeline), 'HTML and the native text workspace must use the exact same pipeline');
     assert.doesNotThrow(() => new Script(harness.source));
     assert.match(harness.source, /@grant\s+GM_xmlhttpRequest/);

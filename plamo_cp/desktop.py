@@ -19,7 +19,7 @@ from pathlib import Path
 
 APPLICATION_ID = "plamo-for-cp"
 CACHE_NAME = "plamo-cp"
-DEFAULT_PORT = 8765
+DEFAULT_PORT = 44894
 HEALTH_TIMEOUT = 0.75
 HEALTH_MAX_BYTES = 65536
 logger = logging.getLogger(__name__)

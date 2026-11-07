@@ -4,7 +4,7 @@ import Darwin
 import Foundation
 
 private let applicationID = "plamo-for-cp"
-private let setupURL = URL(string: "http://127.0.0.1:8765/")!
+private let setupURL = URL(string: "http://127.0.0.1:44894/")!
 
 final class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var window: NSWindow!
@@ -144,7 +144,7 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     }
 
     private func probe(_ callback: @escaping (Bool, Bool) -> Void) {
-        HealthProbe(port: setupURL.port ?? 8765).start { ours, occupied in
+        HealthProbe(port: setupURL.port ?? 44894).start { ours, occupied in
             DispatchQueue.main.async { callback(ours, occupied) }
         }
     }
@@ -254,7 +254,7 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         settingsTimer = nil
         settingsEpoch += 1
         let epoch = settingsEpoch
-        let request = DesktopSettingsRequest(port: setupURL.port ?? 8765)
+        let request = DesktopSettingsRequest(port: setupURL.port ?? 44894)
         settingsRequest = request
         request.start { [weak self] snapshot in
             DispatchQueue.main.async {

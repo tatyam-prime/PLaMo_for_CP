@@ -12,7 +12,7 @@ final class HealthProbe: NSObject, URLSessionDataDelegate, URLSessionTaskDelegat
     private var rejected = false
     private var body = Data()
 
-    init(port: Int = 8765, timeout: TimeInterval = 1, maxBytes: Int = 65536) {
+    init(port: Int = 44894, timeout: TimeInterval = 1, maxBytes: Int = 65536) {
         self.port = port
         self.timeout = timeout
         self.maxBytes = maxBytes

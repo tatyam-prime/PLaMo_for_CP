@@ -56,7 +56,7 @@ final class DesktopSettingsRequest: NSObject, URLSessionDataDelegate, URLSession
     private var finished = false
     private var rejected = false
 
-    init(port: Int = 8765, timeout: TimeInterval = 1.5, maxBytes: Int = 65536) {
+    init(port: Int = 44894, timeout: TimeInterval = 1.5, maxBytes: Int = 65536) {
         self.port = port
         self.timeout = max(0.05, min(timeout, 5))
         self.maxBytes = max(1, min(maxBytes, 1048576))

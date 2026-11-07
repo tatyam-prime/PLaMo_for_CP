@@ -44,7 +44,7 @@ async function fixture(options = {}) {
   }, { storage: options.storage || {} });
   await page.route('**/*', async route => {
     const request = route.request(), url = new URL(request.url()), path = url.pathname;
-    if (url.origin !== 'http://127.0.0.1:8765') { control.unexpected.push(request.url()); return route.fulfill({ status: 404 }); }
+    if (url.origin !== 'http://127.0.0.1:44894') { control.unexpected.push(request.url()); return route.fulfill({ status: 404 }); }
     if (path === '/text') return route.fulfill({ contentType: 'text/html; charset=utf-8', body: assets.get('text.html') });
     if (path === '/text.js' || path === '/translation-jobs.js') return route.fulfill({ contentType: 'application/javascript; charset=utf-8', body: assets.get(path.slice(1)) });
     if (path === '/favicon.ico') return route.fulfill({ status: 204 });
@@ -76,7 +76,7 @@ async function fixture(options = {}) {
   control.releaseCreations = () => { for (const resolve of control.pendingCreations.splice(0)) resolve(); };
   control.complete = id => { for (const job of control.jobs.values()) for (const item of job.events) if (item.event.id === id && !item.ready) { item.ready = true; item.seq = ++job.sequence; } };
   control.finishAll = () => { control.manual = false; for (const job of control.jobs.values()) for (const item of job.events) if (!item.ready) { item.ready = true; item.seq = ++job.sequence; } };
-  await page.goto('http://127.0.0.1:8765/text');
+  await page.goto('http://127.0.0.1:44894/text');
   await page.waitForFunction(() => !document.querySelector('#model').disabled);
   return { page, control };
 }

@@ -21,7 +21,7 @@ class IdleEngine:
 @pytest.fixture
 def client(tmp_path):
     app = create_app(IdleEngine(), tmp_path / "cache.sqlite3", tmp_path / "settings.json")
-    with TestClient(app, base_url="http://127.0.0.1:8765") as value:
+    with TestClient(app, base_url="http://127.0.0.1:44894") as value:
         yield value
 
 
@@ -31,11 +31,12 @@ def client(tmp_path):
         "https://foreign.example",
         "null",
         "http://127.0.0.1:9999",
-        "http://localhost:8765",
-        "http://127.0.0.1:8765.foreign.example",
-        "http://user@127.0.0.1:8765",
-        "http://127.0.0.1:8765/path",
-        "http://127.0.0.1:8765?query",
+        "http://127.0.0.1:8765",
+        "http://localhost:44894",
+        "http://127.0.0.1:44894.foreign.example",
+        "http://user@127.0.0.1:44894",
+        "http://127.0.0.1:44894/path",
+        "http://127.0.0.1:44894?query",
     ],
 )
 def test_foreign_origin_cannot_mutate_even_with_the_public_client_header(client, origin):
@@ -54,7 +55,7 @@ def test_foreign_origin_cannot_mutate_even_with_the_public_client_header(client,
     "origin",
     [
         None,
-        "http://127.0.0.1:8765",
+        "http://127.0.0.1:44894",
         "chrome-extension://abcdefghijklmnop",
         "moz-extension://1e422501-ec2d-4d22-95fb-4c5ee2a62fae",
         "safari-web-extension://extension-id",
@@ -157,7 +158,7 @@ def test_unauthorized_write_is_rejected_without_reading_any_body(headers):
                 "method": "POST",
                 "scheme": "http",
                 "path": "/api/models/folder",
-                "headers": [(b"host", b"127.0.0.1:8765"), *headers],
+                "headers": [(b"host", b"127.0.0.1:44894"), *headers],
             },
             receive,
             send,

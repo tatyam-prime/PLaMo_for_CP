@@ -205,7 +205,7 @@ def test_summary_transport_rejects_redirects_and_oversized_bodies(monkeypatch):
     response.length = windows_app.HEALTH_MAX_BYTES + 1
     with pytest.raises(ValueError):
         poller._read_json("/api/setup")
-    assert calls[0] == ("127.0.0.1", 8765, windows_app.HEALTH_TIMEOUT)
+    assert calls[0] == ("127.0.0.1", windows_app.DEFAULT_PORT, windows_app.HEALTH_TIMEOUT)
     assert all(item[0] in {"127.0.0.1", "GET"} for item in calls)
     poller.close()
 

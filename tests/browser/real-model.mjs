@@ -9,7 +9,7 @@ const file = process.env.PLAMO_FIXTURE || 'tests/browser/fixtures/codeforces-212
 const url = process.env.PLAMO_PAGE_URL || 'https://codeforces.com/problemset/problem/2120/F';
 const model = process.env.PLAMO_MODEL || '0.8b';
 const batchSize = Number(process.env.PLAMO_BATCH || 1);
-const api = process.env.PLAMO_API || 'http://127.0.0.1:8765';
+const api = process.env.PLAMO_API || 'http://127.0.0.1:44894';
 if (!/^http:\/\/127\.0\.0\.1:\d+$/.test(api) || !Number.isInteger(batchSize) || batchSize < 1 || batchSize > 16) throw new Error('Invalid local QA settings');
 const generated = process.env.PLAMO_GENERATED === '1';
 const general = process.env.PLAMO_GENERAL === '1';
@@ -18,7 +18,7 @@ const outputPrefix = process.env.PLAMO_REPORT_PREFIX || '.local/browser-real';
 const scriptFile = process.env.PLAMO_SCRIPT || (generated ? 'dist/plamo-for-cp.user.js' : 'browser/translator.js');
 const registry = generated ? '' : (await readFile('browser/site-registry.js', 'utf8')).replaceAll('export ', '') + '\n';
 const pipeline = generated ? '' : await readFile('plamo_cp/assets/translation-jobs.js', 'utf8') + '\n';
-const script = (registry + pipeline + await readFile(scriptFile, 'utf8')).replaceAll('http://127.0.0.1:8765', api);
+const script = (registry + pipeline + await readFile(scriptFile, 'utf8')).replaceAll('http://127.0.0.1:44894', api);
 const html = await readFile(file, 'utf8');
 const mathCSS = await readFile(new URL('../../node_modules/katex/dist/katex.min.css', import.meta.url), 'utf8');
 const requests = [];

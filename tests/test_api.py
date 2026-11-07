@@ -947,11 +947,11 @@ def test_browser_disconnect_cancels_inference(tmp_path):
             "raw_path": b"/api/translate",
             "query_string": b"",
             "scheme": "http",
-            "server": ("127.0.0.1", 8765),
+            "server": ("127.0.0.1", 44894),
             "client": ("127.0.0.1", 12345),
             "root_path": "",
             "headers": [
-                (b"host", b"127.0.0.1:8765"),
+                (b"host", b"127.0.0.1:44894"),
                 (b"content-type", b"application/json"),
                 (b"x-plamo-client", b"userscript"),
             ],

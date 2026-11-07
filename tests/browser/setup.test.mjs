@@ -27,10 +27,10 @@ async function fixture() {
   const html = await readFile(new URL('../../plamo_cp/assets/setup.html', import.meta.url));
   const script = await readFile(new URL('../../plamo_cp/assets/setup.js', import.meta.url));
   const versions = await readFile(new URL('../../plamo_cp/assets/userscript-version.js', import.meta.url));
-  await page.route('http://127.0.0.1:8765/', route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: html }));
-  await page.route('http://127.0.0.1:8765/setup.js', route => route.fulfill({ contentType: 'application/javascript; charset=utf-8', body: script }));
-  await page.route('http://127.0.0.1:8765/userscript-version.js', route => route.fulfill({ contentType: 'application/javascript; charset=utf-8', body: versions }));
-  await page.route('http://127.0.0.1:8765/api/**', async route => {
+  await page.route('http://127.0.0.1:44894/', route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: html }));
+  await page.route('http://127.0.0.1:44894/setup.js', route => route.fulfill({ contentType: 'application/javascript; charset=utf-8', body: script }));
+  await page.route('http://127.0.0.1:44894/userscript-version.js', route => route.fulfill({ contentType: 'application/javascript; charset=utf-8', body: versions }));
+  await page.route('http://127.0.0.1:44894/api/**', async route => {
     const request = route.request();
     const path = new URL(request.url()).pathname;
     const body = request.method() === 'POST' ? request.postDataJSON() : null;
@@ -54,7 +54,7 @@ async function fixture() {
     }
     return route.fulfill({ status: path === '/api/models/download' ? 202 : 200, json: result });
   });
-  await page.goto('http://127.0.0.1:8765/');
+  await page.goto('http://127.0.0.1:44894/');
   await page.getByText('アプリに接続済み', { exact: true }).waitFor();
   return { page, control };
 }

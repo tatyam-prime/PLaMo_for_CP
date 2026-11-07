@@ -66,7 +66,8 @@ def test_cli_download_reports_an_actionable_error_without_traceback(monkeypatch,
     assert "保存先に書き込めません。" in capsys.readouterr().err
 
 
-def test_cli_server_stays_on_loopback_and_does_not_log_page_access(monkeypatch):
+@pytest.mark.parametrize("port_args,port", [([], cli.DEFAULT_PORT), (["--port", "18765"], 18765)])
+def test_cli_server_stays_on_loopback_and_does_not_log_page_access(monkeypatch, port_args, port):
     import uvicorn
 
     import plamo_cp.api
@@ -75,6 +76,6 @@ def test_cli_server_stays_on_loopback_and_does_not_log_page_access(monkeypatch):
     calls = []
     monkeypatch.setattr(plamo_cp.api, "create_app", lambda: sentinel)
     monkeypatch.setattr(uvicorn, "run", lambda *args, **kwargs: calls.append((args, kwargs)))
-    monkeypatch.setattr(sys, "argv", ["plamo-cp", "serve", "--port", "18765"])
+    monkeypatch.setattr(sys, "argv", ["plamo-cp", "serve", *port_args])
     cli.main()
-    assert calls == [((sentinel,), {"host": "127.0.0.1", "port": 18765, "access_log": False})]
+    assert calls == [((sentinel,), {"host": "127.0.0.1", "port": port, "access_log": False})]

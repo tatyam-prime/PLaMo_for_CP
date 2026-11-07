@@ -4,6 +4,7 @@ import argparse
 import json
 import logging
 
+from .desktop import DEFAULT_PORT
 from .engine import DEFAULT_MODEL_ID, SUPPORTED_MODEL_IDS
 from .runtime import make_engine
 
@@ -14,7 +15,7 @@ def main() -> None:
     )
     commands = parser.add_subparsers(dest="command", required=True)
     server = commands.add_parser("serve", help="localhost の翻訳APIを起動")
-    server.add_argument("--port", type=int, default=8765)
+    server.add_argument("--port", type=int, default=DEFAULT_PORT)
     fetch = commands.add_parser("download", help="このOS用の公式モデルを事前ダウンロード")
     fetch.add_argument("--model", choices=SUPPORTED_MODEL_IDS, default=DEFAULT_MODEL_ID)
     translate = commands.add_parser("translate", help="端末で翻訳を実行")

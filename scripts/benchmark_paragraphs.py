@@ -17,7 +17,7 @@ from pathlib import Path
 def app_state() -> str:
     try:
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        with opener.open("http://127.0.0.1:8765/api/health", timeout=1) as response:
+        with opener.open("http://127.0.0.1:44894/api/health", timeout=1) as response:
             return json.load(response).get("engine", {}).get("state", "unknown")
     except OSError:
         return "unavailable"
