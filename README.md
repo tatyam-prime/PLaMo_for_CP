@@ -2,20 +2,24 @@
 
 # PLaMo for 競プロ
 
-競プロの問題文を、数式や書式を保ったまま日本語に翻訳する非公式ツールです。[PLaMo 3 Translate](https://huggingface.co/pfnet/plamo-3-translate-2b-MLX-4bit) を自分のパソコンで動かし、Tampermonkey でページに訳文を表示します。本文を外部の翻訳 API へ送りません。
+競プロの問題文を、数式や書式を保ったまま日本語に翻訳する非公式ツールです。[PLaMo 3 Translate](https://huggingface.co/pfnet/plamo-3-translate-2b-MLX-4bit) を自分のパソコンで動かし、Tampermonkey 拡張機能でページに訳文を表示します。本文を外部の翻訳 API へ送りません。
+
+**Built with PLaMo.** 本ツールは Preferred Networks（PFN）の公式製品ではありません。
 
 ## ダウンロード
 
-[Releases](../../releases) の **Assets** から、使うパソコンに合うファイルを選んでください。アプリ版の利用には Python・Node.js・ターミナル操作は不要です。
+アプリ・翻訳スクリプトのバージョンは **1.0.0** です。[Releases](../../releases) の **Assets** から、使うパソコンに合うファイルを選んでください。アプリ版の利用には Python・Node.js・ターミナル操作は不要です。
 
 | パソコン | 配布ファイル | 導入方法 |
 | --- | --- | --- |
 | Mac（Apple Silicon） | `PLaMo-for-競プロ-macOS-AppleSilicon.zip` | 展開してアプリを「アプリケーション」へ移動 |
-| Windows（x64） | `PLaMo-for-競プロ-Windows-Setup.exe` | インストーラーを実行 |
+| Windows 10 / 11（x64） | `PLaMo-for-競プロ-Windows-Setup.exe` | インストーラーを実行 |
 
-**現在の Mac ビルドは macOS 27 以降向け・未公証です。Windows 版は実機未検証です。** 各リリースの対応 OS・署名・検証状況を確認してください。
+**Mac は Apple Silicon 専用です。** 最低 macOS バージョンは同梱する Python・MLX によって変わるため、各リリースで確認してください。現ローカルビルドは macOS 27 以降向けです。**Windows 版は実機未検証です。**
 
-Mac の起動時に開発元の確認が表示される場合は、[Apple の説明](https://support.apple.com/ja-jp/102445)を参照してください。
+**Mac 版は当面未公証で配布する方針です。現行のビルド手順は、Mac が ad-hoc 署名、Windows が未署名です。** 初回起動時に警告やブロックが出ることがあります。署名・検証状況は各リリースで確認してください。
+
+Mac で開発元を確認できず起動が止められた場合は、配布元を確認したうえで [Apple の個別許可の手順](https://support.apple.com/ja-jp/102445)を参照してください。Windows では SmartScreen などの設定や端末の管理ポリシーによって実行できない場合があります。OS 全体の保護機能は無効にしないでください。
 
 ## 使い始める
 
@@ -71,13 +75,14 @@ PDF は文章をコピーし、メニューの **「テキストを翻訳」** �
 
 ## ライセンス・注意事項
 
-モデルの重みは同梱しません。ダウンロード・利用には、[公式の PLaMo コミュニティライセンス契約](https://plamo.preferredai.jp/info/plamo-community-license-ja)への同意が必要です。
+モデルの重みは同梱しません。ダウンロード・利用には、[公式の PLaMo コミュニティライセンス契約](https://plamo.preferredai.jp/info/plamo-community-license-ja)への同意が必要です。[契約の写し](plamo_cp/assets/licenses/plamo-community-license-ja.txt)も収録しています。
 
 - **訳文を公表する際は、PLaMo 3 Translate による翻訳と明示してください。**
 - 未成年者は、親権者または法定代理人に契約を確認してもらい、同意を得てください。
+- 業務・組織内での利用には、事前登録などの商業利用条件も確認してください。
 - 訳文には誤りが含まれることがあります。問題文や数式は必要に応じて原文と照合してください。
 
-本ツールは Preferred Networks の公式製品ではありません。独自コードは [CC0](LICENSE) です。モデル・外部ライブラリにはそれぞれの条件が適用されます。[第三者の権利表示](THIRD_PARTY_NOTICES.md)も参照してください。
+独自コードは [CC0](LICENSE) です。モデル・外部ライブラリ・訳文に本ツールの CC0 は適用されません。それぞれに適用される条件と[第三者の権利表示](THIRD_PARTY_NOTICES.md)を確認してください。
 
 ## 開発者向け
 

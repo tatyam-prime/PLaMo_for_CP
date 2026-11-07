@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         PLaMo for 競プロ
 // @namespace    urn:plamo-for-cp
-// @version      0.4.22
+// @version      1.0.0
 // @author       tatyam
-// @description  このパソコンの PLaMo で問題文や記事を翻訳します。数式とサンプルを保持します。
+// @description  PLaMo 3 Translate を使う非公式のローカル翻訳ツールです。数式とサンプルを保持します。
 // @match        https://*/*
 // @match        http://*/*
 // @connect      127.0.0.1

@@ -24,8 +24,10 @@ Pythonコードに変更がなく、管理画面や翻訳スクリプトだけ�
 
 ログは `~/.cache/plamo-cp/logs/desktop.log` に保存し、起動中も128KiBごとにローテーションします。現在分と1本のバックアップで最大256KiBです。通常のHTTPアクセスログは出しません。ログ表示ボタンから Finder で開けます。
 
-開発用成果物はアドホック署名です。一般配布版にするには、開発者が Developer ID で署名し、Apple の notarization を実施する必要があります。このビルドは署名済み一般配布版と区別してください。モデルの初回取得・容量の確認は設定画面で行います。
+当面の配布物は未公証とします。現在のビルドスクリプトは ad-hoc 署名を行い、これは配布元の身元を証明する Developer ID 署名ではありません。Developer ID Application 証明書があれば、Developer ID 署名だけを行い、公証しない配布も可能です。未公証のアプリは署名の種類にかかわらず、インターネットから取得すると Gatekeeper に起動を止められることがあります。配布時にはこの制約を明示し、個別の起動許可は [Apple の手順](https://support.apple.com/ja-jp/102445)を案内してください。OS 全体の保護機能は無効にしません。モデルの初回取得・容量の確認は設定画面で行います。
+
+Developer ID 署名と公証は別工程です。Developer ID 署名だけを行う場合は署名後に、公証まで行う場合は公証・staple 後に、配布 ZIP を作り直します。このビルドスクリプトを再実行するとアプリを作り直して ad-hoc 署名するため、Developer ID 署名後の成果物へそのまま再実行しないでください。
 
 ビルドスクリプトは同梱する Mach-O バイナリーの最低OS版を検査し、アプリの `LSMinimumSystemVersion` に反映します。新しいOS向けにビルドされた Python / MLX を同梱して、macOS 14で動作すると表示することは避けます。現在このMacにあるPythonはmacOS 27.0、MLXは26.2を最低版としているため、ローカル成果物の最低版は27.0になります。
 
-GitHub Actions の手動実行ワークフローは macOS 26 の arm64 ランナーと Windows x64 ランナーを使います。[GitHub のランナー一覧](https://docs.github.com/en/actions/reference/runners/github-hosted-runners) に合わせ、廃止済みの macOS 14 ラベルを使用していません。ワークフローはリポジトリに追加しただけで、実行・公開はしていません。
+GitHub Actions の [Build desktop applications](../../.github/workflows/build-desktop.yml) は macOS 26 の arm64 ランナーと Windows x64 ランナーを使う手動実行ワークフローです。[GitHub のランナー一覧](https://docs.github.com/en/actions/reference/runners/github-hosted-runners) に合わせ、廃止済みの macOS 14 ラベルを使用していません。モデルなしの起動確認と成果物作成までを行い、実推論・Developer ID 署名・公証・Release 公開は行いません。CI の実行結果や配布物の対応 OS・検証状況は別途確認してください。

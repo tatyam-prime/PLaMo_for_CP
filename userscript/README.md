@@ -1,6 +1,8 @@
 # Tampermonkey 版
 
-PLaMo for 競プロ アプリと Tampermonkey を使って、問題文や数式付きHTMLをこのパソコンで日本語に翻訳します。モデルはアプリのダウンロードボタンから取得します。
+PLaMo for 競プロ アプリと Tampermonkey を使って、問題文や数式付きHTMLをこのパソコンで日本語に翻訳する非公式ツールです。Preferred Networks（PFN）の公式製品ではありません。モデルはアプリのダウンロードボタンから取得します。
+
+Built with PLaMo.
 
 ## 利用する
 

@@ -56,7 +56,7 @@ def bundle_info(minimum: str) -> dict:
         "CFBundleDisplayName": "PLaMo for 競プロ",
         "CFBundleIdentifier": "jp.plamo-for-cp.desktop",
         "CFBundleVersion": "1",
-        "CFBundleShortVersionString": "0.2.0",
+        "CFBundleShortVersionString": "1.0.0",
         "CFBundlePackageType": "APPL",
         "CFBundleExecutable": LAUNCHER_NAME,
         "CFBundleIconFile": "app-icon.icns",

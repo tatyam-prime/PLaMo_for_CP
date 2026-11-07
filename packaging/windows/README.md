@@ -11,7 +11,9 @@ uv run --no-sync python -m plamo_cp.llama_backend --output .local/windows-runtim
 uv run --no-sync python -m scripts.build_windows_app
 ```
 
-Inno Setup 6 が入っている開発用Windowsでは、`uv run --no-sync python -m scripts.build_windows_app --installer` で `PLaMo-for-競プロ-Windows-Setup.exe` も生成します。一般の利用者にはこのインストーラーを渡す構成です。ユーザー領域へのインストールなので、管理者権限を要求しません。GitHub Actions のWindowsランナーには [Inno Setup が含まれています](https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md)。CIの定義は追加済みで、実行はしていません。
+Inno Setup 6 が入っている開発用Windowsでは、`uv run --no-sync python -m scripts.build_windows_app --installer` で `PLaMo-for-競プロ-Windows-Setup.exe` も生成します。一般の利用者にはこのインストーラーを渡す構成です。ユーザー領域へのインストールなので、管理者権限を要求しません。GitHub Actions のWindowsランナーには [Inno Setup が含まれています](https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md)。CIの定義は [Build desktop applications](../../.github/workflows/build-desktop.yml) です。
+
+現在のビルド手順にはコード署名が含まれていません。SmartScreen などの警告が出ることがあり、端末の管理ポリシーによっては実行できません。ZIP 版も同様で、OS 全体の保護機能を無効にする案内は行いません。コード署名を追加しても、新しいアプリの警告が必ず消えるわけではありません。
 
 uvは必要に応じて `python -m pip install --require-hashes --no-deps --only-binary=:all: -r packaging/uv-bootstrap.txt` で固定版を導入できます。実行・ビルド依存はuv.lockのpackagingグループまで固定します。
 
@@ -33,4 +35,4 @@ Windows 版も、共通の段落数設定・生成途中の表示・段落ごと
 
 登録するコマンドは、引用符付きのEXEと固定の `--open-url "plamo-for-cp://open"` だけです。外部URIの `%1` をコマンドへ埋め込まず、URI内の引用符を追加引数へ変える攻撃を避けます。アプリ側も通常起動・固定URL起動・内部サーバー起動の引数を区別し、混在した引数を拒否します。PyInstallerの標準 `multiprocessing.freeze_support()` は内部ワーカー用に維持します。
 
-このビルド定義はWindowsで実行する必要があります。Mac上でWindows実行ファイルを生成・動作検証したものではありません。一般公開する場合は、Windows実機で初回取得・翻訳・終了を検証し、配布元署名を行ってください。
+このビルド定義はWindowsで実行する必要があります。Mac上でWindows実行ファイルを生成・動作検証したものではありません。公開前に Windows 実機で初回取得・翻訳・終了を検証してください。一般利用者向けにはコード署名も推奨します。
