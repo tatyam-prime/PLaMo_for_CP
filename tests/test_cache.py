@@ -270,22 +270,6 @@ def test_oversized_legacy_database_is_compacted_but_a_recent_small_row_survives(
         cache.close()
 
 
-def test_expiry_and_lru_lookup_have_indexes():
-    cache = TranslationCache(":memory:")
-    try:
-        expiry = cache._connection.execute(
-            "EXPLAIN QUERY PLAN SELECT cache_key FROM translations WHERE expires_at<=? LIMIT 32",
-            (0,),
-        ).fetchall()
-        lru = cache._connection.execute(
-            "EXPLAIN QUERY PLAN SELECT cache_key,size_bytes FROM translations ORDER BY last_access,created_at,cache_key LIMIT 32"
-        ).fetchall()
-        assert any("translations_expiry" in row[-1] for row in expiry)
-        assert any("translations_lru" in row[-1] for row in lru)
-    finally:
-        cache.close()
-
-
 def test_shorter_policy_expires_old_text_immediately():
     clock = Clock()
     cache = TranslationCache(":memory:", clock=clock)

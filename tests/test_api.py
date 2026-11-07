@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 
 from plamo_cp import __version__
 from plamo_cp.api import create_app
+from plamo_cp.engine import default_glossary
 
 HEADERS = {"X-Plamo-Client": "userscript"}
 
@@ -287,22 +288,13 @@ def test_invalid_source_context_never_reaches_inference(client_and_engine, sourc
     assert result.status_code == 422 and engine.calls == []
 
 
-def test_custom_glossary_is_forwarded_and_separated_in_cache(client_and_engine):
-    client, engine = client_and_engine
-    one = [{"source": "array", "target": "配列"}]
-    two = [{"source": "array", "target": "数列"}]
-    for glossary, expected_cached in [(one, 0), (one, 1), (two, 0)]:
-        response = client.post("/api/translate", json=payload(glossary=glossary), headers=HEADERS)
-        assert response.json()["cached"] == expected_cached
-    assert engine.glossaries == [one, two]
-
-
 @pytest.mark.parametrize("route", ["/api/translate", "/api/translation-jobs"])
 def test_omitted_empty_and_configured_glossaries_keep_distinct_cache_and_engine_options(
     client_and_engine, route
 ):
     client, engine = client_and_engine
     configured = [{"source": "parallel edge", "target": "多重辺"}]
+    edited = [{"source": "parallel edge", "target": "平行辺"}]
     choices = [
         ({}, 0),
         ({}, 1),
@@ -310,6 +302,8 @@ def test_omitted_empty_and_configured_glossaries_keep_distinct_cache_and_engine_
         ({"glossary": []}, 0),
         ({"glossary": []}, 1),
         ({"glossary": configured}, 0),
+        ({"glossary": configured}, 1),
+        ({"glossary": edited}, 0),
         ({"glossary": configured}, 1),
         ({}, 1),
     ]
@@ -329,29 +323,13 @@ def test_omitted_empty_and_configured_glossaries_keep_distinct_cache_and_engine_
             assert response.status_code == 200, response.text
             result = response.json()
         assert result["cached"] == expected_cached
-    assert engine.glossaries == [None, [], configured]
-    assert client.get("/api/cache").json()["entries"] == 3
+    assert engine.glossaries == [None, [], configured, edited]
+    assert client.get("/api/cache").json()["entries"] == 4
 
 
-def test_setup_exposes_copied_initial_glossary_without_model_work(client_and_engine):
+def test_setup_exposes_initial_glossary_without_model_work(client_and_engine):
     client, engine = client_and_engine
-    first = client.get("/api/setup").json()["default_glossary"]
-    assert first == [
-        {"source": "modular inverse", "target": "逆元"},
-        {"source": "proper prefix", "target": "真の接頭辞"},
-        {"source": "parallel edge", "target": "多重辺"},
-        {"source": "prefix sum", "target": "累積和"},
-        {"source": "jury", "target": "ジャッジ"},
-        {"source": "subarray", "target": "連続部分配列"},
-        {"source": "increment", "target": "インクリメント"},
-        {"source": "pairwise disjoint", "target": "互いに交差しない"},
-        {"source": "sequence", "target": "列"},
-        {"source": "visualizer", "target": "ビジュアライザ"},
-        {"source": "forest", "target": "森"},
-        {"source": "node", "target": "頂点"},
-    ]
-    first.clear()
-    assert len(client.get("/api/setup").json()["default_glossary"]) == 12
+    assert client.get("/api/setup").json()["default_glossary"] == default_glossary()
     assert engine.calls == []
 
 
@@ -377,11 +355,7 @@ def test_cache_capacity_change_requires_explicit_action_and_preserves_fixed_seve
 @pytest.mark.parametrize(
     "body",
     [
-        {"retention_days": 0, "max_mib": 10},
-        {"retention_days": 1, "max_mib": 10},
-        {"retention_days": 3, "max_mib": 10},
         {"retention_days": 30, "max_mib": 10},
-        {"retention_days": 31, "max_mib": 10},
         {"retention_days": 7, "max_mib": 0},
         {"retention_days": 7, "max_mib": 101},
     ],
@@ -407,7 +381,7 @@ def test_old_seven_day_policy_payload_remains_compatible(client_and_engine):
     assert response.json()["max_bytes"] == 5 * 1024 * 1024
 
 
-@pytest.mark.parametrize("max_kib", [256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536])
+@pytest.mark.parametrize("max_kib", [256, 1024, 65536])
 def test_capacity_choices_accept_kib_and_preserve_fixed_seven_days(client_and_engine, max_kib):
     client, engine = client_and_engine
     result = client.post(

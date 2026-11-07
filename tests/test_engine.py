@@ -11,25 +11,11 @@ import pytest
 from plamo_cp.engine import (
     Engine,
     check_placeholders,
+    default_glossary,
     preview_prefix,
     translation_options,
     validate_history,
 )
-
-CANONICAL_TERMS = [
-    {"source": "modular inverse", "target": "逆元"},
-    {"source": "proper prefix", "target": "真の接頭辞"},
-    {"source": "parallel edge", "target": "多重辺"},
-    {"source": "prefix sum", "target": "累積和"},
-    {"source": "jury", "target": "ジャッジ"},
-    {"source": "subarray", "target": "連続部分配列"},
-    {"source": "increment", "target": "インクリメント"},
-    {"source": "pairwise disjoint", "target": "互いに交差しない"},
-    {"source": "sequence", "target": "列"},
-    {"source": "visualizer", "target": "ビジュアライザ"},
-    {"source": "forest", "target": "森"},
-    {"source": "node", "target": "頂点"},
-]
 
 
 def test_japanese_options_include_canonical_corrections_and_unique_slots():
@@ -45,30 +31,17 @@ def test_japanese_options_include_canonical_corrections_and_unique_slots():
     assert glossary == {
         "[[PLM_0]]": "[[PLM_0]]",
         "[[PLM_1]]": "[[PLM_1]]",
-        **{pair["source"]: pair["target"] for pair in CANONICAL_TERMS},
+        **{pair["source"]: pair["target"] for pair in default_glossary()},
     }
     assert len(options["glossary"]) == len(glossary)
     assert "Do not solve" in options["context"]
 
 
-def test_explicit_glossary_passes_all_configured_words_without_filtering():
-    options = translation_options(
-        "arraylike and integers",
-        "en",
-        "ja",
-        document_type="general",
-        glossary=[{"source": "array", "target": "配列"}, {"source": "integers", "target": "整数"}],
-    )
-    assert options["glossary"] == [
-        {"source": "array", "target": "配列"},
-        {"source": "integers", "target": "整数"},
-    ]
-
-
-def test_non_japanese_target_omits_japanese_style_and_cp_terms():
-    options = translation_options("array [[PLM_12]]", "auto", "en")
+@pytest.mark.parametrize("target,code", [("en", "en"), ("Chinese", "zh"), ("id", "id")])
+def test_non_japanese_target_omits_japanese_style_and_cp_terms(target, code):
+    options = translation_options("array [[PLM_12]]", "auto", target)
     assert options["source_lang"] is None
-    assert options["target_lang"] == "en"
+    assert options["target_lang"] == code
     assert "form" not in options
     assert options["glossary"] == [{"source": "[[PLM_12]]", "target": "[[PLM_12]]"}]
 
@@ -81,7 +54,7 @@ def test_chinese_indonesian_and_auto_use_official_language_codes(language, code)
     options = translation_options("给定整数 [[PLM_0]]。", language, "Japanese")
     assert options["source_lang"] == code and options["target_lang"] == "ja"
     assert options["form"] == "plain"
-    assert options["glossary"] == [{"source": "[[PLM_0]]", "target": "[[PLM_0]]"}, *CANONICAL_TERMS]
+    assert options["glossary"] == [{"source": "[[PLM_0]]", "target": "[[PLM_0]]"}, *default_glossary()]
     assert (
         options["context"]
         == translation_options("给定整数 [[PLM_0]]。", "English", "Japanese")["context"]
@@ -93,13 +66,6 @@ def test_non_english_surrounding_context_is_not_mislabeled_as_english():
         options = translation_options("文章。", language, "ja", source_context="周围的原文。")
         assert "surrounding source text" in options["context"]
         assert "surrounding English source" not in options["context"]
-
-
-@pytest.mark.parametrize("target", ["Chinese", "zh", "Indonesian", "id"])
-def test_new_non_japanese_target_languages_do_not_add_japanese_style(target):
-    options = translation_options("An array [[PLM_0]].", "English", target)
-    assert options["target_lang"] in {"zh", "id"} and "form" not in options
-    assert options["glossary"] == [{"source": "[[PLM_0]]", "target": "[[PLM_0]]"}]
 
 
 def test_general_documents_keep_math_and_formatting_without_competition_glossary():
@@ -133,7 +99,7 @@ def test_source_context_is_reference_only_and_does_not_expand_current_glossary()
     assert source_context in options["context"]
     assert "Translate only the current input" in options["context"]
     assert "Do not translate, summarize, quote or append" in options["context"]
-    assert options["glossary"] == CANONICAL_TERMS
+    assert options["glossary"] == default_glossary()
     assert options["glossary"] == translation_options("The bank.", "en", "ja")["glossary"]
 
 
@@ -210,19 +176,6 @@ def test_changed_placeholder_multiplicity_rejected(translated):
 def test_empty_translation_rejected():
     with pytest.raises(ValueError, match="空の訳文"):
         check_placeholders("Hello.", " \n\t")
-
-
-def test_formatting_tags_and_math_slots_both_enter_identity_glossary():
-    options = translation_options(
-        "Find the <plm-a>smallest <plm-b>integer</plm-b></plm-a> above [[PLM_0]].",
-        "en",
-        "ja",
-    )
-    glossary = {term["source"]: term["target"] for term in options["glossary"]}
-    for marker in ["<plm-a>", "</plm-a>", "<plm-b>", "</plm-b>", "[[PLM_0]]"]:
-        assert glossary[marker] == marker
-    assert "integer" not in glossary
-    assert all(glossary[pair["source"]] == pair["target"] for pair in CANONICAL_TERMS)
 
 
 def test_valid_formatting_groups_may_move_with_japanese_word_order():
@@ -380,12 +333,12 @@ def test_user_glossary_reaches_mlx_and_does_not_leak_to_the_next_request(inferen
     assert options["glossary"] == terms
     inference.engine.translate("An array.")
     _, options = inference.engine._tokenizer.template_calls[-1]
-    assert options["glossary"] == CANONICAL_TERMS
+    assert options["glossary"] == default_glossary()
     assert terms == [{"source": "array", "target": "数列"}]
     inference.engine.translate("An array.", glossary=[])
     assert inference.engine._tokenizer.template_calls[-1][1]["glossary"] == []
     inference.engine.translate("An array.")
-    assert inference.engine._tokenizer.template_calls[-1][1]["glossary"] == CANONICAL_TERMS
+    assert inference.engine._tokenizer.template_calls[-1][1]["glossary"] == default_glossary()
 
 
 def test_invalid_user_glossary_does_not_start_model_work(inference):

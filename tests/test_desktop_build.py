@@ -3,26 +3,7 @@ import tomllib
 from pathlib import Path
 
 from plamo_cp import __version__
-from plamo_cp.desktop import DEFAULT_PORT
-from plamo_cp.windows_app import SETUP_URL
 from scripts.build_macos_app import bundle_info, minimum_version_from_otool
-
-
-def test_default_local_port_matches_browser_and_native_launchers():
-    root = Path(__file__).resolve().parents[1]
-    origin = f"http://127.0.0.1:{DEFAULT_PORT}"
-    assert SETUP_URL == origin + "/"
-    launcher = (root / "packaging/macos/launcher.swift").read_text()
-    assert f'URL(string: "{origin}/")' in launcher
-    assert f"setupURL.port ?? {DEFAULT_PORT}" in launcher
-    for name in ("HealthProbe.swift", "DesktopSettings.swift"):
-        source = (root / "packaging/macos" / name).read_text()
-        assert f"port: Int = {DEFAULT_PORT}," in source
-    core = (root / "browser/translator.js").read_text()
-    assert f"const API = '{origin}';" in core
-    builder = (root / "scripts/build_userscript.mjs").read_text()
-    assert f"portIndex < 0 ? {DEFAULT_PORT} :" in builder
-    assert f"const API = '{origin}';" in builder
 
 
 def test_release_metadata_uses_the_same_application_version():

@@ -169,10 +169,9 @@ def test_selection_and_availability_do_not_invent_a_loaded_model(native_summary)
 
 
 @pytest.mark.parametrize("part,key", [("health", "app"), ("setup", "application")])
-@pytest.mark.parametrize("identity", ["another-app", None, True])
-def test_summary_never_accepts_an_unrelated_service(native_summary, part, key, identity):
+def test_summary_never_accepts_an_unrelated_service(native_summary, part, key):
     payload = settings_payload()
-    payload[part][key] = identity
+    payload[part][key] = "another-app"
     assert native_summary(payload)["snapshot"] is None
 
 

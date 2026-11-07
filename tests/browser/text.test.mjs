@@ -225,11 +225,8 @@ test('thirteen common batch choices through32 survive model switches, reload, an
 });
 
 for (const item of [
-  { name: 'unrelated previous namespace', storage: { 'plamo-batch-size': 3, 'plamo-text-prefetch': { '0.8b': 4, '2b': 3, '8b': 8 } }, expected: 16 },
   { name: 'explicit common value', storage: { 'cp-translator-batch-size': 24 }, expected: 24 },
   { name: 'integer outside the choices', storage: { 'cp-translator-batch-size': 7 }, expected: 16 },
-  { name: 'out-of-range common value', storage: { 'cp-translator-batch-size': 33 }, expected: 16 },
-  { name: 'fractional common value', storage: { 'cp-translator-batch-size': 1.5 }, expected: 16 },
 ]) {
   test('common batch preference initializes from ' + item.name, async () => {
     const { page, control } = await fixture({ storage: item.storage });

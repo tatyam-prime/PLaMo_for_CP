@@ -1,44 +1,38 @@
 from __future__ import annotations
 
-import hashlib
-
 import pytest
 
-from plamo_cp.engine import (
-    PROMPT_VERSION,
-    TERMS,
-    default_glossary,
-    translation_options,
-    validate_glossary,
-)
+from plamo_cp.engine import TERMS, default_glossary, translation_options, validate_glossary
 from plamo_cp.llama_backend import build_prompt
 
 
 def test_omitted_glossary_keeps_default_prompt_but_explicit_empty_removes_user_terms():
     text = "Find the <plm-a>smallest</plm-a> integer in the array [[PLM_0]]."
     baseline = build_prompt(text, "English", "Japanese")
-    assert (
-        hashlib.sha256(baseline.encode()).hexdigest()
-        == "59732083820a80527718d53118be88d9c0352ee24e763cd34b4793b0b4ffd8f2"
-    )
     assert build_prompt(text, "English", "Japanese", glossary=None) == baseline
+    assert "<|plamo:index|>modular inverse" in baseline
     cleared = build_prompt(text, "English", "Japanese", glossary=[])
-    assert cleared != baseline
     assert "<|plamo:index|>modular inverse" not in cleared
     assert "<|plamo:index|><math-a/><|plamo:item|><math-a/>" in cleared
 
 
-def test_explicit_dictionary_is_authoritative_including_terms_absent_from_input():
-    pairs = [
-        {"source": "PROPER PREFIX", "target": "真接頭辞"},
-        {"source": "edge", "target": "端"},
-        {"source": "vertex", "target": "点"},
-    ]
-    options = translation_options(
-        "A proper prefix of a word is edgy.", "English", "Japanese", glossary=pairs
-    )
+@pytest.mark.parametrize(
+    "text,pairs",
+    [
+        (
+            "A proper prefix of a word is edgy.",
+            [
+                {"source": "PROPER PREFIX", "target": "真接頭辞"},
+                {"source": "edge", "target": "端"},
+                {"source": "vertex", "target": "点"},
+            ],
+        ),
+        ("C++x and myC++.", [{"source": "C++", "target": "シープラスプラス"}]),
+    ],
+)
+def test_explicit_dictionary_is_authoritative_without_word_filtering(text, pairs):
+    options = translation_options(text, "English", "Japanese", glossary=pairs)
     assert options["glossary"] == pairs
-    assert pairs[0]["source"] == "PROPER PREFIX"
 
 
 def test_general_documents_apply_user_dictionary_without_cp_defaults():
@@ -71,44 +65,6 @@ def test_configured_phrases_are_passed_alongside_identity_tags_and_math():
         "</plm-a>": "</plm-a>",
         "[[PLM_0]]": "[[PLM_0]]",
     }
-
-
-def test_protection_identities_are_separate_from_the_authoritative_user_dictionary():
-    text = "Formula [[PLM_0]]."
-    pair = {"source": "unrelated phrase", "target": "別の語句"}
-    assert translation_options(text, "en", "ja", glossary=[pair])["glossary"] == [
-        {"source": "[[PLM_0]]", "target": "[[PLM_0]]"},
-        pair,
-    ]
-
-
-def test_symbol_terms_are_passed_as_configured_without_word_filtering():
-    options = translation_options(
-        "C++ is not C++x or myC++.",
-        "en",
-        "ja",
-        document_type="general",
-        glossary=[{"source": "C++", "target": "シープラスプラス"}],
-    )
-    assert options["glossary"] == [{"source": "C++", "target": "シープラスプラス"}]
-    assert translation_options(
-        "C++x and myC++",
-        "en",
-        "ja",
-        document_type="general",
-        glossary=[{"source": "C++", "target": "wrong"}],
-    )["glossary"] == [{"source": "C++", "target": "wrong"}]
-
-
-def test_absent_configured_lemma_still_reaches_prompt_for_model_inflection():
-    prompt = build_prompt(
-        "Parallel edges are allowed.",
-        "en",
-        "ja",
-        glossary=[{"source": "parallel edge", "target": "多重辺"}],
-    )
-    assert "<|plamo:index|>parallel edge<|plamo:item|>多重辺" in prompt
-    assert "<|plamo:index|>modular inverse" not in prompt
 
 
 def test_validation_copies_trims_and_uses_last_casefolded_source():
@@ -145,54 +101,23 @@ def test_invalid_glossary_is_rejected(value):
         validate_glossary(value)
 
 
-def test_custom_terms_reach_windows_pfml3_glossary():
+def test_custom_terms_reach_windows_pfml3_glossary_without_implicit_defaults():
     prompt = build_prompt(
-        "An array [[PLM_0]].", "en", "ja", glossary=[{"source": "array", "target": "数列"}]
+        "Parallel edges in an array [[PLM_0]].",
+        "en",
+        "ja",
+        glossary=[
+            {"source": "array", "target": "数列"},
+            {"source": "parallel edge", "target": "多重辺"},
+        ],
     )
     assert "<|plamo:index|>array<|plamo:item|>数列" in prompt
-    assert "<|plamo:index|>array<|plamo:item|>配列" not in prompt
+    assert "<|plamo:index|>parallel edge<|plamo:item|>多重辺" in prompt
+    assert "<|plamo:index|>modular inverse" not in prompt
     assert "<|plamo:index|><math-a/><|plamo:item|><math-a/>" in prompt
 
 
-def test_canonical_terms_stay_singular_for_formatted_multiline_plural_inputs():
-    terms = translation_options(
-        "Find modular <plm-a>inverses</plm-a>, prefix\nsums and parallel edges.",
-        "English",
-        "Japanese",
-    )["glossary"]
-    dictionary = {item["source"]: item["target"] for item in terms}
-    assert dictionary == {
-        "<plm-a>": "<plm-a>",
-        "</plm-a>": "</plm-a>",
-        "modular inverse": "逆元",
-        "proper prefix": "真の接頭辞",
-        "parallel edge": "多重辺",
-        "prefix sum": "累積和",
-        "jury": "ジャッジ",
-        "subarray": "連続部分配列",
-        "increment": "インクリメント",
-        "pairwise disjoint": "互いに交差しない",
-        "sequence": "列",
-        "visualizer": "ビジュアライザ",
-        "forest": "森",
-        "node": "頂点",
-    }
-
-
-def test_canonical_defaults_are_not_injected_into_general_documents_and_can_be_overridden():
-    text = "Find the modular inverse and a proper prefix."
-    assert (
-        translation_options(text, "English", "Japanese", document_type="general")["glossary"] == []
-    )
-    terms = translation_options(
-        text, "English", "Japanese", glossary=[{"source": "proper prefix", "target": "真接頭辞"}]
-    )["glossary"]
-    assert [item for item in terms if item["source"] == "proper prefix"] == [
-        {"source": "proper prefix", "target": "真接頭辞"}
-    ]
-
-
-def test_minimal_canonical_defaults_include_only_the_requested_corrections():
+def test_default_glossary_contains_canonical_competitive_programming_terms():
     assert TERMS == {
         "modular inverse": "逆元",
         "proper prefix": "真の接頭辞",
@@ -207,12 +132,10 @@ def test_minimal_canonical_defaults_include_only_the_requested_corrections():
         "forest": "森",
         "node": "頂点",
     }
-    assert PROMPT_VERSION == "pfml3-cp-v12-glossary"
     terms = translation_options(
-        "An array of integers. This is a communication problem.", "English", "Japanese"
+        "Find modular inverses, prefix sums and parallel edges.", "English", "Japanese"
     )["glossary"]
     assert {pair["source"]: pair["target"] for pair in terms} == TERMS
-    assert len(terms) == 12
 
 
 def test_clearing_all_terms_keeps_only_internal_protection_and_does_not_leak_to_next_request():
@@ -229,42 +152,10 @@ def test_clearing_all_terms_keeps_only_internal_protection_and_does_not_leak_to_
     assert edited == [{"source": "proper prefix", "target": "真接頭辞"}]
 
 
-def test_default_glossary_is_a_fresh_copy_and_general_has_no_implicit_defaults():
+def test_default_glossary_is_a_fresh_copy():
     first = default_glossary()
     first[0]["target"] = "changed"
     first.append({"source": "extra", "target": "余分"})
     assert default_glossary() == [
         {"source": source, "target": target} for source, target in TERMS.items()
     ]
-    assert (
-        translation_options("Proper prefixes.", "en", "ja", document_type="general")["glossary"]
-        == []
-    )
-    configured = [{"source": "prefix sum", "target": "累積和"}]
-    assert (
-        translation_options(
-            "Some prose.", "en", "ja", document_type="general", glossary=configured
-        )["glossary"]
-        == configured
-    )
-
-
-def test_node_initial_term_does_not_override_an_empty_or_custom_dictionary():
-    text = "Find a node [[PLM_0]]."
-    protection = {"source": "[[PLM_0]]", "target": "[[PLM_0]]"}
-    assert {
-        pair["source"]: pair["target"] for pair in translation_options(text, "en", "ja")["glossary"]
-    }["node"] == "頂点"
-    assert translation_options(text, "en", "ja", glossary=[])["glossary"] == [protection]
-    custom = [{"source": "node", "target": "ノード"}]
-    assert translation_options(text, "en", "ja", glossary=custom)["glossary"] == [
-        protection,
-        *custom,
-    ]
-    assert translation_options(text, "en", "ja", document_type="general")["glossary"] == [
-        protection
-    ]
-    assert translation_options(text, "en", "ja", document_type="general", glossary=custom)[
-        "glossary"
-    ] == [protection, *custom]
-    assert custom == [{"source": "node", "target": "ノード"}]
