@@ -18,10 +18,10 @@ def test_settings_updates_preserve_other_keys_and_save_utf8_atomically(tmp_path)
         "unrelated": {"name": "既存"},
     }
     assert "モデル保存先" in path.read_text(encoding="utf-8")
-    assert sorted(item.name for item in path.parent.iterdir()) == [
-        "settings.json",
-        "settings.json.lock",
-    ]
+    # filelock keeps its marker on Unix but may remove it on Windows.
+    assert sorted(
+        item.name for item in path.parent.iterdir() if item.name != "settings.json.lock"
+    ) == ["settings.json"]
 
 
 def test_independent_settings_writers_do_not_lose_fields(tmp_path):

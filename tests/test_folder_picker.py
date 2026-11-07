@@ -11,7 +11,8 @@ from plamo_cp import folder_picker
 
 def test_macos_paths_are_argv_data_and_have_no_short_timeout(monkeypatch, tmp_path):
     initial = tmp_path / 'モデル "quoted" $(not-a-command)'
-    initial.mkdir()
+    # Test argv data without requiring the host filesystem to allow macOS filenames.
+    monkeypatch.setattr(folder_picker, "_existing_parent", lambda path: path)
     selected = tmp_path / "選んだフォルダー"
     calls = []
     monkeypatch.setattr(folder_picker.platform, "system", lambda: "Darwin")

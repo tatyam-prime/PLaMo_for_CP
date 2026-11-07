@@ -180,9 +180,10 @@ def test_model_license_serves_the_exact_bundled_utf8_document(client_and_engine,
     response = client.get(f"/licenses/plamo-community-license-{language}.txt")
     assert response.status_code == 200
     assert response.headers["content-type"] == "text/plain; charset=utf-8"
-    assert response.text == (
+    # FileResponse must preserve the on-disk bytes, including checkout-specific newlines.
+    assert response.content == (
         SETUP_ASSETS / "licenses" / f"plamo-community-license-{language}.txt"
-    ).read_text(encoding="utf-8")
+    ).read_bytes()
     assert client.get("/licenses/plamo-community-license-other.txt").status_code == 404
 
 
@@ -711,7 +712,7 @@ def test_userscript_installation_serves_fixed_source_or_packaged_file(
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/javascript; charset=utf-8"
     assert response.headers["cache-control"] == "no-cache"
-    assert response.text == (source if use_source else packaged).read_text(encoding="utf-8")
+    assert response.content == (source if use_source else packaged).read_bytes()
     assert client.get("/api/health").json()["userscript_version"] == (
         "2.3.4" if use_source else "1.2.3"
     )
@@ -751,10 +752,10 @@ def test_userscript_health_tracks_replacements_and_preferred_file_removal(
     assert client.get("/api/health").json()["userscript_version"] == "3.4.5"
     source.write_text(content("3.4.6"), encoding="utf-8")
     assert client.get("/api/health").json()["userscript_version"] == "3.4.6"
-    assert client.get("/install.user.js").text == content("3.4.6")
+    assert client.get("/install.user.js").content == source.read_bytes()
     source.unlink()
     assert client.get("/api/health").json()["userscript_version"] == "1.0.0"
-    assert client.get("/install.user.js").text == content("1.0.0")
+    assert client.get("/install.user.js").content == packaged.read_bytes()
 
 
 @pytest.mark.parametrize(
@@ -789,7 +790,7 @@ def test_invalid_userscript_metadata_is_null_and_does_not_break_health(
     client, _ = client_and_engine
     result = client.get("/api/health")
     assert result.status_code == 200 and result.json()["userscript_version"] is None
-    assert client.get("/install.user.js").text == metadata
+    assert client.get("/install.user.js").content == source.read_bytes()
 
 
 def test_userscript_version_reads_only_a_bounded_prefix_and_accepts_bom_crlf(
@@ -873,11 +874,12 @@ def test_userscript_version_helper_is_served_only_from_its_fixed_asset(
     from plamo_cp import api
 
     text = "function compareUserscriptVersions() { return null; }\n"
-    (tmp_path / "userscript-version.js").write_text(text, encoding="utf-8")
+    asset = tmp_path / "userscript-version.js"
+    asset.write_text(text, encoding="utf-8")
     monkeypatch.setattr(api, "SETUP_ASSETS", tmp_path)
     client, _ = client_and_engine
     result = client.get("/userscript-version.js?path=/untrusted.js")
-    assert result.status_code == 200 and result.text == text
+    assert result.status_code == 200 and result.content == asset.read_bytes()
     assert result.headers["content-type"] == "application/javascript"
 
 
