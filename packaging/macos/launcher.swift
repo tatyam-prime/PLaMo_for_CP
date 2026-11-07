@@ -6,11 +6,17 @@ import Foundation
 private let applicationID = "plamo-for-cp"
 private let setupURL = URL(string: "http://127.0.0.1:8765/")!
 
-final class ApplicationDelegate: NSObject, NSApplicationDelegate {
+final class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var window: NSWindow!
     private var statusLabel: NSTextField!
     private var openButton: NSButton!
     private var textButton: NSButton!
+    private var modelValue: NSTextField!
+    private var utilizationValue: NSTextField!
+    private var contentStack: NSStackView!
+    private var settingsRequest: DesktopSettingsRequest?
+    private var settingsTimer: Timer?
+    private var settingsEpoch = 0
     private var backend: Process?
     private var logSink: BoundedLog?
     private var outputPipe: Pipe?
@@ -54,24 +60,48 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate {
         if window.isMiniaturized { window.deminiaturize(nil) }
         window.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
+        refreshSettings()
     }
 
     private func buildWindow() {
-        window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 480, height: 300),
+        window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 420, height: 180),
                           styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
         window.title = "PLaMo for 競プロ"
         window.isReleasedWhenClosed = false
+        window.delegate = self
         window.center()
         let container = NSStackView()
+        contentStack = container
         container.orientation = .vertical
         container.alignment = .leading
-        container.spacing = 18
+        container.spacing = 12
+        container.detachesHiddenViews = true
         container.translatesAutoresizingMaskIntoConstraints = false
         let title = NSTextField(labelWithString: "PLaMo for 競プロ")
-        title.font = .systemFont(ofSize: 25, weight: .bold)
-        let description = NSTextField(wrappingLabelWithString:
-            "翻訳を、このMacで実行します。\n標準は2B。モデルや保存先は管理画面で変更できます。")
-        description.font = .systemFont(ofSize: 14)
+        title.font = .systemFont(ofSize: 20, weight: .bold)
+        func valueField() -> NSTextField {
+            let value = NSTextField(labelWithString: "—")
+            value.font = .systemFont(ofSize: 13)
+            value.isSelectable = true
+            value.maximumNumberOfLines = 1
+            value.lineBreakMode = .byTruncatingMiddle
+            value.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+            value.setContentHuggingPriority(.defaultLow, for: .horizontal)
+            return value
+        }
+        modelValue = valueField()
+        utilizationValue = valueField()
+        let rows: [(String, NSTextField)] = [("読込中のモデル", modelValue), ("稼働率", utilizationValue)]
+        let settings = NSGridView(views: rows.map { name, value in
+            let label = NSTextField(labelWithString: name)
+            label.font = .systemFont(ofSize: 12)
+            label.textColor = .secondaryLabelColor
+            return [label, value]
+        })
+        settings.rowSpacing = 8
+        settings.columnSpacing = 12
+        settings.column(at: 0).width = 96
+        settings.column(at: 1).xPlacement = .fill
         statusLabel = NSTextField(wrappingLabelWithString: "起動しています…")
         statusLabel.textColor = .secondaryLabelColor
         openButton = NSButton(title: "管理画面を開く", target: self, action: #selector(openSetup))
@@ -87,22 +117,30 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate {
         logs.bezelStyle = .rounded
         let buttons = NSStackView(views: [openButton, textButton, logs, quit])
         buttons.orientation = .horizontal
-        buttons.spacing = 8
-        let footnote = NSTextField(wrappingLabelWithString:
-            "翻訳中はこのアプリを起動しておいてください。\n終了すると、このアプリが開始した翻訳処理を停止します。")
-        footnote.font = .systemFont(ofSize: 11)
-        footnote.textColor = .secondaryLabelColor
-        for view in [title, description, statusLabel!, buttons, footnote] { container.addArrangedSubview(view) }
+        buttons.spacing = 6
+        for view in [title, settings, statusLabel!, buttons] { container.addArrangedSubview(view) }
         window.contentView!.addSubview(container)
         NSLayoutConstraint.activate([
-            container.leadingAnchor.constraint(equalTo: window.contentView!.leadingAnchor, constant: 26),
-            container.trailingAnchor.constraint(equalTo: window.contentView!.trailingAnchor, constant: -26),
-            container.topAnchor.constraint(equalTo: window.contentView!.topAnchor, constant: 26),
-            description.widthAnchor.constraint(equalTo: container.widthAnchor),
+            container.leadingAnchor.constraint(equalTo: window.contentView!.leadingAnchor, constant: 18),
+            container.trailingAnchor.constraint(equalTo: window.contentView!.trailingAnchor, constant: -18),
+            container.topAnchor.constraint(equalTo: window.contentView!.topAnchor, constant: 18),
+            settings.widthAnchor.constraint(equalTo: container.widthAnchor),
             statusLabel.widthAnchor.constraint(equalTo: container.widthAnchor),
-            footnote.widthAnchor.constraint(equalTo: container.widthAnchor)
+            container.bottomAnchor.constraint(lessThanOrEqualTo: window.contentView!.bottomAnchor, constant: -14)
         ])
+        fitWindowToContent()
         bringToForeground()
+    }
+
+    private func fitWindowToContent() {
+        guard let window = window, let stack = contentStack else { return }
+        window.contentView?.layoutSubtreeIfNeeded()
+        let height = max(160, ceil(stack.fittingSize.height) + 32)
+        guard abs((window.contentView?.frame.height ?? 0) - height) > 0.5 else { return }
+        let previous = window.frame
+        var frame = window.frameRect(forContentRect: NSRect(x: 0, y: 0, width: 420, height: height))
+        frame.origin = NSPoint(x: previous.minX, y: previous.maxY - frame.height)
+        window.setFrame(frame, display: true)
     }
 
     private func probe(_ callback: @escaping (Bool, Bool) -> Void) {
@@ -176,17 +214,77 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate {
 
     private func markReady(existing: Bool) {
         ready = true
-        statusLabel.stringValue = existing ? "起動済みのPLaMo for 競プロに接続しました。" : "起動しました。管理画面でモデルや保存先を確認できます。"
+        statusLabel.stringValue = "設定を確認しています…"
+        statusLabel.isHidden = false
+        fitWindowToContent()
         statusLabel.textColor = .secondaryLabelColor
         openButton.isEnabled = true
         textButton.isEnabled = true
+        refreshSettings()
         if !protocolLaunch { openSetup() }
     }
 
     private func fail(_ message: String) {
+        ready = false
+        pauseSettingsRefresh()
+        openButton.isEnabled = false
+        textButton.isEnabled = false
         statusLabel.stringValue = message
+        statusLabel.isHidden = false
         statusLabel.textColor = .systemRed
+        fitWindowToContent()
     }
+
+    private var settingsVisible: Bool {
+        ready && !quitting && window?.isVisible == true && window?.isMiniaturized == false && !NSApplication.shared.isHidden
+    }
+
+    private func pauseSettingsRefresh() {
+        settingsTimer?.invalidate()
+        settingsTimer = nil
+        settingsEpoch += 1
+        settingsRequest?.cancel()
+        settingsRequest = nil
+    }
+
+    private func refreshSettings() {
+        guard settingsVisible else { pauseSettingsRefresh(); return }
+        guard settingsRequest == nil else { return }
+        settingsTimer?.invalidate()
+        settingsTimer = nil
+        settingsEpoch += 1
+        let epoch = settingsEpoch
+        let request = DesktopSettingsRequest(port: setupURL.port ?? 8765)
+        settingsRequest = request
+        request.start { [weak self] snapshot in
+            DispatchQueue.main.async {
+                guard let self = self, epoch == self.settingsEpoch, !self.quitting else { return }
+                self.settingsRequest = nil
+                guard self.settingsVisible else { self.pauseSettingsRefresh(); return }
+                if let snapshot = snapshot {
+                    self.modelValue.stringValue = snapshot.model
+                    self.utilizationValue.stringValue = snapshot.utilization
+                    self.statusLabel.stringValue = ""
+                    self.statusLabel.isHidden = true
+                } else {
+                    self.statusLabel.stringValue = "設定を取得できません。再接続しています…"
+                    self.statusLabel.isHidden = false
+                    self.statusLabel.textColor = .systemOrange
+                }
+                self.fitWindowToContent()
+                self.settingsTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { [weak self] _ in
+                    self?.refreshSettings()
+                }
+            }
+        }
+    }
+
+    func windowDidBecomeKey(_ notification: Notification) { refreshSettings() }
+    func windowDidDeminiaturize(_ notification: Notification) { refreshSettings() }
+    func windowDidMiniaturize(_ notification: Notification) { pauseSettingsRefresh() }
+    func windowWillClose(_ notification: Notification) { pauseSettingsRefresh() }
+    func applicationDidHide(_ notification: Notification) { pauseSettingsRefresh() }
+    func applicationDidUnhide(_ notification: Notification) { refreshSettings() }
 
     private func openBrowser(_ url: URL) { if ready { NSWorkspace.shared.open(url) } }
     @objc private func openSetup() { openBrowser(setupURL) }
@@ -196,6 +294,7 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         quitting = true
+        pauseSettingsRefresh()
         if let child = backend, child.isRunning {
             child.interrupt()
             let deadline = Date().addingTimeInterval(8)

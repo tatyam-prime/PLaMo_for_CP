@@ -144,6 +144,7 @@ def main() -> None:
         "AppKit",
         str(ROOT / "packaging/macos/BoundedLog.swift"),
         str(ROOT / "packaging/macos/HealthProbe.swift"),
+        str(ROOT / "packaging/macos/DesktopSettings.swift"),
         str(ROOT / "packaging/macos/AppLaunch.swift"),
         str(ROOT / "packaging/macos/launcher.swift"),
         "-o",
