@@ -1,11 +1,13 @@
 # Windows アプリのビルド
 
-Windows 10 / 11 のx64版と、Python公式配布の Python 3.13.18（Tkを含む）でビルドします。開発用マシンには CMake と Visual Studio C++ ビルドツールが必要ですが、利用者に Python / uv / コンパイラーのインストールは不要です。
+Windows 10 / 11 のx64版と、Python公式配布の Python 3.13 系（Tkを含む）でビルドします。開発用マシンには CMake と Visual Studio C++ ビルドツールが必要ですが、利用者に Python / uv / コンパイラーのインストールは不要です。
+
+CI でも Python 3.13 系を指定し、各 OS・アーキテクチャ向けに提供済みのパッチ版を選択します。`setup-python` と `uv sync --python` の指定は揃えます。
 
 開発環境の依存パッケージと PyInstaller を用意して、次を実行します。
 
 ```powershell
-uv sync --locked --group packaging --no-install-project --python 3.13.18
+uv sync --locked --group packaging --no-install-project --python 3.13
 node scripts/build_userscript.mjs
 uv run --no-sync python -m plamo_cp.llama_backend --output .local/windows-runtime/llama
 uv run --no-sync python -m scripts.build_windows_app
