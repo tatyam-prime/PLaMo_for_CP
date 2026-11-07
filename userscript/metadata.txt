@@ -1,7 +1,8 @@
 // ==UserScript==
-// @name         PLaMo for CP
+// @name         PLaMo for 競プロ
 // @namespace    urn:plamo-for-cp
-// @version      0.4.12
+// @version      0.4.21
+// @author       tatyam
 // @description  このパソコンの PLaMo で問題文や記事を翻訳します。数式とサンプルを保持します。
 // @match        https://*/*
 // @match        http://*/*
@@ -16,6 +17,6 @@
 // @grant        GM_registerMenuCommand
 // @grant        GM_openInTab
 // @grant        GM_xmlhttpRequest
-// @downloadURL  __PLAMO_API__/install.user.js
-// @updateURL    __PLAMO_API__/install.user.js
+// @downloadURL  __TRANSLATOR_API__/install.user.js
+// @updateURL    __TRANSLATOR_API__/install.user.js
 // ==/UserScript==

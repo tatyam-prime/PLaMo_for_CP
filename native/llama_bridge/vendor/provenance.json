@@ -1,0 +1,40 @@
+{
+  "project": "ggml-org/llama.cpp",
+  "release": "b12119",
+  "commit": "6f1e6543704bc5b080c7a98e7b6f707b31f6ed51",
+  "license": "MIT",
+  "files": {
+    "llama.h": {
+      "url": "https://raw.githubusercontent.com/ggml-org/llama.cpp/6f1e6543704bc5b080c7a98e7b6f707b31f6ed51/include/llama.h",
+      "sha256": "f07ffbabd3fbe9ef21d97b4d4ce8328d9c2a123ccbf5266f04a3146d70ce4f91"
+    },
+    "ggml.h": {
+      "url": "https://raw.githubusercontent.com/ggml-org/llama.cpp/6f1e6543704bc5b080c7a98e7b6f707b31f6ed51/ggml/include/ggml.h",
+      "sha256": "1aef7a5f465b1c19de305dd6f9a0c303f88e485133a94b9a0ee1cce6345c9101"
+    },
+    "ggml-cpu.h": {
+      "url": "https://raw.githubusercontent.com/ggml-org/llama.cpp/6f1e6543704bc5b080c7a98e7b6f707b31f6ed51/ggml/include/ggml-cpu.h",
+      "sha256": "316279e004cdeb8e6ef78599acb602bf79a8abdf897fed9fd1914808c1518c6e"
+    },
+    "ggml-backend.h": {
+      "url": "https://raw.githubusercontent.com/ggml-org/llama.cpp/6f1e6543704bc5b080c7a98e7b6f707b31f6ed51/ggml/include/ggml-backend.h",
+      "sha256": "34464da4b46314c710cd634626578c6f2a6811431d41eddaf5e8aa77082fea2a"
+    },
+    "ggml-opt.h": {
+      "url": "https://raw.githubusercontent.com/ggml-org/llama.cpp/6f1e6543704bc5b080c7a98e7b6f707b31f6ed51/ggml/include/ggml-opt.h",
+      "sha256": "3586de1bc8a934b5c72339e2b6937b0641e8f149b512231e666f67de0736eea2"
+    },
+    "gguf.h": {
+      "url": "https://raw.githubusercontent.com/ggml-org/llama.cpp/6f1e6543704bc5b080c7a98e7b6f707b31f6ed51/ggml/include/gguf.h",
+      "sha256": "e56714aab702e5ce62ee587a409643c08f7e93e8fbb77f48ef7cc85075f96fa4"
+    },
+    "ggml-alloc.h": {
+      "url": "https://raw.githubusercontent.com/ggml-org/llama.cpp/6f1e6543704bc5b080c7a98e7b6f707b31f6ed51/ggml/include/ggml-alloc.h",
+      "sha256": "d114067f9099c4a0e2bbc0625c676d4894d9cf0ea27168ee072c7de0e71bb51d"
+    },
+    "LICENSE": {
+      "url": "https://raw.githubusercontent.com/ggml-org/llama.cpp/6f1e6543704bc5b080c7a98e7b6f707b31f6ed51/LICENSE",
+      "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d"
+    }
+  }
+}

@@ -1,7 +1,41 @@
 {
   "asset": "app-icon.png",
-  "purpose": "PLaMo for CP desktop application icon",
-  "generator": "built-in image_gen",
+  "purpose": "PLaMo for 競プロ desktop application icon",
+  "generator": "built-in image_gen for original artwork; user-approved Swift/CoreGraphics alpha extraction",
   "transparent_background": true,
-  "prompt": "Use case: logo-brand. Asset type: production desktop application icon for PLaMo for CP, a local Japanese translation assistant for competitive programming, macOS and Windows. Create ONE polished, original application icon on a square 1024x1024 canvas. A cobalt-blue rounded-square tile with generous rounded corners, subtle rich blue gradient, and restrained soft depth. Center a large beautifully drawn white Japanese hiragana「あ」, crisply recognizable, accompanied by two simple white code angle brackets < and > at its left and right, balancing the composition. The あ is the dominant feature; all strokes bold and uncluttered so the icon is recognizable at 32px. A thoughtful modern native utility app aesthetic, quiet and professional. Straight-on view, flat graphic with just a little depth, centered and comfortably inset in the canvas. The rounded tile occupies about 88 percent of the canvas. Outside the rounded square must be genuinely transparent alpha, not a checkerboard or white background; preserve clean edges. Exact visible text: あ. No English lettering, no app name, no extra text, no logos belonging to PLaMo or PFN, no flags, no mascot, no mockup or surrounding scene, no separate alternatives. High quality finished icon, suitable to ship."
+  "size": [
+    1254,
+    1254
+  ],
+  "source": "User-supplied handwritten ぷらも / for 競プロ; preserve the strokes and two-row layout.",
+  "prompt": "Use case: compositing.\nAsset type: one finished desktop application icon for PLaMo for 競プロ, on a square 1024 by 1024 pixel canvas.\nInput image 1 is the EDIT TARGET: the latest user-provided black handwritten Japanese drawing, with ぷらも across the upper row and handwritten for 競プロ on the lower row, on plain white paper. It is not merely a style reference.\nPrimary request: add a tasteful background tile and restrained soft shadow to this exact drawing. Keep the original black ink strokes and character shapes, their relative positions and proportions, the two-row arrangement, and all the natural handwritten imperfections. In particular preserve the user's handwritten 競 character and プロ marks exactly. Do not replace any handwriting with a font, redraw or re-typeset it, add letters, translate it, or substitute CP for 競プロ.\nPlace the preserved artwork on a very pale blue-to-white rounded-square tile, centered at a comfortable app-icon scale with even margins. Add only a subtle smooth neutral gray drop shadow behind and slightly below the tile. Use a quiet, simple, straight-on icon treatment; no heavy bevel, gloss, thick border or strong 3D effect.\nThe overall square canvas must be fully OPAQUE white or extremely pale neutral gray. Keep enough space around the rounded tile and its soft shadow so neither is clipped. Do not make a transparent cutout, alpha matte, checkerboard surround or transparent corners. The rounded edge must be smoothly antialiased, with no jagged white fringe, blue flecks or speckles.\nExact existing content stays ぷらも on top, for 競プロ below. Do not add a separate typed app name, symbols, slogans, decorations, watermark, device, scene or mockup. Return only the single finished icon artwork.",
+  "prompt_role": "Original opaque artwork generation only; transparency was added with deterministic processing without redrawing.",
+  "processing": {
+    "method": "Native CoreGraphics antialiased rounded contour mask; recover the existing neutral shadow from its white matte. No redraw or new image generation was used for the final transparency step.",
+    "original_rgb_sha256": "2b172fefbb791b8ddf13490b61144667e1053337f4c6500e83b744efce08a38f",
+    "contour_pixels": {
+      "left": 130,
+      "top": 137,
+      "right": 1124,
+      "bottom": 1126,
+      "top_corner_radius": 185,
+      "bottom_corner_radius": 190
+    },
+    "background_noise_floor_levels": 3,
+    "color_space": "sRGB",
+    "validation": {
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "opaque_rgb_preserved_pixels": 952152,
+      "opaque_rgb_mismatch_pixels": 0,
+      "dark_ink_pixels_checked": 34580,
+      "dark_ink_mismatch_pixels": 0,
+      "partial_alpha_pixels": 154084,
+      "fully_transparent_pixels": 466280
+    }
+  }
 }

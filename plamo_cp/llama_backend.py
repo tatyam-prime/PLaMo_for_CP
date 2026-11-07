@@ -32,9 +32,11 @@ from .engine import (
     DEFAULT_MODEL_ID,
     SUPPORTED_MODEL_IDS,
     check_placeholders,
+    preview_prefix,
     translation_options,
     validate_history,
 )
+from .performance import LEGACY_QUIET_LEVEL, MAX_QUIET_LEVEL
 
 log = logging.getLogger(__name__)
 Progress = Callable[[dict[str, Any]], None] | None
@@ -357,9 +359,13 @@ def build_prompt(
         glossary=glossary,
         source_context=source_context,
     )
+    from .marker_codec import prepare_model_input
+
+    prepared = prepare_model_input(text, options, validate_history(history))
+    text, options = prepared.text, prepared.options
     prompt = "<|plamo:bos|><|plamo:tag|>dataset<|plamo:msg|>translation"
     prompt += "<|plamo:tag|>context<|plamo:msg|>" + options["context"]
-    for pair in validate_history(history):
+    for pair in prepared.history:
         prompt += "<|plamo:tag|>input"
         if options["source_lang"]:
             prompt += "<|plamo:key|>lang<|plamo:val|>" + options["source_lang"]
@@ -405,7 +411,8 @@ def windows_memory_gb() -> float:
 class LlamaEngine:
     model_specs: ClassVar[dict] = {model: GGUF_MODELS[model] for model in SUPPORTED_MODEL_IDS}
     storage_model_specs = GGUF_MODELS
-    supported_batch_sizes = (1,)
+    supported_batch_sizes = tuple(range(1, 33))
+    supported_translation_previews = True
 
     def __init__(self, cache_dir: str | Path | None = None) -> None:
         from .settings import model_cache_dir
@@ -417,11 +424,55 @@ class LlamaEngine:
         self._loaded: str | None = None
         self._state = "idle"
         self._log_thread = None
+        self._quiet_lock = threading.RLock()
+        self._quiet_level = 0
+        self._cpu_limit = None
+        self._configured_threads = min(8, os.cpu_count() or 4)
+        self._closing = threading.Event()
         atexit.register(self.close)
 
     @property
+    def quiet_level(self) -> int:
+        with self._quiet_lock:
+            return self._quiet_level
+
+    @property
+    def quiet_mode(self) -> bool:
+        return self.quiet_level > 0
+
+    def _cpu_limit_for_child(self):
+        if self._cpu_limit is None:
+            from .windows_cpu_limit import OwnedProcessCpuLimit
+
+            self._cpu_limit = OwnedProcessCpuLimit(self._process, self._configured_threads)
+        return self._cpu_limit
+
+    def set_quiet_mode(self, enabled: bool) -> None:
+        if type(enabled) is not bool:
+            raise ValueError("静音モードの有効・無効を指定してください。")
+        self.set_quiet_level(LEGACY_QUIET_LEVEL if enabled else 0)
+
+    def set_quiet_level(self, level: int) -> None:
+        if type(level) is not int or not 0 <= level <= MAX_QUIET_LEVEL:
+            raise ValueError(f"静音モードは 0〜{MAX_QUIET_LEVEL} で指定してください。")
+        # This lock is independent of the inference lock held for a completion.
+        # Limit the actual owned native process, never the SSE reader or a PID
+        # reopened from the system. No child means future intent only.
+        with self._quiet_lock:
+            if self._process is None or self._process.poll() is not None:
+                if self._cpu_limit is not None:
+                    self._cpu_limit.close()
+                    self._cpu_limit = None
+            elif level or self._cpu_limit is not None:
+                self._cpu_limit_for_child().set_level(level)
+            self._quiet_level = level
+
+    @property
     def status(self) -> dict[str, Any]:
-        return {"backend": "llama.cpp", "loaded_model": self._loaded, "state": self._state}
+        state = {"backend": "llama.cpp", "loaded_model": self._loaded, "state": self._state}
+        if reason := getattr(self, "native_fallback_reason", None):
+            state["native_fallback_reason"] = reason
+        return state
 
     def _model_path(self, model: str) -> Path | None:
         from huggingface_hub import snapshot_download
@@ -538,6 +589,7 @@ class LlamaEngine:
         logs = Path.home() / ".cache" / "plamo-cp"
         logs.mkdir(parents=True, exist_ok=True)
         flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        configured_threads = min(8, os.cpu_count() or 4)
         args = [
             str(binary),
             "--model",
@@ -549,9 +601,20 @@ class LlamaEngine:
             "--ctx-size",
             str(CONTEXT_SIZE),
             "--parallel",
-            "1",
+            "32",
+            "--cont-batching",
+            "--kv-unified",
+            "--kv-unified-per-slot",
+            str(CONTEXT_SIZE),
+            "--batch-size",
+            "256",
+            "--ubatch-size",
+            "256",
+            "--cache-ram",
+            "0",
+            "--slots",
             "--threads",
-            str(min(8, os.cpu_count() or 4)),
+            str(configured_threads),
             "--gpu-layers",
             "0",
             "--no-context-shift",
@@ -559,7 +622,7 @@ class LlamaEngine:
         ]
         try:
             _notify(progress, stage="loading", message="翻訳モデルを読み込んでいます。")
-            self._process = subprocess.Popen(
+            child = subprocess.Popen(
                 args,
                 cwd=binary.parent,
                 env=environment,
@@ -568,6 +631,11 @@ class LlamaEngine:
                 stderr=subprocess.STDOUT,
                 creationflags=flags,
             )
+            with self._quiet_lock:
+                self._process = child
+                self._configured_threads = configured_threads
+                if self._quiet_level:
+                    self._cpu_limit_for_child().set_level(self._quiet_level)
             from .bounded_log import drain_stream
 
             self._log_thread = threading.Thread(
@@ -606,6 +674,180 @@ class LlamaEngine:
             self._stop()
             raise
 
+    def _new_request(self, cancelled):
+        from .llama_jobs import RequestControl
+
+        return RequestControl(
+            self._client.base_url, self._client.headers, cancelled, shutdown=self._closing
+        )
+
+    def _prepare_completion(
+        self,
+        text,
+        control,
+        source_lang="English",
+        target_lang="Japanese",
+        document_type="problem",
+        history=None,
+        glossary=None,
+        source_context="",
+    ):
+        from .llama_jobs import PreparedCompletion
+        from .marker_codec import prepare_model_input
+
+        previous = validate_history(history)
+
+        def tokenize(value, **options):
+            control.check()
+            value = control.post_json("/tokenize", {"content": value, **options})
+            tokens = value.get("tokens")
+            if not isinstance(tokens, list) or any(type(token) is not int for token in tokens):
+                raise RuntimeError("翻訳エンジンのトークンを解釈できませんでした。")
+            return tokens
+
+        def prompt():
+            return build_prompt(
+                text,
+                source_lang,
+                target_lang,
+                document_type=document_type,
+                history=previous,
+                glossary=glossary,
+                source_context=source_context,
+            )
+
+        tokens = tokenize(prompt(), add_special=False, parse_special=True)
+        budget = max(512, len(tokenize(text)) * 3 + 128)
+        while len(tokens) + budget > CONTEXT_SIZE:
+            if not previous:
+                raise ValueError("段落が長すぎます。短く区切って翻訳してください。")
+            previous = previous[1:]
+            tokens = tokenize(prompt(), add_special=False, parse_special=True)
+        options = translation_options(
+            text,
+            source_lang,
+            target_lang,
+            document_type=document_type,
+            glossary=glossary,
+            source_context=source_context,
+        )
+        payload = {
+            "prompt": tokens,
+            "n_predict": budget,
+            "temperature": 0,
+            "repeat_penalty": 1.0,
+            "cache_prompt": False,
+            "stream": True,
+            "stop": ["<|plamo:tag|>", "<|plamo:bos|>"],
+        }
+        return PreparedCompletion(text, payload, prepare_model_input(text, options, previous).codec)
+
+    def _completion(self, prepared, control, progress=None):
+        parts, final = [], None
+        preview, preview_at, preview_enabled = "", float("-inf"), progress is not None
+        length = 0
+        for event in control.events("/completion", prepared.payload):
+            control.check()
+            if "error" in event:
+                raise RuntimeError("翻訳エンジンがエラーを返しました。")
+            content = event.get("content", "")
+            if not isinstance(content, str):
+                raise RuntimeError("翻訳エンジンの応答を解釈できませんでした。")  # noqa: TRY004
+            parts.append(content)
+            length += len(content)
+            if length > 2 * 1024 * 1024:
+                raise RuntimeError("翻訳エンジンの応答が大きすぎます。")
+            if event.get("stop"):
+                final = event
+            if preview_enabled and final is None:
+                # Keep snapshots bounded independently of final generation.
+                # A partial wire tag is withheld by the same codec used on Mac.
+                preview = (preview + content)[:16384]
+                now = time.monotonic()
+                if now - preview_at >= 0.05:
+                    preview_at = now
+                    try:
+                        draft = prepared.codec.decode(preview_prefix(preview), partial=True)
+                        if draft.strip():
+                            progress(draft[:16384])
+                    except Exception:  # noqa: BLE001 - previews cannot break final inference
+                        preview_enabled = False
+                        log.debug("Disabled a translation preview after its callback failed")
+        control.check()
+        if final is None or final.get("truncated") or final.get("stop_type") not in {"eos", "word"}:
+            raise RuntimeError("訳文が途中で終了しました。この段落は原文を保持してください。")
+        translated = prepared.codec.decode("".join(parts).strip())
+        check_placeholders(prepared.text, translated)
+        return translated
+
+    def _ensure_prepared(self, model):
+        if model not in self.model_specs or not self.model_available(model):
+            raise RuntimeError("先にアプリの「ダウンロード」ボタンでモデルを準備してください。")
+        self.prepare(model)
+        self._state = "translating"
+
+    def iter_work(
+        self,
+        model,
+        take,
+        capacity,
+        *,
+        cancelled=None,
+        prefill_batch_size=1,
+        prefill_step_size=256,
+    ):
+        from .llama_jobs import AnyCancelled, NativeReleaseError, iter_completions
+
+        if model not in self.model_specs:
+            raise ValueError("指定されたモデルサイズには対応していません。")
+        # The pinned native runtime chunks prefill at startup (-b/-ub 256).
+        # Client request count never multiplies the shared 32768-token KV pool.
+        cancelled = AnyCancelled(cancelled or threading.Event(), self._closing)
+        loaded = False
+
+        def make_request(work):
+            nonlocal loaded
+            if not loaded:
+                self._ensure_prepared(model)
+                loaded = True
+            return self._new_request(AnyCancelled(work.cancelled, cancelled))
+
+        def prepare(work, control):
+            try:
+                return self._prepare_completion(work.text, control, **work.parameters)
+            except RuntimeError as error:
+                if self._process is None or self._process.poll() is not None:
+                    raise
+                raise ValueError(str(error)) from error
+
+        def complete(work, prepared, control):
+            try:
+                try:
+                    return self._completion(prepared, control, work.progress)
+                finally:
+                    if finish := getattr(control, "finish", None):
+                        finish()
+            except NativeReleaseError:
+                raise
+            except RuntimeError as error:
+                if self._process is None or self._process.poll() is not None:
+                    raise
+                # Per-request errors cannot discard another client's valid work.
+                raise ValueError(str(error)) from error
+
+        with self._lock:
+            try:
+                yield from iter_completions(
+                    take, capacity, prepare, complete, make_request, cancelled, CONTEXT_SIZE
+                )
+            except NativeReleaseError:
+                self._stop()
+                raise
+            finally:
+                if self._process is not None and self._process.poll() is not None:
+                    self._stop()
+                self._state = "idle"
+
     def translate(
         self,
         text: str,
@@ -618,137 +860,54 @@ class LlamaEngine:
         glossary: list[dict] | None = None,
         source_context: str = "",
     ) -> str:
-        previous = validate_history(history)
-        prompt = build_prompt(
-            text,
-            source_lang,
-            target_lang,
-            document_type=document_type,
-            history=previous,
-            glossary=glossary,
-            source_context=source_context,
-        )
-        cancelled = cancelled or threading.Event()
+        from .llama_jobs import AnyCancelled, NativeReleaseError, RequestGroup
+
+        cancelled = AnyCancelled(cancelled or threading.Event(), self._closing)
         with self._lock:
             if cancelled.is_set():
                 raise InterruptedError("翻訳を停止しました。")
-            if model not in self.model_specs or not self.model_available(model):
-                raise RuntimeError("先にアプリの「ダウンロード」ボタンでモデルを準備してください。")
-            self.prepare(model)
-            self._state = "translating"
-            finished = threading.Event()
-            process = self._process
-
-            def interrupt() -> None:
-                while not finished.wait(0.1):
-                    if cancelled.is_set():
-                        # Terminate only this owned private process. This also
-                        # interrupts long CPU prefill before any token is sent.
-                        if process is not None and process.poll() is None:
-                            process.terminate()
-                        return
-
-            watcher = threading.Thread(target=interrupt, name="plamo-llama-cancel", daemon=True)
-            watcher.start()
+            self._ensure_prepared(model)
             try:
-                tokenized = self._client.post(
-                    "/tokenize",
-                    json={
-                        "content": prompt,
-                        "add_special": False,
-                        "parse_special": True,
-                    },
-                )
-                tokenized.raise_for_status()
-                tokens = tokenized.json()["tokens"]
-                source_tokens = self._client.post("/tokenize", json={"content": text})
-                source_tokens.raise_for_status()
-                max_tokens = max(512, len(source_tokens.json()["tokens"]) * 3 + 128)
-                while len(tokens) + max_tokens > CONTEXT_SIZE:
-                    if not previous:
-                        raise ValueError("段落が長すぎます。短く区切って翻訳してください。")
-                    previous = previous[1:]
-                    prompt = build_prompt(
+                with RequestGroup() as group:
+                    control = self._new_request(cancelled)
+                    group.add(control)
+                    prepared = self._prepare_completion(
                         text,
-                        source_lang,
-                        target_lang,
+                        control,
+                        source_lang=source_lang,
+                        target_lang=target_lang,
                         document_type=document_type,
-                        history=previous,
+                        history=history,
                         glossary=glossary,
                         source_context=source_context,
                     )
-                    tokenized = self._client.post(
-                        "/tokenize",
-                        json={
-                            "content": prompt,
-                            "add_special": False,
-                            "parse_special": True,
-                        },
-                    )
-                    tokenized.raise_for_status()
-                    tokens = tokenized.json()["tokens"]
-                payload = {
-                    "prompt": tokens,
-                    "n_predict": max_tokens,
-                    "temperature": 0,
-                    "repeat_penalty": 1.0,
-                    "cache_prompt": False,
-                    "stream": True,
-                    "stop": ["<|plamo:tag|>", "<|plamo:bos|>"],
-                }
-                parts = []
-                final = None
-                with self._client.stream("POST", "/completion", json=payload) as response:
-                    response.raise_for_status()
-                    for line in response.iter_lines():
-                        if cancelled.is_set():
-                            raise InterruptedError("翻訳を停止しました。")
-                        if not line.startswith("data:"):
-                            continue
-                        data = line[5:].strip()
-                        if not data or data == "[DONE]":
-                            continue
-                        event = json.loads(data)
-                        if "error" in event:
-                            raise RuntimeError("翻訳エンジンがエラーを返しました。")
-                        parts.append(event.get("content", ""))
-                        if event.get("stop"):
-                            final = event
-                if cancelled.is_set():
-                    raise InterruptedError("翻訳を停止しました。")
-                if (
-                    final is None
-                    or final.get("truncated")
-                    or final.get("stop_type") not in {"eos", "word"}
-                ):
-                    raise RuntimeError(
-                        "訳文が途中で終了しました。この段落は原文を保持してください。"
-                    )
-                result = "".join(parts).strip()
-                check_placeholders(text, result)
-                return result
-            except httpx.HTTPError as error:
-                if cancelled.is_set():
-                    raise InterruptedError("翻訳を停止しました。") from error
-                raise RuntimeError(
-                    "翻訳エンジンとの接続に失敗しました。準備画面から再試行してください。"
-                ) from error
+                    prepared.payload["id_slot"] = 0
+                    try:
+                        return self._completion(prepared, control)
+                    finally:
+                        if finish := getattr(control, "finish", None):
+                            finish()
+            except NativeReleaseError:
+                self._stop()
+                raise
             finally:
-                finished.set()
-                watcher.join(timeout=1)
-                if process is not None and process.poll() is not None:
+                if self._process is not None and self._process.poll() is not None:
                     self._stop()
                 self._state = "idle"
 
     def _stop(self) -> None:
-        if self._process is not None:
-            if self._process.poll() is None:
-                self._process.terminate()
-                try:
-                    self._process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    self._process.kill()
-                    self._process.wait(timeout=5)
+        if self._process is not None and self._process.poll() is None:
+            self._process.terminate()
+            try:
+                self._process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self._process.kill()
+                self._process.wait(timeout=5)
+        with self._quiet_lock:
+            self._loaded = None
+            if self._cpu_limit is not None:
+                self._cpu_limit.close()
+                self._cpu_limit = None
             self._process = None
         if self._client is not None:
             self._client.close()
@@ -759,6 +918,7 @@ class LlamaEngine:
         self._loaded = None
 
     def close(self) -> None:
+        self._closing.set()
         with self._lock:
             self._stop()
 

@@ -28,6 +28,7 @@ CANONICAL_TERMS = [
     {"source": "sequence", "target": "列"},
     {"source": "visualizer", "target": "ビジュアライザ"},
     {"source": "forest", "target": "森"},
+    {"source": "node", "target": "頂点"},
 ]
 
 
@@ -113,7 +114,7 @@ def test_general_documents_keep_math_and_formatting_without_competition_glossary
     assert "general document" in options["context"]
     assert "competitive programming" not in options["context"]
     assert "Do not solve" not in options["context"]
-    assert "valid nesting" in options["context"]
+    assert "properly nested" in options["context"]
 
 
 def test_explicit_problem_options_equal_the_unchanged_default():
@@ -566,3 +567,33 @@ def test_file_download_does_not_acquire_inference_lock_or_replace_live_model(tmp
             engine._lock.release()
     assert calls == [("8b", {"cache_dir": tmp_path.resolve(), "cancelled": cancelled})]
     assert engine._model is live and engine._loaded == "2b" and engine._state == "translating"
+
+
+def test_serial_model_input_and_output_use_wire_tags_without_changing_api_markers(inference):
+    source = "Find <plm-a>all</plm-a> [[PLM_19]]."
+    inference.stream.responses = [('<span id="plm-a">すべて</span>', None), ("<math-a/>。", "stop")]
+    assert inference.engine.translate(source, glossary=[]) == "<plm-a>すべて</plm-a>[[PLM_19]]。"
+    messages, options = inference.engine._tokenizer.template_calls[-1]
+    assert messages == [{"role": "user", "content": 'Find <span id="plm-a">all</span> <math-a/>.'}]
+    assert options["glossary"] == [{"source": "<math-a/>", "target": "<math-a/>"}]
+
+
+def test_serial_quiet_mode_synchronizes_the_library_stream_and_keeps_the_same_output(
+    inference, monkeypatch
+):
+    baseline = inference.engine.translate("Find the array.")
+    generation = ModuleType("mlx_lm.generate")
+    generation.generation_stream = object()
+    parent, core = ModuleType("mlx"), ModuleType("mlx.core")
+    synchronized, waits = [], []
+    core.synchronize = synchronized.append
+    parent.core = core
+    monkeypatch.setitem(sys.modules, "mlx", parent)
+    monkeypatch.setitem(sys.modules, "mlx.core", core)
+    monkeypatch.setitem(sys.modules, "mlx_lm.generate", generation)
+    monkeypatch.setattr(inference.engine, "_quiet_wait", lambda delay, *_: waits.append(delay))
+    inference.engine.set_quiet_mode(True)
+    assert inference.engine.translate("Find the array.") == baseline
+    assert synchronized == [generation.generation_stream] * 2
+    assert len(waits) == 2 and all(wait >= 0 for wait in waits)
+    assert inference.stream.closed and inference.engine.status["state"] == "idle"

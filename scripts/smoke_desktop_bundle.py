@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import os
 import shutil
@@ -13,6 +14,28 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+
+def smoke_frozen_native_worker(executable: Path, environment: dict, *, run=None) -> None:
+    """Check windowed EXE pipe framing without loading a DLL or a model."""
+    from plamo_cp.native_ipc import read_frame, write_frame
+
+    request = io.BytesIO()
+    # A deliberately unsupported first frame must produce one bounded fatal
+    # response. This exercises console=False inherited stdin/stdout handles.
+    write_frame(request, {"type": "smoke-invalid-init"})
+    result = (run or subprocess.run)(
+        [str(executable.resolve()), "--native-worker"],
+        input=request.getvalue(),
+        capture_output=True,
+        env=environment,
+        timeout=20,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    )
+    output = io.BytesIO(result.stdout)
+    frame = read_frame(output)
+    if result.returncode != 1 or frame is None or frame.get("type") != "fatal" or output.read():
+        raise RuntimeError("The frozen native worker did not preserve its isolated IPC protocol.")
 
 
 def main() -> None:
@@ -29,13 +52,19 @@ def main() -> None:
     logs.mkdir(parents=True, exist_ok=True)
     command = [str(args.executable.resolve())]
     if args.windows:
+        from plamo_cp.llama_backend import _runtime_executable
+
         runtime = args.executable.resolve().parent / "_internal/llama"
-        manifest = json.loads((runtime / ".runtime-manifest.json").read_text())
-        subprocess.run([str(runtime / manifest["executable"]), "--version"], check=True, timeout=30)
+        verified_server = _runtime_executable(runtime, verify=True)
+        if verified_server is None:
+            raise RuntimeError("The bundled CPU fallback failed its fixed-archive verification.")
+        subprocess.run([str(verified_server), "--version"], check=True, timeout=30)
         command.append("--server-child")
     command += ["--port", str(port)]
     environment = dict(os.environ)
     environment["HF_HUB_OFFLINE"] = "1"
+    if args.windows and (args.executable.resolve().parent / "_internal/native").is_dir():
+        smoke_frozen_native_worker(args.executable, environment)
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     base = f"http://127.0.0.1:{port}"
     with (logs / "server.log").open("wb") as output:
@@ -65,13 +94,25 @@ def main() -> None:
                 "/text",
                 "/text.js",
                 "/translation-jobs.js",
+                "/userscript-version.js",
                 "/install.user.js",
                 "/licenses/plamo-community-license-ja.txt",
                 "/licenses/plamo-community-license-en.txt",
             ]:
                 with opener.open(base + path, timeout=3) as response:
-                    if response.status != 200 or not response.read():
+                    body = response.read()
+                    if response.status != 200 or not body:
                         raise RuntimeError(f"Missing bundled resource: {path}")
+                    if args.windows and path == "/api/setup":
+                        setup = json.loads(body)
+                        if (
+                            setup.get("supported_batch_sizes") != list(range(1, 33))
+                            or setup.get("supported_translation_jobs") is not True
+                            or setup.get("supported_translation_previews") is not True
+                        ):
+                            raise RuntimeError(
+                                "The Windows bundle is missing its streaming job capabilities."
+                            )
             try:
                 opener.open(base + "/extension.zip", timeout=3)
             except urllib.error.HTTPError as error:

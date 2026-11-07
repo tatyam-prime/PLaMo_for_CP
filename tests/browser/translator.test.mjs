@@ -18,27 +18,27 @@ async function fixture(html, url = 'https://codeforces.com/problemset/problem/1/
   if (options.clock) await page.clock.install();
   await page.route(url, route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: html }));
   await page.addInitScript(({ options }) => {
-    window.__plamoRequests = [];
-    window.__plamoCommands = {};
-    window.__plamoPreferences = { ...(options.preferences || {}) };
+    window.__cpTranslatorRequests = [];
+    window.__cpTranslatorCommands = {};
+    window.__cpTranslatorPreferences = { ...(options.preferences || {}) };
     window.readPreference = (key, fallback) => {
-      if (key === 'plamo-current-site') {
-        if (window.__plamoPreferences[key] !== undefined) return window.__plamoPreferences[key];
-        const site = window.__plamoSiteRegistry.find(site => site.host.test(location.hostname) && window.__plamoProblemRoots(site).length);
-        return site && !window.__plamoPreferences['plamo-disabled-sites']?.includes(site.id) ? site.id : null;
+      if (key === 'cp-translator-current-site') {
+        if (window.__cpTranslatorPreferences[key] !== undefined) return window.__cpTranslatorPreferences[key];
+        const site = window.__cpTranslatorSiteRegistry.find(site => site.host.test(location.hostname) && window.__cpTranslatorProblemRoots(site).length);
+        return site && !window.__cpTranslatorPreferences['cp-translator-disabled-sites']?.includes(site.id) ? site.id : null;
       }
-      return window.__plamoPreferences[key] ?? fallback;
+      return window.__cpTranslatorPreferences[key] ?? fallback;
     };
-    window.writePreference = (key, value) => { window.__plamoPreferences[key] = value; };
+    window.writePreference = (key, value) => { window.__cpTranslatorPreferences[key] = value; };
     window.openManagement = () => { window.__managementOpened = (window.__managementOpened || 0) + 1; };
-    window.registerCommand = (name, callback) => { window.__plamoCommands[name] = callback; };
+    window.registerCommand = (name, callback) => { window.__cpTranslatorCommands[name] = callback; };
     window.requestHTTP = details => {
       const payload = details.data ? JSON.parse(details.data) : null;
-      window.__plamoRequests.push({ url: details.url, headers: details.headers, payload });
+      window.__cpTranslatorRequests.push({ url: details.url, headers: details.headers, payload });
       let cancelled = false;
       const timer = setTimeout(() => {
         if (cancelled) return;
-        if (!payload) { details.onload({ status: 200, responseText: '{"status":"ok"}' }); return; }
+        if (!payload) { details.onload({ status: 200, responseText: '{"status":"ok","app":"plamo-for-cp"}' }); return; }
         if (options.networkError) { details.onerror(); return; }
         if (options.httpError) { details.onload({ status: 422, responseText: JSON.stringify({ detail: '保護マーカーが欠けています' }) }); return; }
         const translations = payload.segments.map(segment => {
@@ -50,7 +50,7 @@ async function fixture(html, url = 'https://codeforces.com/problemset/problem/1/
           else if (options.tagCorruption === 'crossed') text = text.replace('</plm-b></plm-a>', '</plm-a></plm-b>');
           return { id: segment.id, text };
         });
-        const errors = payload.segments.filter(segment => (options.errorIds || []).includes(segment.id) || options.markerLimit && (segment.text.match(/\[\[PLM_\d+\]\]/g) || []).length > options.markerLimit).map(segment => ({ id: segment.id, message: 'この段落の数式を保持できなかったため原文を残します。' }));
+        const errors = payload.segments.filter(segment => (options.errorIds || []).includes(segment.id) || options.rejectedSources?.includes(segment.text) || options.markerLimit && (segment.text.match(/\[\[PLM_\d+\]\]/g) || []).length > options.markerLimit).map(segment => ({ id: segment.id, message: 'この段落の数式を保持できなかったため原文を残します。' }));
         details.onload({ status: 200, responseText: JSON.stringify({ translations: translations.filter(item => !errors.some(error => error.id === item.id)), errors, cached: options.cached || 0, model: payload.model, precision: payload.precision }) });
       }, payload ? (options.delay || 5) : 1);
       return { abort() { cancelled = true; clearTimeout(timer); details.onabort(); } };
@@ -58,13 +58,13 @@ async function fixture(html, url = 'https://codeforces.com/problemset/problem/1/
   }, { options });
   await page.goto(url);
   const policy = options.policyMessage ? `SITE_REGISTRY.push({ id: 'policy-fixture', name: 'Policy fixture', host: /^policy\\.example$/, roots: 'article', sourceLanguage: 'English', restriction: () => ${JSON.stringify(options.policyMessage)} });\n` : '';
-  await page.evaluate(registry + '\n' + policy + 'window.__plamoSiteRegistry = SITE_REGISTRY; window.__plamoProblemRoots = problemRoots;\n' + source);
+  await page.evaluate(registry + '\n' + policy + 'window.__cpTranslatorSiteRegistry = SITE_REGISTRY; window.__cpTranslatorProblemRoots = problemRoots;\n' + source);
   return page;
 }
 
 async function translate(page) {
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
-  await page.waitForFunction(() => document.querySelector('#plamo-for-cp').shadowRoot.querySelector('.status').textContent.includes('箇所を翻訳しました'));
+  await page.waitForFunction(() => document.querySelector('#cp-translator').shadowRoot.querySelector('.status').textContent.includes('箇所を翻訳しました'));
 }
 
 async function chooseModel(page, model) {
@@ -99,7 +99,7 @@ test('Codeforces: paragraph context, math, inline formatting, links, sample byte
   assert.equal(await page.locator('#paragraph a').getAttribute('href'), '/help');
   assert.equal(await page.locator('#paragraph code').textContent(), 'YES');
   assert.equal(await page.locator('.header').textContent(), 'A. Titletime limit per test');
-  const requests = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload));
+  const requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload));
   assert.equal(requests[0].payload.model, '8b');
   assert.equal(requests[0].payload.precision, '4bit');
   assert.equal(requests[0].payload.document_type, 'problem');
@@ -119,7 +119,7 @@ test('raw TeX is protected before MathJax renders', async () => {
   const page = await fixture(String.raw`<div class="problem-statement"><p id="p">Find the answer for $$$n \le 10^9$$$ and \(x+y\) and $z$.</p></div>`);
   const original = await page.locator('#p').textContent();
   await translate(page);
-  const sent = await page.evaluate(() => window.__plamoRequests.find(request => request.payload).payload.segments[0].text);
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.find(request => request.payload).payload.segments[0].text);
   assert.ok(!sent.includes('10^9'));
   assert.equal((sent.match(/\[\[PLM_/g) || []).length, 3);
   assert.equal(await page.locator('#p').textContent(), `日本語: ${original.replace('Find the answer', '答えを求めよ')}`);
@@ -133,7 +133,7 @@ test('Codeforces2255B rendered MathJax siblings use one slot per formula and res
   const math = await page.locator('.MathJax_Preview,.MathJax,script[type^="math/tex"]').evaluateAll(nodes => nodes.map(node => node.outerHTML));
   assert.equal(math.length, 12);
   await translate(page);
-  const sent = await page.evaluate(() => window.__plamoRequests.find(request => request.payload).payload.segments[0].text);
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.find(request => request.payload).payload.segments[0].text);
   assert.equal((sent.match(/\[\[PLM_\d+\]\]/g) || []).length, 4);
   assert.match(sent, /In this example, \[\[PLM_0\]\] is a sample value associated with \[\[PLM_1\]\]/);
   assert.deepEqual(await page.locator('.MathJax_Preview,.MathJax,script[type^="math/tex"]').evaluateAll(nodes => nodes.map(node => node.outerHTML)), math);
@@ -144,11 +144,11 @@ test('Codeforces2255B rendered MathJax siblings use one slot per formula and res
 
 test('Codeforces2120F retries a rejected math-only chunk once at sentence boundaries while preserving its footnote and original IDs', async () => {
   const html = await readFile(new URL('./fixtures/codeforces-2120f-opening.html', import.meta.url), 'utf8');
-  const page = await fixture(html, 'https://codeforces.com/problemset/problem/2120/F', { markerLimit: 4, preferences: { 'plamo-translation-previews': true } });
+  const page = await fixture(html, 'https://codeforces.com/problemset/problem/2120/F', { markerLimit: 4, preferences: { 'cp-translator-translation-previews': true } });
   const original = await page.locator('#target').textContent(), math = await page.locator('.MathJax_Preview,.MathJax,script[type^="math/tex"]').evaluateAll(nodes => nodes.map(node => node.outerHTML));
   await page.evaluate(() => { window.__openingNodes = [...document.querySelector('#target').childNodes]; });
   await translate(page);
-  const sent = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
   assert.deepEqual(sent.map(text => (text.match(/\[\[PLM_\d+\]\]/g) || []).length), [7, 4, 3]);
   assert.equal(sent[1] + sent[2], sent[0]);
   assert.deepEqual(sent[2].match(/\[\[PLM_\d+\]\]/g), ['[[PLM_4]]', '[[PLM_5]]', '[[PLM_6]]']);
@@ -163,11 +163,55 @@ test('Codeforces2120F retries a rejected math-only chunk once at sentence bounda
 
 test('failed sentence recovery is bounded to one pass and never loosens math validation', async () => {
   const html = await readFile(new URL('./fixtures/codeforces-2120f-opening.html', import.meta.url), 'utf8');
-  const page = await fixture(html, 'https://codeforces.com/problemset/problem/2120/F', { httpError: true, preferences: { 'plamo-translation-previews': true } });
+  const page = await fixture(html, 'https://codeforces.com/problemset/problem/2120/F', { httpError: true, preferences: { 'cp-translator-translation-previews': true } });
   const original = await page.locator('#target').evaluate(node => node.outerHTML);
   await translate(page);
   assert.equal(await page.locator('#target').evaluate(node => node.outerHTML), original);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).length), 3);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).length), 3);
+  await assertNoOriginalToggle(page);
+  await page.close();
+});
+
+test('legacy translation retries balanced sentences before submitting the next primary paragraph', async () => {
+  const page = await fixture('<div class="problem-statement"><p>Round <strong>all</strong> symbols use <var>n</var>. Square symbols use <var>m</var>.</p><p>A later primary paragraph.</p></div>', undefined, { markerLimit: 1 });
+  await translate(page);
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments));
+  assert.deepEqual(sent.map(segment => segment.id), ['0', '2', '3', '1']);
+  assert.equal(sent[1].text + sent[2].text, sent[0].text);
+  assert.equal(sent[3].text, 'A later primary paragraph.');
+  await page.close();
+});
+
+for (const count of [4, 6]) test(`a failed ${count}-sentence paragraph retains context in two halves before splitting only the failed half`, async () => {
+  const names = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot'].slice(0, count);
+  const parts = names.map((name, index) => `${name} case uses [[PLM_${index}]].${index === count - 1 ? '' : ' '}`);
+  const middle = count / 2, left = parts.slice(0, middle).join(''), right = parts.slice(middle).join('');
+  const html = `<div class="problem-statement"><p id="p">${names.map((name, index) => `${name} case uses <var>${index}</var>.${index === count - 1 ? '' : ' '}`).join('')}</p></div>`;
+  const page = await fixture(html, undefined, { markerLimit: middle, rejectedSources: [right] });
+  const original = await page.locator('#p').textContent();
+  await page.locator('#p').evaluate(node => { window.__halvesOriginal = [...node.childNodes]; });
+  await translate(page);
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments));
+  assert.equal(sent[0].text, parts.join(''));
+  assert.deepEqual(sent.slice(1, 3).map(segment => segment.text), [left, right]);
+  assert.deepEqual(sent.slice(3).map(segment => segment.text), parts.slice(middle));
+  assert.equal(sent.filter(segment => segment.text === left).length, 1, 'a verified half must not be queued again');
+  assert.equal(sent[1].text + sent[2].text, sent[0].text);
+  assert.equal(sent.slice(3).map(segment => segment.text).join(''), right);
+  assert.equal((await page.locator('#p').textContent()).match(/日本語:/g).length, 1 + middle);
+  await page.getByRole('button', { name: '原文を表示', exact: true }).click();
+  assert.equal(await page.locator('#p').textContent(), original);
+  assert.equal(await page.locator('#p').evaluate(node => [...node.childNodes].filter(child => child.nodeType !== Node.COMMENT_NODE).every((child, index) => child === window.__halvesOriginal[index])), true);
+  await page.close();
+});
+
+test('two-level fallback terminates when both halves and every sentence fail', async () => {
+  const names = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot'];
+  const page = await fixture(`<div class="problem-statement"><p id="p">${names.map(name => `${name} case uses <var>n</var>.`).join(' ')}</p></div>`, undefined, { httpError: true });
+  const original = await page.locator('#p').evaluate(node => node.outerHTML);
+  await translate(page);
+  assert.equal(await page.locator('#p').evaluate(node => node.outerHTML), original);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).length), 9);
   await assertNoOriginalToggle(page);
   await page.close();
 });
@@ -175,7 +219,7 @@ test('failed sentence recovery is bounded to one pass and never loosens math val
 test('MathJax grouping does not consume an unrelated source script or intervening prose', async () => {
   const page = await fixture('<div class="problem-statement"><p>Find <span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-1-Frame">n</span> intervening prose <script type="math/tex" id="MathJax-Element-2">m</script>.</p></div>');
   await translate(page);
-  const sent = await page.evaluate(() => window.__plamoRequests.find(request => request.payload).payload.segments[0].text);
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.find(request => request.payload).payload.segments[0].text);
   assert.equal((sent.match(/\[\[PLM_\d+\]\]/g) || []).length, 3);
   assert.match(sent, /intervening prose/);
   await page.close();
@@ -185,11 +229,10 @@ test('Codeforces2273D six-dollar display TeX stays one opaque slot without visua
   const formula = String.raw`$$$$$$ \min\bigl(|x-a_i|,\ |x-b_i|\bigr) $$$$$$`;
   const page = await fixture(`<div class="problem-statement"><p id="p">You then lose ${formula} aura.</p></div>`, 'https://codeforces.com/contest/2273/problem/D', { translations: { 0: '失う量は[[PLM_0]]オーラです。' } });
   await translate(page);
-  const sent = await page.evaluate(() => window.__plamoRequests.find(request => request.payload).payload);
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.find(request => request.payload).payload);
   assert.equal(sent.segments[0].text, 'You then lose [[PLM_0]] aura.');
   assert.equal(sent.source_context, '');
   assert.equal(await page.locator('#p').textContent(), `失う量は${formula}オーラです。`);
-  assert.equal(await page.locator('#p .plamo-inline-gap').count(), 0);
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
   assert.equal(await page.locator('#p').textContent(), `You then lose ${formula} aura.`);
   await page.close();
@@ -204,84 +247,105 @@ test('actual KaTeX HTML+MathML rendering is preserved byte-for-byte', async () =
   assert.equal(await page.locator('.katex math annotation').count(), 2);
   await translate(page);
   assert.deepEqual(await page.locator('.katex, .katex-display').evaluateAll(nodes => nodes.map(node => node.outerHTML)), before);
-  const sources = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).map(request => request.payload.segments[0].text));
+  const sources = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).map(request => request.payload.segments[0].text));
   assert.ok(sources.every(text => !text.includes('sum') && !text.includes('pmatrix')));
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
   assert.equal(await page.evaluate(() => window.__katexNodes.every((node, index) => document.querySelectorAll('.katex, .katex-display')[index] === node)), true);
   await page.close();
 });
 
-test('missing inline variable gaps are restored with CSS without altering text, formulas, or source context', async () => {
+test('missing inline variable separators become copyable ASCII spaces without changing formulas or original nodes', async () => {
   const page = await fixture('<div class="problem-statement"><p id="p">There are <var id="v">n</var> integers.</p><p>Next paragraph.</p></div>', undefined, { translations: { 0: '整数[[PLM_0]]個', 1: '次の段落。' } });
+  await page.evaluate(() => { window.__gapOriginal = [...document.querySelector('#p').childNodes]; });
   const original = await page.locator('#v').evaluate(node => node.outerHTML);
   await translate(page);
-  assert.equal(await page.locator('#p').textContent(), '整数n個');
+  assert.equal(await page.locator('#p').textContent(), '整数 n 個');
   assert.equal(await page.locator('#v').evaluate(node => node.outerHTML), original);
-  const gap = await page.locator('#v').evaluate(node => ({ owned: node.parentElement.hasAttribute('data-plamo-inline-gap'), start: parseFloat(getComputedStyle(node.parentElement).marginInlineStart), end: parseFloat(getComputedStyle(node.parentElement).marginInlineEnd) }));
-  assert.equal(gap.owned, true); assert.ok(gap.start > 0 && gap.end > 0);
-  const payload = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload)[1].payload);
+  assert.deepEqual(await page.locator('#v').evaluate(node => [node.parentElement.id, node.previousSibling.nodeValue, node.nextSibling.nodeValue]), ['p', ' ', ' ']);
+  const copied = await page.locator('#p').evaluate(node => { const selection = getSelection(), range = document.createRange(); range.selectNodeContents(node); selection.removeAllRanges(); selection.addRange(range); const text = selection.toString(); selection.removeAllRanges(); return text; });
+  assert.equal(copied, '整数 n 個');
+  const payload = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload)[1].payload);
   assert.equal(payload.history, undefined);
   assert.ok(!payload.source_context.includes('整数'));
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
   assert.equal(await page.locator('#p').textContent(), 'There are n integers.');
-  assert.equal(await page.locator('[data-plamo-inline-gap]').count(), 0);
+  assert.equal(await page.locator('#p').evaluate(node => [...node.childNodes].filter(child => child.nodeType !== Node.COMMENT_NODE).every((child, index) => child === window.__gapOriginal[index])), true);
+  await page.getByRole('button', { name: '訳文を表示', exact: true }).click();
+  assert.equal(await page.locator('#p').textContent(), copied);
   await page.close();
 });
 
-test('inline gaps do not duplicate spaces or pad punctuation, adjacent slots, display math, images, or scripts', async () => {
+test('inline separators preserve existing whitespace and distinguish separate math from punctuation and other protected nodes', async () => {
   const page = await fixture('<div class="problem-statement"><p id="punct">integer <var>n</var> .</p><p id="spaced">integer <code>n</code> count</p><p id="adjacent">value <var>x</var> <var>y</var> count</p><p id="display">equation <span class="katex-display"><span class="katex">x</span></span> text</p><p id="image">icon <img alt="x"> label</p><p id="script">value <script type="math/tex">x_i</script> text</p><p id="joined">integer<var>n</var>count</p></div>', undefined, { translations: { 0: '整数[[PLM_0]]。', 1: '整数 [[PLM_0]] 個', 2: '値[[PLM_0]][[PLM_1]]個', 3: '式[[PLM_0]]本文', 4: '印[[PLM_0]]説明', 5: '値[[PLM_0]]本文', 6: '整数[[PLM_0]]個' } });
   const originalDisplay = await page.locator('.katex-display').evaluate(node => node.outerHTML);
   await translate(page);
-  const punct = await page.locator('#punct var').evaluate(node => [parseFloat(getComputedStyle(node.parentElement).marginInlineStart), parseFloat(getComputedStyle(node.parentElement).marginInlineEnd)]);
-  assert.ok(punct[0] > 0); assert.equal(punct[1], 0);
+  assert.equal(await page.locator('#punct').textContent(), '整数 n。');
   assert.equal(await page.locator('#spaced').textContent(), '整数 n 個');
-  assert.equal(await page.locator('#spaced [data-plamo-inline-gap]').count(), 0);
-  const adjacent = await page.locator('#adjacent var').evaluateAll(nodes => nodes.map(node => [parseFloat(getComputedStyle(node.parentElement).marginInlineStart), parseFloat(getComputedStyle(node.parentElement).marginInlineEnd)]));
-  assert.ok(adjacent[0][0] > 0); assert.equal(adjacent[0][1], 0); assert.equal(adjacent[1][0], 0); assert.ok(adjacent[1][1] > 0);
-  for (const id of ['display', 'image', 'script', 'joined']) assert.equal(await page.locator(`#${id} [data-plamo-inline-gap]`).count(), 0);
+  assert.equal(await page.locator('#adjacent').textContent(), '値 x y 個');
+  assert.equal(await page.locator('#adjacent').evaluate(node => { const [left, right] = node.querySelectorAll('var'); let text = ''; for (let next = left.nextSibling; next !== right; next = next.nextSibling) text += next.textContent; return text; }), ' ');
+  for (const [id, expected] of Object.entries({ display: '式x本文', image: '印説明', script: '値x_i本文', joined: '整数n個' })) assert.equal(await page.locator('#' + id).textContent(), expected);
   assert.equal(await page.locator('.katex-display').evaluate(node => node.outerHTML), originalDisplay);
   await page.close();
 });
 
-test('CSS gaps look through nested formatting and hidden MathJax bookkeeping without changing renderer subtrees', async () => {
+test('real separators look through nested formatting and hidden MathJax bookkeeping without changing renderer subtrees', async () => {
   const page = await fixture('<div class="problem-statement"><p id="wrapped">integer <strong><var>n</var></strong> count</p><p id="jax">integer <span class="MathJax_Preview" style="display:none">n</span><span class="MathJax">n</span><script type="math/tex">n</script> count</p></div>', undefined, { translations: { 0: '整数<plm-a>[[PLM_0]]</plm-a>個', 1: '整数[[PLM_0]][[PLM_1]][[PLM_2]]個' } });
   const original = await page.locator('#jax .MathJax').evaluate(node => node.outerHTML);
   await translate(page);
-  for (const selector of ['#wrapped var', '#jax .MathJax']) {
-    const gap = await page.locator(selector).evaluate(node => [parseFloat(getComputedStyle(node.parentElement).marginInlineStart), parseFloat(getComputedStyle(node.parentElement).marginInlineEnd)]);
-    assert.ok(gap[0] > 0 && gap[1] > 0);
-  }
+  assert.equal(await page.locator('#wrapped').textContent(), '整数 n 個');
+  assert.equal(await page.locator('#wrapped strong').textContent(), ' n ');
+  assert.equal(await page.locator('#jax').innerText(), '整数 n 個');
   assert.equal(await page.locator('#wrapped strong').count(), 1);
   assert.equal(await page.locator('#jax .MathJax').evaluate(node => node.outerHTML), original);
-  assert.equal(await page.locator('#jax [data-plamo-inline-gap]').count(), 1);
+  assert.deepEqual(await page.locator('#jax .MathJax').evaluate(node => [node.previousSibling.nodeValue, node.nextSibling.nodeValue]), [' ', ' ']);
   await page.close();
 });
 
-test('raw inline TeX gets visual gaps while display TeX and all original TeX strings stay unchanged', async () => {
+test('independent Codeforces MathJax groups restore one real separator across formatting and marker reordering', async () => {
+  const math = (index, text) => `<span class="MathJax_Preview" style="display:none">${text}</span><span class="MathJax" id="MathJax-Element-${index}-Frame">${text}</span><script type="math/tex" id="MathJax-Element-${index}">${text}</script>`;
+  const html = `<div class="problem-statement"><p id="separated">value ${math(1, 'n')} <strong>${math(2, 'm')}</strong> count</p><p id="joined-pair">value ${math(3, 'a')}${math(4, 'b')} count</p><p id="already-spaced">value ${math(5, 'x')} ${math(6, 'y')} count</p></div>`;
+  const page = await fixture(html, 'https://codeforces.com/problemset/problem/1/A', { translations: { 0: '値<plm-a>[[PLM_1]]</plm-a>[[PLM_0]]個', 1: '数[[PLM_1]][[PLM_0]]個', 2: '値 [[PLM_0]] [[PLM_1]] 個' } });
+  await page.evaluate(() => { window.__groupOriginals = [...document.querySelectorAll('.problem-statement p')].map(node => [...node.childNodes]); });
+  const formulas = await page.locator('.MathJax_Preview,.MathJax,script[type="math/tex"]').evaluateAll(nodes => nodes.map(node => node.outerHTML).sort());
+  await translate(page);
+  assert.equal(await page.locator('#separated').innerText(), '値 m n 個');
+  assert.equal(await page.locator('#joined-pair').innerText(), '数ba個');
+  assert.equal(await page.locator('#already-spaced').innerText(), '値 x y 個');
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+  assert.ok(sent.every(text => (text.match(/\[\[PLM_\d+\]\]/g) || []).length === 2));
+  assert.deepEqual(await page.locator('.MathJax_Preview,.MathJax,script[type="math/tex"]').evaluateAll(nodes => nodes.map(node => node.outerHTML).sort()), formulas);
+  assert.equal(await page.locator('.MathJax').evaluateAll(nodes => nodes.every(node => node.previousSibling.nodeType === Node.ELEMENT_NODE && node.previousSibling.matches('.MathJax_Preview') && node.nextSibling.nodeType === Node.ELEMENT_NODE && node.nextSibling.id === node.id.replace('-Frame', ''))), true);
+  await page.getByRole('button', { name: '原文を表示', exact: true }).click();
+  assert.equal(await page.locator('.problem-statement p').evaluateAll(nodes => nodes.every((node, index) => [...node.childNodes].filter(child => child.nodeType !== Node.COMMENT_NODE).every((child, childIndex) => child === window.__groupOriginals[index][childIndex]))), true);
+  await page.close();
+});
+
+test('raw inline TeX gets ASCII separators while display TeX and every original TeX string stay unchanged', async () => {
   const page = await fixture(String.raw`<div class="problem-statement"><p id="inline">variable \(x_i\) count</p><p id="display">equation $$x_i$$ text</p><p id="display-bracket">equation \[x_i\] text</p></div>`, undefined, { translations: { 0: '変数[[PLM_0]]個', 1: '式[[PLM_0]]本文', 2: '式[[PLM_0]]本文' } });
   await translate(page);
-  assert.equal(await page.locator('#inline').textContent(), String.raw`変数\(x_i\)個`);
-  assert.equal(await page.locator('#inline [data-plamo-inline-gap]').textContent(), String.raw`\(x_i\)`);
-  assert.equal(await page.locator('#display [data-plamo-inline-gap]').count(), 0);
-  assert.equal(await page.locator('#display-bracket [data-plamo-inline-gap]').count(), 0);
+  assert.equal(await page.locator('#inline').textContent(), String.raw`変数 \(x_i\) 個`);
+  assert.equal(await page.locator('#display').textContent(), String.raw`式$$x_i$$本文`);
+  assert.equal(await page.locator('#display-bracket').textContent(), String.raw`式\[x_i\]本文`);
+  await page.getByRole('button', { name: '原文を表示', exact: true }).click();
+  assert.equal(await page.locator('#inline').textContent(), String.raw`variable \(x_i\) count`);
   await page.close();
 });
 
 test('compact toolbar shows attribution, icons and a small model selector, and opens management explicitly', async () => {
   const page = await fixture('<div class="problem-statement"><p>Find the answer.</p></div>');
-  const size = await page.locator('#plamo-for-cp').evaluate(node => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height }));
+  const size = await page.locator('#cp-translator').evaluate(node => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height }));
   assert.ok(size.width <= 210 && size.height <= 54);
-  assert.equal(await page.getByText('Translated by PLaMo', { exact: true }).isVisible(), true);
+  assert.equal(await page.getByText('Translated by PLaMo 3 Translate', { exact: true }).isVisible(), true);
   assert.equal(await page.getByRole('button', { name: '原文を表示', exact: true }).count(), 0);
   assert.equal(await page.getByRole('button', { name: '停止', exact: true }).count(), 0);
   await chooseModel(page, '0.8b');
-  assert.equal(await page.evaluate(() => window.__plamoRequests.length), 0);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.length), 0);
   assert.equal(await page.locator('option[value="0.8b"]').textContent(), '0.8B');
   await page.getByRole('button', { name: '設定・管理', exact: true }).click();
   assert.equal(await page.evaluate(() => window.__managementOpened), 1);
   await translate(page);
   assert.equal(await page.getByRole('button', { name: '原文を表示', exact: true }).count(), 1);
-  assert.ok((await page.locator('#plamo-for-cp').boundingBox()).width <= 210);
+  assert.ok((await page.locator('#cp-translator').boundingBox()).width <= 210);
   await page.screenshot({ path: '.local/compact-toolbar.png' });
   await page.close();
 });
@@ -290,7 +354,7 @@ test('nested inline formatting uses unique alphabetic tags and reconstructs nati
   const spans = Array.from({ length: 28 }, (_, index) => `<strong>word${index}</strong>`).join(' ');
   const page = await fixture(`<div class="problem-statement"><p id="nested">Find <strong>the <em>smallest</em></strong> integer <span class="katex">n</span>.</p><p id="many">Find ${spans}.</p></div>`);
   await translate(page);
-  const sources = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).map(request => request.payload.segments[0].text));
+  const sources = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).map(request => request.payload.segments[0].text));
   assert.match(sources[0], /<plm-a>the <plm-b>smallest<\/plm-b><\/plm-a>/);
   assert.match(sources[0], /\[\[PLM_0\]\]/);
   assert.match(sources[1], /<plm-z>word25<\/plm-z>/);
@@ -308,7 +372,7 @@ test('Codeforces italic and bold prose translate as formatting while nested math
   const formula = await page.locator('#math').evaluate(node => node.outerHTML);
   await page.evaluate(() => { window.__styledOriginal = [...document.querySelector('#styled').childNodes]; });
   await translate(page);
-  const sources = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+  const sources = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
   assert.equal(sources.length, 3);
   assert.match(sources[0], /<plm-a>Find the answer<\/plm-a> using <plm-b>positive integers<\/plm-b> and \[\[PLM_0\]\]/);
   assert.match(sources[2], /<plm-a>Find the answer<\/plm-a>/);
@@ -333,7 +397,7 @@ test('Codeforces2261H actual style classes translate italic prose and preserve f
   const page = await fixture(html, 'https://codeforces.com/contest/2261/problem/H', { translations: { 0: '<plm-a>これは通信問題です。</plm-a>', 1: '最初の行には [[PLM_0]] が含まれます。', 2: '最初の行には [[PLM_0]] が含まれます。' } });
   const literals = await page.locator('.tex-font-style-tt').evaluateAll(nodes => nodes.map(node => node.outerHTML));
   await translate(page);
-  const sources = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+  const sources = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
   assert.equal(sources[0], '<plm-a>This is a communication problem.</plm-a>');
   assert.equal(sources[1], 'The first line contains [[PLM_0]].');
   assert.equal(sources[2], 'The first line contains [[PLM_0]].');
@@ -348,17 +412,98 @@ test('Codeforces2261H actual style classes translate italic prose and preserve f
   await page.close();
 });
 
+test('Codeforces2196D emphasis and a grouped footnote stay in whole-sentence requests and restore exact source nodes', async () => {
+  const html = await readFile(new URL('./fixtures/codeforces-2196d-bold.html', import.meta.url), 'utf8');
+  const page = await fixture(html, 'https://codeforces.com/contest/2196/problem/D', { translations: {
+    0: 'この集まりの<plm-a>すべて</plm-a>の丸記号を確認する[[PLM_0]];',
+    1: 'この集まりの<plm-a>すべて</plm-a>の角記号を確認する。',
+  } });
+  const original = await page.locator('li').allTextContents();
+  const math = await page.locator('.MathJax_Preview,.MathJax,script[type^="math/tex"]').evaluateAll(nodes => nodes.map(node => node.outerHTML));
+  await page.locator('li').evaluateAll(nodes => { window.__boldOriginal = nodes.map(node => [...node.childNodes]); });
+  await translate(page);
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+  assert.deepEqual(sent, [' Review <plm-a>all</plm-a> round symbols in this collection[[PLM_0]]; ', ' Review <plm-a>all</plm-a> square symbols in this collection. ']);
+  assert.deepEqual(await page.locator('.tex-font-style-bf').allTextContents(), ['すべて', 'すべて']);
+  assert.equal(await page.locator('.tex-font-style-bf').first().evaluate(node => getComputedStyle(node).fontWeight), '700');
+  assert.deepEqual(await page.locator('.MathJax_Preview,.MathJax,script[type^="math/tex"]').evaluateAll(nodes => nodes.map(node => node.outerHTML)), math);
+  await page.getByRole('button', { name: '原文を表示', exact: true }).click();
+  assert.deepEqual(await page.locator('li').allTextContents(), original);
+  assert.equal(await page.locator('li').evaluateAll(nodes => nodes.every((node, row) => [...node.childNodes].filter(child => child.nodeType !== Node.COMMENT_NODE).every((child, column) => child === window.__boldOriginal[row][column]))), true);
+  await page.close();
+});
+
+test('a rejected Codeforces2196D sentence keeps its bold quantifier and footnote original without clause retries', async () => {
+  const html = await readFile(new URL('./fixtures/codeforces-2196d-bold.html', import.meta.url), 'utf8');
+  const page = await fixture(html, 'https://codeforces.com/contest/2196/problem/D', { tagCorruption: 'missing' });
+  const original = await page.locator('li').evaluateAll(nodes => nodes.map(node => node.outerHTML));
+  await translate(page);
+  assert.deepEqual(await page.locator('li').evaluateAll(nodes => nodes.map(node => node.outerHTML)), original);
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+  assert.equal(sent.length, 2);
+  assert.ok(sent.every(text => text.startsWith(' Review <plm-a>all</plm-a> ') && text.includes('symbols in this collection')));
+  await assertNoOriginalToggle(page);
+  await page.close();
+});
+
+for (const zero of ['math', 'code']) test(`Codeforces2089B2 keeps a single quantified sentence and its protected zero (${zero}) intact`, async () => {
+  const html = await readFile(new URL('./fixtures/codeforces-2089b2-output.html', import.meta.url), 'utf8');
+  const page = await fixture(html, 'https://codeforces.com/contest/2089/problem/B2', { translations: { 0: '[[PLM_3]]にちょうど[[PLM_2]]回の編集をした後、[[PLM_0]]の各値が[[PLM_1]]になる最小コストを求める。' } });
+  if (zero === 'code') await page.evaluate(() => {
+    const script = document.querySelector('#MathJax-Element-45'), renderer = script.previousSibling, preview = renderer.previousSibling;
+    const literal = document.createElement('code'); literal.id = 'literal-zero'; literal.textContent = '0'; preview.before(literal);
+    script.remove(); renderer.remove(); preview.remove();
+  });
+  const original = await page.locator('#output').textContent();
+  const protectedNodes = await page.locator('.MathJax_Preview,.MathJax,script[type^="math/tex"],code').evaluateAll(nodes => nodes.map(node => node.outerHTML).sort());
+  await page.locator('#output').evaluate(node => { window.__outputOriginal = [...node.childNodes]; });
+  await translate(page);
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+  assert.deepEqual(sent, ['Return the smallest cost for every value in [[PLM_0]] to reach [[PLM_1]] after exactly [[PLM_2]] allowed edits to [[PLM_3]].']);
+  assert.deepEqual(await page.locator('.MathJax_Preview,.MathJax,script[type^="math/tex"],code').evaluateAll(nodes => nodes.map(node => node.outerHTML).sort()), protectedNodes);
+  assert.match(await page.locator('#output').textContent(), /ちょうど/);
+  assert.doesNotMatch(await page.locator('#output').textContent(), /PLM_|<math-/);
+  await page.getByRole('button', { name: '原文を表示', exact: true }).click();
+  assert.equal(await page.locator('#output').textContent(), original);
+  assert.equal(await page.locator('#output').evaluate(node => [...node.childNodes].filter(child => child.nodeType !== Node.COMMENT_NODE).every((child, index) => child === window.__outputOriginal[index])), true);
+  await page.close();
+});
+
+test('a rejected single math sentence stays original after one attempt', async () => {
+  const html = await readFile(new URL('./fixtures/codeforces-2089b2-output.html', import.meta.url), 'utf8');
+  const page = await fixture(html, 'https://codeforces.com/contest/2089/problem/B2', { markerLimit: 3 });
+  const original = await page.locator('#output').evaluate(node => node.outerHTML);
+  await translate(page);
+  assert.equal(await page.locator('#output').evaluate(node => node.outerHTML), original);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).length), 1);
+  await assertNoOriginalToggle(page);
+  await page.close();
+});
+
+test('balanced sentence recovery retains nested emphasis and never cuts inside its formatting scope', async () => {
+  const page = await fixture('<div class="problem-statement"><p id="p"><strong>A nested <em>clause ends here.</em> All round symbols use <var>n</var>.</strong> Square symbols use <var>m</var>.</p></div>', undefined, { markerLimit: 1 });
+  await translate(page);
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+  assert.equal(sent.length, 3);
+  assert.equal(sent[1] + sent[2], sent[0]);
+  assert.equal(sent[1], '<plm-a>A nested <plm-b>clause ends here.</plm-b> All round symbols use [[PLM_0]].</plm-a> ');
+  assert.equal(sent[2], 'Square symbols use [[PLM_1]].');
+  assert.equal(await page.locator('#p strong em').count(), 1);
+  assert.equal((await page.locator('#p').textContent()).match(/日本語:/g).length, 2);
+  await page.close();
+});
+
 for (const corruption of ['missing', 'duplicate', 'unknown', 'crossed']) {
-  test(`${corruption} formatting tags recover through validated native scopes and restore original DOM`, async () => {
+  test(`${corruption} formatting tags keep the whole sentence original instead of translating hanging clauses`, async () => {
     const page = await fixture('<div class="problem-statement"><p id="p">Find <strong>the <em>smallest</em></strong> integer.</p></div>', undefined, { tagCorruption: corruption });
     const before = await page.locator('#p').evaluate(node => node.outerHTML);
     await translate(page);
-    assert.match(await page.locator('#p').textContent(), /日本語/);
+    assert.equal(await page.locator('#p').evaluate(node => node.outerHTML), before);
     assert.equal(await page.locator('#p strong em').count(), 1);
-    const sources = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
-    assert.ok(sources.slice(1).every(source => !/<\/?plm-/.test(source)));
-    await page.getByRole('button', { name: '原文を表示', exact: true }).click();
-    assert.equal(await page.locator('#p').evaluate(node => { const clone = node.cloneNode(true); for (const child of [...clone.childNodes]) if (child.nodeType === Node.COMMENT_NODE) child.remove(); return clone.outerHTML; }), before);
+    const sources = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+    assert.equal(sources.length, 1);
+    assert.match(sources[0], /^Find <plm-a>the <plm-b>smallest<\/plm-b><\/plm-a> integer\.$/);
+    await assertNoOriginalToggle(page);
     await page.close();
   });
 }
@@ -366,7 +511,7 @@ for (const corruption of ['missing', 'duplicate', 'unknown', 'crossed']) {
 test('missing math markers fail safely without replacing the original', async () => {
   const page = await fixture('<div class="problem-statement"><p id="p">Find the answer <span class="katex">n</span>.</p></div>', undefined, { missingMarker: true });
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
-  await page.waitForFunction(() => document.querySelector('#plamo-for-cp').shadowRoot.querySelector('.status').textContent.includes('マーカー'));
+  await page.waitForFunction(() => document.querySelector('#cp-translator').shadowRoot.querySelector('.status').textContent.includes('マーカー'));
   assert.equal(await page.locator('#p').textContent(), 'Find the answer n.');
   await assertNoOriginalToggle(page);
   await page.close();
@@ -380,16 +525,16 @@ test('long paragraph chunks display progressively, buffer in original view and r
   await page.evaluate(() => { window.__longOriginal = [...document.querySelector('#p').childNodes]; });
   const original = await page.locator('#p').textContent(), formula = await page.locator('#v').evaluate(node => node.outerHTML);
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
-  await page.waitForFunction(() => document.querySelector('#p').textContent.startsWith('日本語: ') && !document.querySelector('#plamo-for-cp').shadowRoot.querySelector('button[aria-label="停止"]').hidden);
+  await page.waitForFunction(() => document.querySelector('#p').textContent.startsWith('日本語: ') && !document.querySelector('#cp-translator').shadowRoot.querySelector('button[aria-label="停止"]').hidden);
   assert.ok((await page.locator('#p').textContent()).endsWith(third));
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
   assert.equal(await page.locator('#p').textContent(), original);
-  await page.waitForFunction(() => document.querySelector('#plamo-for-cp').shadowRoot.querySelector('.status').textContent.includes('箇所を翻訳しました'));
+  await page.waitForFunction(() => document.querySelector('#cp-translator').shadowRoot.querySelector('.status').textContent.includes('箇所を翻訳しました'));
   assert.equal(await page.locator('#p').textContent(), original);
   await page.getByRole('button', { name: '訳文を表示', exact: true }).click();
   assert.equal((await page.locator('#p').textContent()).match(/日本語:/g).length, 3);
   assert.equal(await page.locator('#v').evaluate(node => node.outerHTML), formula);
-  const sent = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
   assert.equal(sent.length, 3); assert.equal(sent.join(''), first.replace('<strong>', '<plm-a>').replace('</strong>', '</plm-a>') + second.replace('<var id="v">n</var>', '[[PLM_0]]') + third);
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
   assert.equal(await page.locator('#p').evaluate(node => [...node.childNodes].filter(child => child.nodeType !== Node.COMMENT_NODE).every((child, index) => child === window.__longOriginal[index])), true);
@@ -399,9 +544,9 @@ test('long paragraph chunks display progressively, buffer in original view and r
 test('stream-capable clients use600-character paragraph chunks while other clients keep300', async () => {
   const sentence = 'This sentence explains the complete strategy and the conditions that must be met before any decision is made, while retaining all relevant details from previous rounds. ';
   for (const [previews, expected] of [[false, 6], [true, 2]]) {
-    const page = await fixture(`<div class="problem-statement"><p>${sentence.repeat(6)}</p></div>`, undefined, { preferences: { 'plamo-translation-previews': previews } });
+    const page = await fixture(`<div class="problem-statement"><p>${sentence.repeat(6)}</p></div>`, undefined, { preferences: { 'cp-translator-translation-previews': previews } });
     await translate(page);
-    const sent = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+    const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
     assert.equal(sent.length, expected); assert.equal(sent.join(''), sentence.repeat(6));
     await page.close();
   }
@@ -413,19 +558,20 @@ test('a page edit inside an already displayed paragraph chunk rejects later resu
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('#p').textContent.startsWith('日本語: '));
   await page.locator('#p').evaluate(node => { node.firstChild.nextSibling.textContent = 'Page-authored replacement.'; });
-  await page.waitForFunction(() => document.querySelector('#plamo-for-cp').shadowRoot.querySelector('.status').textContent.includes('ページの内容が更新'));
+  await page.waitForFunction(() => document.querySelector('#cp-translator').shadowRoot.querySelector('.status').textContent.includes('ページの内容が更新'));
   assert.match(await page.locator('#p').textContent(), /Page-authored replacement/);
   await page.close();
 });
 
-test('format-scope recovery preserves the entire rejected chunk when any math fragment fails', async () => {
+test('a rejected formatted single sentence is never retried as isolated words or hanging clauses', async () => {
   const page = await fixture('<div class="problem-statement"><p id="p">Find <strong>the answer</strong> for <var id="v">n</var>.</p><p>Continue with another paragraph.</p></div>', undefined, { missingMarker: true });
   const original = await page.locator('#p').evaluate(node => node.outerHTML);
   await translate(page);
   assert.equal(await page.locator('#p').evaluate(node => node.outerHTML), original);
-  const sources = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
-  assert.ok(sources.some(source => source.includes('[[PLM_0]]') && !source.includes('<plm-')));
-  assert.match(await page.locator('#plamo-for-cp').locator('.status').textContent(), /原文を保持/);
+  const sources = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).flatMap(request => request.payload.segments.map(segment => segment.text)));
+  assert.equal(sources.length, 2);
+  assert.equal(sources[0], 'Find <plm-a>the answer</plm-a> for [[PLM_0]].');
+  assert.match(await page.locator('#cp-translator').locator('.status').textContent(), /原文を保持/);
   await page.close();
 });
 
@@ -447,15 +593,22 @@ test('Stop keeps completed paragraph chunks switchable and leaves later chunks o
   await page.close();
 });
 
-test('Stop during format-scope recovery never applies incomplete recovered fragments', async () => {
-  const page = await fixture('<div class="problem-statement"><p id="p">Find <strong>the answer</strong> for <var>n</var>.</p></div>', undefined, { tagCorruption: 'missing', delay: 150 });
-  const original = await page.locator('#p').evaluate(node => node.outerHTML);
+test('Stop during balanced formatted-sentence recovery keeps completed sentences and restores original native nodes', async () => {
+  const page = await fixture('<div class="problem-statement"><p id="p">Round <strong>all</strong> symbols use <var>n</var>. Square <em>all</em> symbols use <var>m</var>.</p></div>', undefined, { markerLimit: 1, delay: 150 });
+  const original = await page.locator('#p').textContent();
+  await page.evaluate(() => { window.__retryOriginal = [...document.querySelector('#p').childNodes]; });
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
-  await page.waitForFunction(() => window.__plamoRequests.filter(request => request.payload).length >= 2);
+  await page.waitForFunction(() => window.__cpTranslatorRequests.filter(request => request.payload).length === 3 && document.querySelector('#p').textContent.startsWith('日本語:'));
   await page.getByRole('button', { name: '停止', exact: true }).click();
-  await page.waitForTimeout(500);
-  assert.equal(await page.locator('#p').evaluate(node => node.outerHTML), original);
-  await assertNoOriginalToggle(page);
+  const stopped = await page.locator('#p').textContent();
+  assert.match(stopped, /Square all symbols use m\.$/);
+  await page.waitForTimeout(350);
+  assert.equal(await page.locator('#p').textContent(), stopped);
+  await page.getByRole('button', { name: '原文を表示', exact: true }).click();
+  assert.equal(await page.locator('#p').textContent(), original);
+  assert.equal(await page.locator('#p').evaluate(node => [...node.childNodes].filter(child => child.nodeType !== Node.COMMENT_NODE).every((child, index) => child === window.__retryOriginal[index])), true);
+  await page.getByRole('button', { name: '訳文を表示', exact: true }).click();
+  assert.equal(await page.locator('#p').textContent(), stopped);
   await page.close();
 });
 
@@ -472,19 +625,19 @@ test('a damaged paragraph stays original while later paragraphs continue', async
   await translate(page);
   assert.equal(await page.locator('#first').textContent(), 'Find the answer n.');
   assert.match(await page.locator('#second').textContent(), /日本語/);
-  assert.match(await page.locator('#plamo-for-cp').locator('.status').textContent(), /1 箇所は失敗/);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).length), 2);
+  assert.match(await page.locator('#cp-translator').locator('.status').textContent(), /1 箇所は失敗/);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).length), 2);
   await page.close();
 });
 
 test('removed source-context preferences never send surrounding prose or translated history', async () => {
-  const page = await fixture('<div class="problem-statement"><p>First paragraph <var>n</var>.</p><p>Second paragraph.</p></div>', undefined, { cached: 1, preferences: { 'plamo-use-source-context': true, 'plamo-use-history': true } });
+  const page = await fixture('<div class="problem-statement"><p>First paragraph <var>n</var>.</p><p>Second paragraph.</p></div>', undefined, { cached: 1, preferences: { 'cp-translator-use-source-context': true, 'cp-translator-use-history': true } });
   await translate(page);
   await chooseModel(page, '8b');
   await translate(page);
   await page.evaluate(() => { document.querySelector('.problem-statement').innerHTML = '<p>New problem paragraph.</p>'; });
   await translate(page);
-  const requests = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).map(request => request.payload));
+  const requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).map(request => request.payload));
   assert.equal(requests.length, 5);
   assert.ok(requests.every(request => request.source_context === '' && request.history === undefined));
   assert.equal(requests[4].segments[0].text, 'New problem paragraph.');
@@ -506,7 +659,7 @@ test('nested interactive controls retain their exact original nodes and listener
   await page.locator('#action').click();
   assert.equal(await page.evaluate(() => window.__clicked), true);
   assert.match(await page.locator('#plain').textContent(), /日本語/);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).length), 1);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).length), 1);
   await page.close();
 });
 
@@ -514,7 +667,7 @@ for (const mutation of ['text', 'subtree', 'insert', 'detach']) {
   test(`in-flight ${mutation} DOM update rejects the stale translation`, async () => {
     const page = await fixture('<div class="problem-statement"><p id="p">Find the answer <span class="katex">n</span>.</p></div>', undefined, { delay: 100 });
     await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
-    await page.waitForFunction(() => window.__plamoRequests.some(request => request.payload));
+    await page.waitForFunction(() => window.__cpTranslatorRequests.some(request => request.payload));
     const expected = await page.evaluate(mutation => {
       const paragraph = document.querySelector('#p');
       window.__paragraph = paragraph;
@@ -524,7 +677,7 @@ for (const mutation of ['text', 'subtree', 'insert', 'detach']) {
       else paragraph.remove();
       return paragraph.outerHTML;
     }, mutation);
-    await page.waitForFunction(() => document.querySelector('#plamo-for-cp').shadowRoot.querySelector('.status').textContent.includes('更新されました'));
+    await page.waitForFunction(() => document.querySelector('#cp-translator').shadowRoot.querySelector('.status').textContent.includes('更新されました'));
     assert.equal(await page.evaluate(() => window.__paragraph.outerHTML), expected);
     await assertNoOriginalToggle(page);
     await page.close();
@@ -534,10 +687,10 @@ for (const mutation of ['text', 'subtree', 'insert', 'detach']) {
 test('stop aborts the current request and prevents late DOM changes', async () => {
   const page = await fixture('<div class="problem-statement"><p id="p">Find the answer.</p><p>Another paragraph.</p></div>', undefined, { delay: 1000 });
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
-  await page.waitForFunction(() => window.__plamoRequests.some(request => request.payload));
+  await page.waitForFunction(() => window.__cpTranslatorRequests.some(request => request.payload));
   await page.getByRole('button', { name: '停止', exact: true }).click();
   assert.equal(await page.locator('#p').textContent(), 'Find the answer.');
-  assert.match(await page.locator('#plamo-for-cp').locator('.status').textContent(), /停止しました/);
+  assert.match(await page.locator('#cp-translator').locator('.status').textContent(), /停止しました/);
   assert.equal(await page.getByRole('button', { name: '日本語に翻訳', exact: true }).isEnabled(), true);
   await page.close();
 });
@@ -553,13 +706,13 @@ for (const url of ['https://www.codechef.com/problems/FLOW001', 'https://www.cod
     const formulas = await page.locator('#problem-statement .katex').evaluateAll(nodes => nodes.map(node => node.outerHTML));
     const samples = await page.locator('pre').evaluateAll(nodes => nodes.map(node => node.outerHTML));
     await translate(page);
-    assert.equal(await page.locator('#plamo-for-cp').evaluate(node => node.shadowRoot.querySelector('.site').textContent), 'CodeChef');
+    assert.equal(await page.locator('#cp-translator').evaluate(node => node.shadowRoot.querySelector('.site').textContent), 'CodeChef');
     assert.match(await page.locator('#p').textContent(), /日本語/);
     assert.deepEqual(await page.locator('#problem-statement .katex').evaluateAll(nodes => nodes.map(node => node.outerHTML)), formulas);
     assert.deepEqual(await page.locator('pre').evaluateAll(nodes => nodes.map(node => node.outerHTML)), samples);
     assert.equal(await page.locator('#editor').textContent(), 'Code editor and Test against Custom Input');
     assert.equal(await page.locator('nav').textContent(), 'Statement Hints Submissions Solution AI Help');
-    const sent = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).map(request => request.payload.segments[0].text));
+    const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).map(request => request.payload.segments[0].text));
     assert.ok(sent.every(text => !text.includes('100 200') && !text.includes('Code editor') && !text.includes('AI Help')));
     await page.getByRole('button', { name: '原文を表示', exact: true }).click();
     assert.equal(await page.locator('#problem-statement').textContent(), original);
@@ -569,7 +722,7 @@ for (const url of ['https://www.codechef.com/problems/FLOW001', 'https://www.cod
 
 test('CodeChef: the first React problem can mount after browsing for more than 30 seconds', async () => {
   const page = await fixture('<main id="root"><p>Loading the statement</p></main>', 'https://www.codechef.com/', { clock: true });
-  assert.equal(await page.locator('#plamo-for-cp').count(), 0);
+  assert.equal(await page.locator('#cp-translator').count(), 0);
   await page.clock.fastForward(31000);
   await page.evaluate(() => {
     history.pushState({}, '', '/problems/FLOW001');
@@ -597,11 +750,11 @@ test('CodeChef: React navigation reuses the panel and translates the newly mount
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
   assert.equal(await page.locator('#next').textContent(), 'You are given positive integers. Find the answer.');
   await translate(page);
-  assert.equal(await page.locator('#plamo-for-cp').count(), 1);
+  assert.equal(await page.locator('#cp-translator').count(), 1);
   assert.match(await page.locator('#next').textContent(), /日本語/);
   assert.equal(await page.locator('pre').textContent(), 'new sample\n2  3');
   assert.equal(await page.locator('#old').count(), 0);
-  const last = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).at(-1).payload.segments[0].text);
+  const last = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).at(-1).payload.segments[0].text);
   assert.match(last, /You are given positive integers/);
   await page.close();
 });
@@ -621,28 +774,28 @@ for (const [name, url, html, target] of [
 
 test('general articles only activate through an explicit translation command', async () => {
   const page = await fixture('<nav>Navigation</nav><article><h1>Example article</h1><p id="p">Find the answer <mjx-container><svg aria-label="formula"></svg></mjx-container>.</p></article>', 'https://example.com/article');
-  assert.equal(await page.locator('#plamo-for-cp').count(), 0);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.length), 0);
-  await page.evaluate(() => window.__plamoCommands['PLaMo: このページの本文を翻訳']());
+  assert.equal(await page.locator('#cp-translator').count(), 0);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.length), 0);
+  await page.evaluate(() => window.__cpTranslatorCommands['PLaMo: このページの本文を翻訳']());
   await translate(page);
   assert.match(await page.locator('#p').textContent(), /日本語/);
   assert.equal(await page.locator('mjx-container svg').count(), 1);
   assert.equal(await page.locator('nav').textContent(), 'Navigation');
-  assert.ok((await page.evaluate(() => window.__plamoRequests.filter(request => request.payload))).every(request => request.payload.document_type === 'general'));
+  assert.ok((await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload))).every(request => request.payload.document_type === 'general'));
   await page.close();
 });
 
 test('explicit whole-page translation starts for plain HTML without an article container', async () => {
   const page = await fixture('<nav>Navigation untouched</nav><p id="plain">Find the answer <var>n</var>.</p><input value="untouched"><pre>sample untouched</pre>', 'https://example.com/plain');
-  assert.equal(await page.evaluate(() => window.__plamoRequests.length), 0);
-  await page.evaluate(() => window.__plamoCommands['PLaMo: ページ全体を翻訳']());
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.length), 0);
+  await page.evaluate(() => window.__cpTranslatorCommands['PLaMo: ページ全体を翻訳']());
   assert.match(await page.locator('#plain').textContent(), /日本語/);
   assert.equal(await page.locator('nav').textContent(), 'Navigation untouched');
   assert.equal(await page.locator('pre').textContent(), 'sample untouched');
   assert.equal(await page.locator('input').inputValue(), 'untouched');
-  const requests = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload));
+  const requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload));
   assert.ok(requests.every(request => request.payload.document_type === 'general'));
-  assert.equal(await page.locator('#plamo-for-cp').count(), 1);
+  assert.equal(await page.locator('#cp-translator').count(), 1);
   await page.close();
 });
 
@@ -650,13 +803,13 @@ test('general KaTeX articles send the general context and preserve rendered math
   const formula = katex.renderToString(String.raw`E = \frac{1}{2}mv^2`, { output: 'htmlAndMathml' });
   const display = katex.renderToString(String.raw`\int_a^b f(x)\,dx`, { displayMode: true, output: 'htmlAndMathml' });
   const page = await fixture(`<nav>Navigation</nav><article><h1>Energy and motion</h1><p id="general-text">The edge of the spectrum is described by ${formula}. Read <a href="/chapter">the next chapter</a>.</p><p>The area is ${display}.</p></article>`, 'https://example.com/physics');
-  assert.equal(await page.locator('#plamo-for-cp').count(), 0);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.length), 0);
+  assert.equal(await page.locator('#cp-translator').count(), 0);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.length), 0);
   const original = await page.locator('article').textContent();
   const math = await page.locator('.katex, .katex-display').evaluateAll(nodes => nodes.map(node => node.outerHTML));
-  await page.evaluate(() => { window.__generalMathNodes = Array.from(document.querySelectorAll('.katex, .katex-display')); window.__plamoCommands['PLaMo: このページの本文を翻訳'](); });
+  await page.evaluate(() => { window.__generalMathNodes = Array.from(document.querySelectorAll('.katex, .katex-display')); window.__cpTranslatorCommands['PLaMo: このページの本文を翻訳'](); });
   await translate(page);
-  const requests = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload));
+  const requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload));
   assert.ok(requests.length > 0);
   assert.ok(requests.every(request => request.payload.document_type === 'general'));
   assert.ok(requests.every(request => !request.payload.segments[0].text.includes('\\frac')));
@@ -672,16 +825,16 @@ test('general KaTeX articles send the general context and preserve rendered math
 test('arXiv HTML automatically shows its general-document toolbar and preserves published MathML, title, navigation and links', async () => {
   const article = await readFile(new URL('./fixtures/arxiv-html-math-paragraph.html', import.meta.url), 'utf8');
   const page = await fixture('<title>Original browser title</title><nav id="outside">Outside navigation.</nav>' + article, 'https://arxiv.org/html/2402.03300v3', { preferences: {
-    'plamo-default-glossary': [{ source: 'jury', target: 'ジャッジ' }],
-    'plamo-glossary': [{ source: 'jury', target: 'ジャッジ' }, { source: 'research', target: '研究' }],
+    'cp-translator-default-glossary': [{ source: 'jury', target: 'ジャッジ' }],
+    'cp-translator-glossary': [{ source: 'jury', target: 'ジャッジ' }, { source: 'research', target: '研究' }],
   } });
   const original = await page.locator('article.ltx_document').textContent();
   const math = await page.locator('math').evaluateAll(nodes => nodes.map(node => node.outerHTML));
   const href = await page.locator('article a').getAttribute('href');
   assert.equal(await page.getByRole('button', { name: '日本語に翻訳', exact: true }).isVisible(), true);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.length), 0);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.length), 0);
   await translate(page);
-  const sent = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).map(request => request.payload));
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).map(request => request.payload));
   assert.ok(sent.length > 0 && sent.every(request => request.document_type === 'general' && request.source_lang === 'English'));
   assert.ok(sent.every(request => JSON.stringify(request.glossary) === JSON.stringify([{ source: 'research', target: '研究' }])));
   assert.equal(await page.title(), 'Original browser title');
@@ -698,40 +851,40 @@ test('arXiv HTML automatically shows its general-document toolbar and preserves 
 test('connection errors explain opening the app without terminal instructions', async () => {
   const page = await fixture('<div class="problem-statement"><p>Find the answer.</p></div>', undefined, { networkError: true });
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
-  await page.waitForFunction(() => document.querySelector('#plamo-for-cp').shadowRoot.querySelector('.status').textContent.includes('接続できません'));
-  assert.match(await page.locator('#plamo-for-cp').locator('.status').textContent(), /PLaMo for CP アプリを開いて/);
-  assert.doesNotMatch(await page.locator('#plamo-for-cp').locator('.status').textContent(), /uv run|Python|127\.0\.0\.1/);
+  await page.waitForFunction(() => document.querySelector('#cp-translator').shadowRoot.querySelector('.status').textContent.includes('接続できません'));
+  assert.match(await page.locator('#cp-translator').locator('.status').textContent(), /PLaMo for 競プロ アプリを開いて/);
+  assert.doesNotMatch(await page.locator('#cp-translator').locator('.status').textContent(), /uv run|Python|127\.0\.0\.1/);
   await page.close();
 });
 
 test('automatic translation defaults off and honors a saved explicit model without changing it', async () => {
-  const page = await fixture('<div class="problem-statement"><p>Find the answer.</p></div>', undefined, { preferences: { 'plamo-model': '8b' } });
+  const page = await fixture('<div class="problem-statement"><p>Find the answer.</p></div>', undefined, { preferences: { 'cp-translator-model': '8b' } });
   await page.waitForTimeout(180);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.length), 0);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.length), 0);
   assert.equal(await page.getByLabel('モデルサイズ').inputValue(), '8b');
   await page.close();
 });
 
 test('opt-in automatic translation runs once and ignores its own DOM changes and original toggles', async () => {
-  const page = await fixture('<div class="problem-statement"><p id="p">Find the answer.</p></div>', undefined, { preferences: { 'plamo-auto-sites': { codeforces: true } } });
+  const page = await fixture('<div class="problem-statement"><p id="p">Find the answer.</p></div>', undefined, { preferences: { 'cp-translator-auto-sites': { codeforces: true } } });
   await page.waitForFunction(() => document.querySelector('#p').textContent.startsWith('日本語'));
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
   await page.evaluate(() => document.body.append(document.createElement('aside')));
   await page.waitForTimeout(250);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.filter(item => item.payload).length), 1);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).length), 1);
   assert.equal(await page.locator('#p').textContent(), 'Find the answer.');
-  assert.match(await page.locator('#plamo-for-cp').locator('.panel').getAttribute('title'), /Built with PLaMo/);
+  assert.match(await page.locator('#cp-translator').locator('.panel').getAttribute('title'), /Built with PLaMo/);
   await page.close();
 });
 
 test('automatic CodeChef translation handles late statements and a new SPA document once each', async () => {
-  const page = await fixture('<main></main>', 'https://www.codechef.com/', { preferences: { 'plamo-auto-sites': { codechef: true } } });
+  const page = await fixture('<main></main>', 'https://www.codechef.com/', { preferences: { 'cp-translator-auto-sites': { codechef: true } } });
   await page.evaluate(() => { history.pushState({}, '', '/problems/FLOW001'); document.querySelector('main').innerHTML = '<div id="problem-statement"><p id="first-auto">Find the answer.</p></div>'; });
   await page.waitForFunction(() => document.querySelector('#first-auto').textContent.startsWith('日本語'));
   await page.evaluate(() => { history.pushState({}, '', '/problems/NEXT'); const next = document.createElement('div'); next.id = 'problem-statement'; const p = document.createElement('p'); p.id = 'next-auto'; p.textContent = 'You are given positive integers.'; next.append(p); document.querySelector('#problem-statement').replaceWith(next); });
   await page.waitForFunction(() => document.querySelector('#next-auto').textContent.startsWith('日本語'));
   await page.waitForTimeout(200);
-  const sent = await page.evaluate(() => window.__plamoRequests.filter(item => item.payload));
+  const sent = await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload));
   assert.equal(sent.length, 2); assert.ok(sent.every(item => item.payload.document_type === 'problem'));
   assert.equal(sent[1].payload.history, undefined);
   assert.ok(!sent[1].payload.source_context.includes('Find the answer'));
@@ -739,25 +892,25 @@ test('automatic CodeChef translation handles late statements and a new SPA docum
 });
 
 test('automatic custom articles use general context and leave navigation and code unchanged', async () => {
-  const page = await fixture('<nav>Navigation</nav><article><p id="article-auto">The edge of this spectrum is visible.</p><pre>raw code</pre></article>', 'https://example.com/article', { preferences: { 'plamo-auto-sites': { article: true }, 'plamo-current-site': 'article', 'plamo-custom-site': true } });
+  const page = await fixture('<nav>Navigation</nav><article><p id="article-auto">The edge of this spectrum is visible.</p><pre>raw code</pre></article>', 'https://example.com/article', { preferences: { 'cp-translator-auto-sites': { article: true }, 'cp-translator-current-site': 'article', 'cp-translator-custom-site': true } });
   await page.waitForFunction(() => document.querySelector('#article-auto').textContent.startsWith('日本語'));
-  assert.equal(await page.evaluate(() => window.__plamoRequests.find(item => item.payload).payload.document_type), 'general');
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.find(item => item.payload).payload.document_type), 'general');
   assert.equal(await page.locator('nav').textContent(), 'Navigation'); assert.equal(await page.locator('pre').textContent(), 'raw code');
   await page.close();
 });
 
-test('per-model batches preserve failed paragraphs independently and continue with later segments', async () => {
+test('a common batch choice preserves failed paragraphs independently across model changes', async () => {
   const paragraphs = ['Find <var>x</var> first.', 'Second paragraph.', 'Third paragraph.', 'Fourth paragraph.', 'Fifth paragraph.'];
-  const page = await fixture(`<div class="problem-statement">${paragraphs.map((html, index) => `<p id="batch-${index}">${html}</p>`).join('')}</div>`, undefined, { missingFirstMarker: true, errorIds: ['1'], preferences: { 'plamo-supported-batch-sizes': [1, 2, 4], 'plamo-model': '0.8b', 'plamo-batch-sizes': { '0.8b': 4, '2b': 2 } } });
+  const page = await fixture(`<div class="problem-statement">${paragraphs.map((html, index) => `<p id="batch-${index}">${html}</p>`).join('')}</div>`, undefined, { missingFirstMarker: true, errorIds: ['1'], preferences: { 'cp-translator-supported-batch-sizes': [1, 2, 4], 'cp-translator-model': '0.8b', 'cp-translator-batch-size': 4 } });
   const originals = await page.locator('#batch-0, #batch-1').evaluateAll(nodes => nodes.map(node => node.outerHTML));
   await translate(page);
   assert.deepEqual(await page.locator('#batch-0, #batch-1').evaluateAll(nodes => nodes.map(node => node.outerHTML)), originals);
   for (const index of [2, 3, 4]) assert.match(await page.locator(`#batch-${index}`).textContent(), /日本語/);
-  assert.match(await page.locator('#plamo-for-cp').locator('.status').textContent(), /3 箇所を翻訳しました。2 箇所は失敗/);
+  assert.match(await page.locator('#cp-translator').locator('.status').textContent(), /3 箇所を翻訳しました。2 箇所は失敗/);
   await chooseModel(page, '2b'); await translate(page);
-  const requests = await page.evaluate(() => window.__plamoRequests.filter(item => item.payload).map(item => item.payload));
-  assert.deepEqual(requests.map(item => item.segments.length), [4, 1, 2, 2, 1]);
-  assert.deepEqual(requests.map(item => item.batch_size), [4, 4, 2, 2, 2]);
+  const requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).map(item => item.payload));
+  assert.deepEqual(requests.map(item => item.segments.length), [4, 1, 4, 1]);
+  assert.deepEqual(requests.map(item => item.batch_size), [4, 4, 4, 4]);
   assert.deepEqual(requests.slice(0, 2).flatMap(item => item.segments.map(segment => segment.id)), ['0', '1', '2', '3', '4']);
   assert.ok(requests.every(item => item.history === undefined && !item.source_context.includes('PLM_') && !item.source_context.includes('日本語')));
   await page.close();
@@ -765,34 +918,34 @@ test('per-model batches preserve failed paragraphs independently and continue wi
 
 test('eight-paragraph groups preserve each formula and skip failed segments before continuing the final group', async () => {
   const html = Array.from({ length: 9 }, (_, index) => `<p id="eight-${index}">Paragraph ${index} <var id="math-${index}">n_${index}</var>.</p>`).join('');
-  const page = await fixture(`<div class="problem-statement">${html}<pre>1  2\n3</pre></div>`, undefined, { errorIds: ['3'], translations: { 6: 'マーカーが欠けた訳文' }, preferences: { 'plamo-model': '8b', 'plamo-batch-sizes': { '8b': 8 }, 'plamo-supported-batch-sizes': [1, 2, 4, 8] } });
+  const page = await fixture(`<div class="problem-statement">${html}<pre>1  2\n3</pre></div>`, undefined, { errorIds: ['3'], translations: { 6: 'マーカーが欠けた訳文' }, preferences: { 'cp-translator-model': '8b', 'cp-translator-batch-size': 8, 'cp-translator-supported-batch-sizes': [1, 2, 4, 8] } });
   const variables = await page.locator('var').evaluateAll(nodes => nodes.map(node => node.outerHTML));
   await translate(page);
-  const requests = await page.evaluate(() => window.__plamoRequests.filter(item => item.payload).map(item => item.payload));
+  const requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).map(item => item.payload));
   assert.deepEqual(requests.map(item => item.segments.length), [8, 1]);
   assert.ok(requests.every(item => item.batch_size === 8));
   assert.deepEqual(requests.flatMap(item => item.segments.map(segment => segment.id)), Array.from({ length: 9 }, (_, index) => String(index)));
   assert.deepEqual(await page.locator('var').evaluateAll(nodes => nodes.map(node => node.outerHTML)), variables);
   for (const index of [3, 6]) assert.equal(await page.locator(`#eight-${index}`).textContent(), `Paragraph ${index} n_${index}.`);
   assert.match(await page.locator('#eight-8').textContent(), /日本語/);
-  assert.match(await page.locator('#plamo-for-cp').locator('.status').textContent(), /7 箇所を翻訳しました。2 箇所は失敗/);
+  assert.match(await page.locator('#cp-translator').locator('.status').textContent(), /7 箇所を翻訳しました。2 箇所は失敗/);
   assert.equal(await page.locator('pre').textContent(), '1  2\n3');
   await page.close();
 });
 
-test('unsupported model batches fall back to sequential requests without changing the saved choice', async () => {
-  const page = await fixture('<div class="problem-statement"><p>First paragraph.</p><p>Second paragraph.</p><p>Third paragraph.</p></div>', undefined, { preferences: { 'plamo-supported-batch-sizes': [1], 'plamo-batch-sizes': { '0.8b': 4 } } });
+test('unsupported common batches fall back to sequential requests without changing the saved choice', async () => {
+  const page = await fixture('<div class="problem-statement"><p>First paragraph.</p><p>Second paragraph.</p><p>Third paragraph.</p></div>', undefined, { preferences: { 'cp-translator-supported-batch-sizes': [1], 'cp-translator-batch-size': 16 } });
   await translate(page);
-  const requests = await page.evaluate(() => window.__plamoRequests.filter(item => item.payload).map(item => item.payload));
+  const requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).map(item => item.payload));
   assert.equal(requests.length, 3); assert.ok(requests.every(item => item.segments.length === 1 && item.batch_size === 1));
-  assert.equal(await page.evaluate(() => window.__plamoPreferences['plamo-batch-sizes']['0.8b']), 4);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorPreferences['cp-translator-batch-size']), 16);
   await page.close();
 });
 
 test('the page menu keeps known problem adapters and their problem context', async () => {
   const page = await fixture('<p id="outside">Outside problem text.</p><div class="problem-statement"><p id="p">Find the answer.</p><pre>1  2</pre></div>');
-  await page.evaluate(() => window.__plamoCommands['PLaMo: ページ全体を翻訳']());
-  const requests = await page.evaluate(() => window.__plamoRequests.filter(item => item.payload).map(item => item.payload));
+  await page.evaluate(() => window.__cpTranslatorCommands['PLaMo: ページ全体を翻訳']());
+  const requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).map(item => item.payload));
   assert.equal(requests.length, 1); assert.equal(requests[0].document_type, 'problem');
   assert.equal(requests[0].segments[0].text, 'Find the answer.');
   assert.equal(await page.locator('#outside').textContent(), 'Outside problem text.');
@@ -800,34 +953,43 @@ test('the page menu keeps known problem adapters and their problem context', asy
   await page.close();
 });
 
-test('missing per-model prefetch preferences use4/4/8 while explicit saved choices remain authoritative', async () => {
-  const page = await fixture(`<div class="problem-statement">${Array.from({ length: 9 }, (_, index) => `<p>Paragraph ${index}.</p>`).join('')}</div>`, undefined, { preferences: { 'plamo-supported-batch-sizes': [1, 2, 3, 4, 5, 6, 7, 8], 'plamo-batch-sizes': { '0.8b': 2 } } });
+test('a missing common preference uses sixteen for every model and choices through32 apply to them all', async () => {
+  const page = await fixture(`<div class="problem-statement">${Array.from({ length: 9 }, (_, index) => `<p>Paragraph ${index}.</p>`).join('')}</div>`, undefined, { preferences: { 'cp-translator-supported-batch-sizes': Array.from({ length: 32 }, (_, index) => index + 1) } });
   for (const model of ['0.8b', '2b', '8b']) { await chooseModel(page, model); await translate(page); }
-  const requests = await page.evaluate(() => window.__plamoRequests.filter(item => item.payload).map(item => item.payload));
-  assert.deepEqual(requests.filter(item => item.model === '0.8b').map(item => item.segments.length), [2, 2, 2, 2, 1]);
-  assert.deepEqual(requests.filter(item => item.model === '2b').map(item => item.segments.length), [4, 4, 1]);
-  assert.deepEqual(requests.filter(item => item.model === '8b').map(item => item.segments.length), [8, 1]);
-  assert.deepEqual(await page.evaluate(() => window.__plamoPreferences['plamo-batch-sizes']), { '0.8b': 2 });
+  let requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).map(item => item.payload));
+  assert.deepEqual(requests.map(item => item.segments.length), [9, 9, 9]);
+  assert.ok(requests.every(item => item.batch_size === 16));
+  await page.evaluate(() => { window.__cpTranslatorPreferences['cp-translator-batch-size'] = 3; window.__cpTranslatorRequests = []; });
+  for (const model of ['0.8b', '2b', '8b']) { await chooseModel(page, model); await translate(page); }
+  requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).map(item => item.payload));
+  assert.ok(requests.every(item => item.batch_size === 3 && item.segments.length === 3));
+  assert.equal(await page.evaluate(() => window.__cpTranslatorPreferences['cp-translator-batch-size']), 3);
+  await page.evaluate(() => { window.__cpTranslatorPreferences['cp-translator-batch-size'] = 32; window.__cpTranslatorRequests = []; });
+  for (const model of ['0.8b', '2b', '8b']) { await chooseModel(page, model); await translate(page); }
+  requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).map(item => item.payload));
+  assert.deepEqual(requests.map(item => item.segments.length), [9, 9, 9]);
+  assert.ok(requests.every(item => item.batch_size === 32));
+  assert.equal(await page.evaluate(() => window.__cpTranslatorPreferences['cp-translator-batch-size']), 32);
   await page.close();
 });
 
 test('automatic translation uses only the active site map and never the retired global switch', async () => {
-  const page = await fixture('<div class="problem-statement"><p id="site-p">Find the answer.</p></div>', undefined, { preferences: { 'plamo-auto-translate': true, 'plamo-auto-sites': { codeforces: false, codechef: true } } });
-  await page.waitForTimeout(180); assert.equal(await page.evaluate(() => window.__plamoRequests.length), 0);
-  await page.evaluate(() => { window.__plamoPreferences['plamo-auto-sites'].codeforces = true; document.dispatchEvent(new Event('plamo-preferences-changed')); });
+  const page = await fixture('<div class="problem-statement"><p id="site-p">Find the answer.</p></div>', undefined, { preferences: { 'cp-translator-auto-translate': true, 'cp-translator-auto-sites': { codeforces: false, codechef: true } } });
+  await page.waitForTimeout(180); assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.length), 0);
+  await page.evaluate(() => { window.__cpTranslatorPreferences['cp-translator-auto-sites'].codeforces = true; document.dispatchEvent(new Event('cp-translator-preferences-changed')); });
   await page.waitForFunction(() => document.querySelector('#site-p').textContent.startsWith('日本語'));
   await page.evaluate(() => {
-    window.__plamoPreferences['plamo-disabled-sites'] = ['codeforces'];
+    window.__cpTranslatorPreferences['cp-translator-disabled-sites'] = ['codeforces'];
     const next = document.createElement('div'); next.className = 'problem-statement'; next.textContent = 'Next problem paragraph.';
     history.pushState({}, '', '/problemset/problem/2/A'); document.querySelector('.problem-statement').replaceWith(next);
   });
-  await page.waitForTimeout(200); assert.equal(await page.evaluate(() => window.__plamoRequests.filter(item => item.payload).length), 1);
+  await page.waitForTimeout(200); assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).length), 1);
   await page.close();
 });
 
 test('automatic CodeChef translation retries the new statement when navigation reuses an in-flight root', async () => {
-  const page = await fixture('<div id="problem-statement"><p>Old problem paragraph.</p></div>', 'https://www.codechef.com/problems/OLD', { delay: 200, preferences: { 'plamo-auto-sites': { codechef: true } } });
-  await page.waitForFunction(() => window.__plamoRequests.some(item => item.payload));
+  const page = await fixture('<div id="problem-statement"><p>Old problem paragraph.</p></div>', 'https://www.codechef.com/problems/OLD', { delay: 200, preferences: { 'cp-translator-auto-sites': { codechef: true } } });
+  await page.waitForFunction(() => window.__cpTranslatorRequests.some(item => item.payload));
   await page.evaluate(() => {
     window.__sameProblemRoot = document.querySelector('#problem-statement');
     history.pushState({}, '', '/problems/NEW'); const next = document.createElement('p'); next.id = 'new-problem'; next.textContent = 'New problem paragraph.';
@@ -836,7 +998,7 @@ test('automatic CodeChef translation retries the new statement when navigation r
   await page.waitForFunction(() => document.querySelector('#new-problem').textContent.startsWith('日本語'));
   await page.waitForTimeout(180);
   assert.equal(await page.evaluate(() => document.querySelector('#problem-statement') === window.__sameProblemRoot), true);
-  const requests = await page.evaluate(() => window.__plamoRequests.filter(item => item.payload).map(item => item.payload));
+  const requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).map(item => item.payload));
   assert.equal(requests.length, 2); assert.equal(requests[1].segments[0].text, 'New problem paragraph.');
   assert.ok(!requests[1].source_context.includes('Old problem'));
   await page.close();
@@ -846,16 +1008,16 @@ test('original view can be selected before the first result and buffers later re
   const page = await fixture('<div class="problem-statement"><p id="first">First paragraph <var id="formula">n</var>.</p><p id="second">Second paragraph.</p><p id="third">Third paragraph.</p></div>', undefined, { delay: 160 });
   await page.evaluate(() => { window.__sourceNodes = [...document.querySelector('#first').childNodes]; window.__sourceFormula = document.querySelector('#formula').outerHTML; });
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
-  await page.waitForFunction(() => window.__plamoRequests.filter(item => item.payload).length === 1);
+  await page.waitForFunction(() => window.__cpTranslatorRequests.filter(item => item.payload).length === 1);
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
-  await page.waitForFunction(() => window.__plamoRequests.filter(item => item.payload).length === 2);
+  await page.waitForFunction(() => window.__cpTranslatorRequests.filter(item => item.payload).length === 2);
   assert.equal(await page.locator('#first').textContent(), 'First paragraph n.');
   assert.equal(await page.evaluate(() => window.__sourceNodes.every((node, index) => document.querySelector('#first').childNodes[index + 1] === node)), true);
   await page.getByRole('button', { name: '訳文を表示', exact: true }).click();
   assert.match(await page.locator('#first').textContent(), /日本語/);
-  await page.waitForFunction(() => window.__plamoRequests.filter(item => item.payload).length === 3);
+  await page.waitForFunction(() => window.__cpTranslatorRequests.filter(item => item.payload).length === 3);
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
-  await page.waitForFunction(() => document.querySelector('#plamo-for-cp').shadowRoot.querySelector('.status').textContent.includes('3 箇所を翻訳しました'));
+  await page.waitForFunction(() => document.querySelector('#cp-translator').shadowRoot.querySelector('.status').textContent.includes('3 箇所を翻訳しました'));
   assert.deepEqual(await page.locator('p').allTextContents(), ['First paragraph n.', 'Second paragraph.', 'Third paragraph.']);
   assert.equal(await page.locator('#formula').evaluate(node => node.outerHTML), await page.evaluate(() => window.__sourceFormula));
   await page.getByRole('button', { name: '訳文を表示', exact: true }).click();
@@ -869,9 +1031,9 @@ test('in-flight view switches preserve failed and stopped paragraphs while compl
   const page = await fixture('<div class="problem-statement"><p id="first">First paragraph <var>n</var>.</p><p id="bad">Second paragraph <var>x</var>.</p><p id="pending">Third paragraph.</p></div>', undefined, { delay: 160, translations: { 1: '保護マーカーが欠けた訳文' } });
   const bad = await page.locator('#bad').evaluate(node => node.outerHTML);
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
-  await page.waitForFunction(() => window.__plamoRequests.filter(item => item.payload).length === 2);
+  await page.waitForFunction(() => window.__cpTranslatorRequests.filter(item => item.payload).length === 2);
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
-  await page.waitForFunction(() => window.__plamoRequests.filter(item => item.payload).length === 3);
+  await page.waitForFunction(() => window.__cpTranslatorRequests.filter(item => item.payload).length === 3);
   await page.getByRole('button', { name: '訳文を表示', exact: true }).click();
   await page.getByRole('button', { name: '停止', exact: true }).click();
   await page.waitForTimeout(200);
@@ -887,27 +1049,27 @@ test('in-flight view switches preserve failed and stopped paragraphs while compl
 });
 
 test('batch results are validated independently and remain buffered when original view is active', async () => {
-  const page = await fixture('<div class="problem-statement"><p id="good">First paragraph <var>n</var>.</p><p id="bad">Second paragraph <var>x</var>.</p><p id="later">Third paragraph.</p></div>', undefined, { delay: 160, errorIds: ['1'], preferences: { 'plamo-model': '8b', 'plamo-batch-sizes': { '8b': 8 }, 'plamo-supported-batch-sizes': [1, 2, 4, 8] } });
+  const page = await fixture('<div class="problem-statement"><p id="good">First paragraph <var>n</var>.</p><p id="bad">Second paragraph <var>x</var>.</p><p id="later">Third paragraph.</p></div>', undefined, { delay: 160, errorIds: ['1'], preferences: { 'cp-translator-model': '8b', 'cp-translator-batch-size': 8, 'cp-translator-supported-batch-sizes': [1, 2, 4, 8] } });
   const original = await page.locator('p').allTextContents();
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
-  await page.waitForFunction(() => document.querySelector('#plamo-for-cp').shadowRoot.querySelector('.status').textContent.includes('2 箇所を翻訳しました。1 箇所は失敗'));
+  await page.waitForFunction(() => document.querySelector('#cp-translator').shadowRoot.querySelector('.status').textContent.includes('2 箇所を翻訳しました。1 箇所は失敗'));
   assert.deepEqual(await page.locator('p').allTextContents(), original);
   await page.getByRole('button', { name: '訳文を表示', exact: true }).click();
   assert.match(await page.locator('#good').textContent(), /日本語/); assert.match(await page.locator('#later').textContent(), /日本語/);
   assert.equal(await page.locator('#bad').textContent(), original[1]);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.filter(item => item.payload).length), 1);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).length), 1);
   await page.close();
 });
 
 test('genuine page mutations still reject in-flight output while original view is active', async () => {
   const page = await fixture('<div class="problem-statement"><p id="first">First paragraph.</p><p id="pending">Second paragraph <var>x</var>.</p></div>', undefined, { delay: 160 });
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
-  await page.waitForFunction(() => window.__plamoRequests.filter(item => item.payload).length === 2);
+  await page.waitForFunction(() => window.__cpTranslatorRequests.filter(item => item.payload).length === 2);
   await page.getByRole('button', { name: '原文を表示', exact: true }).click();
   await page.locator('#pending').evaluate(node => { node.firstChild.data = 'Updated paragraph '; });
   const updated = await page.locator('#pending').evaluate(node => node.outerHTML);
-  await page.waitForFunction(() => document.querySelector('#plamo-for-cp').shadowRoot.querySelector('.status').textContent.includes('更新されました'));
+  await page.waitForFunction(() => document.querySelector('#cp-translator').shadowRoot.querySelector('.status').textContent.includes('更新されました'));
   assert.equal(await page.locator('#first').textContent(), 'First paragraph.');
   assert.equal(await page.locator('#pending').evaluate(node => node.outerHTML), updated);
   await page.getByRole('button', { name: '訳文を表示', exact: true }).click();
@@ -920,8 +1082,8 @@ test('declared Chinese prose is collected without Latin letters while protected 
   const formula = katex.renderToString('a_i + b_i', { output: 'htmlAndMathml' });
   const page = await fixture(`<html lang="zh-CN"><body><article><p id="zh">给定一个长度为 ${formula} 的整数序列，请求出最大值。</p><p>输入格式</p><p>${formula}</p><pre>1  2\n3</pre></article></body></html>`, 'https://example.org/chinese');
   const math = await page.locator('.katex').evaluateAll(nodes => nodes.map(node => node.outerHTML));
-  await page.evaluate(() => window.__plamoCommands['PLaMo: ページ全体を翻訳']());
-  const requests = await page.evaluate(() => window.__plamoRequests.filter(item => item.payload).map(item => item.payload));
+  await page.evaluate(() => window.__cpTranslatorCommands['PLaMo: ページ全体を翻訳']());
+  const requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(item => item.payload).map(item => item.payload));
   assert.equal(requests.length, 2); assert.ok(requests.every(item => item.source_lang === 'Chinese' && item.document_type === 'general'));
   assert.ok(requests.some(item => item.segments[0].text === '输入格式'));
   assert.ok(requests.every(item => !item.source_context.includes('PLM_')));
@@ -932,20 +1094,20 @@ test('declared Chinese prose is collected without Latin letters while protected 
 
 test('declared Indonesian documents send the explicit source language without changing English defaults', async () => {
   const page = await fixture('<html lang="id"><body><article><p>Diberikan sebuah bilangan bulat positif.</p></article></body></html>', 'https://example.org/indonesian');
-  await page.evaluate(() => window.__plamoCommands['PLaMo: ページ全体を翻訳']());
-  assert.equal(await page.evaluate(() => window.__plamoRequests.find(item => item.payload).payload.source_lang), 'Indonesian');
+  await page.evaluate(() => window.__cpTranslatorCommands['PLaMo: ページ全体を翻訳']());
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.find(item => item.payload).payload.source_lang), 'Indonesian');
   await page.close();
 });
 
 test('a configured toolbar suppression stays idle until an explicit manual translation', async () => {
-  const page = await fixture('<article><p id="restricted">Restricted statement remains in its source language.</p></article>', 'https://policy.example/problem', { policyMessage: 'この問題は大会規定により翻訳できません。', preferences: { 'plamo-auto-sites': { 'policy-fixture': true } } });
-  assert.equal(await page.locator('#plamo-for-cp').count(), 0);
+  const page = await fixture('<article><p id="restricted">Restricted statement remains in its source language.</p></article>', 'https://policy.example/problem', { policyMessage: 'この問題は大会規定により翻訳できません。', preferences: { 'cp-translator-auto-sites': { 'policy-fixture': true } } });
+  assert.equal(await page.locator('#cp-translator').count(), 0);
   await page.waitForTimeout(160);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.length), 0);
-  await page.evaluate(async () => { await window.__plamoCommands['PLaMo: ページ全体を翻訳'](); await window.__plamoCommands['PLaMo: このページの本文を翻訳'](); });
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.length), 0);
+  await page.evaluate(async () => { await window.__cpTranslatorCommands['PLaMo: ページ全体を翻訳'](); await window.__cpTranslatorCommands['PLaMo: このページの本文を翻訳'](); });
   await page.waitForTimeout(180);
   assert.equal(await page.getByRole('button', { name: '日本語に翻訳', exact: true }).isVisible(), true);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).length), 1);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).length), 1);
   assert.match(await page.locator('#restricted').textContent(), /^日本語/);
   await page.close();
 });
@@ -962,7 +1124,7 @@ for (const item of [
     const variables = await page.locator('var').evaluateAll(nodes => nodes.map(node => node.outerHTML));
     await translate(page);
     assert.match(await page.locator('#p').textContent(), /日本語/);
-    const requests = await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).map(request => request.payload));
+    const requests = await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).map(request => request.payload));
     assert.ok(requests.length > 0 && requests.every(request => request.source_lang === item.sourceLanguage && request.document_type === 'problem'));
     assert.ok(requests.every(request => !request.segments.some(segment => segment.text.includes('Outside statement'))));
     assert.equal(await page.locator('#sample').evaluate(node => node.outerHTML), sample);
@@ -980,18 +1142,18 @@ for (const item of [
   { contest: '1016', title: 'Example | Repovive', breadcrumb: 'Repovive Math Contest Round 2' },
 ]) {
   test(`Repovive MathRound suppresses its automatic toolbar but allows explicit page and selected-text translation for ${item.contest}`, async () => {
-    const page = await fixture(`<title>${item.title}</title><a data-slot="breadcrumb-link" href="/contests/${item.contest}">${item.breadcrumb}</a><div class="prose"><p id="p">This contest problem must remain in the original language.</p></div>`, `https://repovive.com/contests/${item.contest}/problems/A`, { preferences: { 'plamo-custom-site': true, 'plamo-current-site': 'custom', 'plamo-auto-sites': { repovive: true, custom: true } } });
-    assert.equal(await page.locator('#plamo-for-cp').count(), 0);
+    const page = await fixture(`<title>${item.title}</title><a data-slot="breadcrumb-link" href="/contests/${item.contest}">${item.breadcrumb}</a><div class="prose"><p id="p">This contest problem must remain in the original language.</p></div>`, `https://repovive.com/contests/${item.contest}/problems/A`, { preferences: { 'cp-translator-custom-site': true, 'cp-translator-current-site': 'custom', 'cp-translator-auto-sites': { repovive: true, custom: true } } });
+    assert.equal(await page.locator('#cp-translator').count(), 0);
     await page.waitForTimeout(160);
-    assert.equal(await page.evaluate(() => window.__plamoRequests.length), 0);
+    assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.length), 0);
     await page.evaluate(async () => {
-      await window.__plamoCommands['PLaMo: ページ全体を翻訳']();
+      await window.__cpTranslatorCommands['PLaMo: ページ全体を翻訳']();
       const selection = getSelection(); selection.selectAllChildren(document.querySelector('#p'));
-      await window.__plamoCommands['PLaMo: 選択範囲を翻訳']();
+      await window.__cpTranslatorCommands['PLaMo: 選択範囲を翻訳']();
     });
     await page.waitForTimeout(160);
     assert.equal(await page.getByRole('button', { name: '日本語に翻訳', exact: true }).isVisible(), true);
-    assert.equal(await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).length), 2);
+    assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).length), 2);
     assert.match(await page.locator('#p').textContent(), /^日本語/);
     await page.close();
   });
@@ -1016,20 +1178,20 @@ test('TLX mounts its first HTML statement after a long SPA session without trans
 
 test('Repovive SPA navigation hides restricted toolbars, cancels in-flight translation and restores ordinary controls', async () => {
   const page = await fixture('<title>Gifts - Repovive Math Contest Round 1 | Repovive</title><main><div class="prose"><p>Blocked statement.</p></div></main>', 'https://repovive.com/contests/m1/problems/A', { delay: 400 });
-  assert.equal(await page.locator('#plamo-for-cp').count(), 0);
+  assert.equal(await page.locator('#cp-translator').count(), 0);
   await page.evaluate(() => { history.pushState({}, '', '/contests/30/problems/G'); document.title = 'Example - Repovive Premier Round 10 | Repovive'; document.querySelector('main').innerHTML = '<div class="prose"><p id="p">Ordinary problem paragraph.</p></div>'; });
   await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
-  await page.waitForFunction(() => window.__plamoRequests.some(request => request.payload));
+  await page.waitForFunction(() => window.__cpTranslatorRequests.some(request => request.payload));
   await page.evaluate(() => { history.pushState({}, '', '/contests/m2/problems/B'); document.title = 'Example - Repovive Math Contest Round 2 | Repovive'; document.querySelector('main').innerHTML = '<div class="prose"><p id="p">A new blocked statement.</p></div>'; });
-  await page.waitForFunction(() => document.querySelector('#plamo-for-cp').hidden);
+  await page.waitForFunction(() => document.querySelector('#cp-translator').hidden);
   await page.waitForTimeout(450);
-  assert.equal(await page.evaluate(() => window.__plamoRequests.filter(request => request.payload).length), 1);
+  assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.filter(request => request.payload).length), 1);
   assert.equal(await page.locator('#p').textContent(), 'A new blocked statement.');
-  await page.evaluate(() => window.__plamoCommands['PLaMo: ページ全体を翻訳']());
+  await page.evaluate(() => window.__cpTranslatorCommands['PLaMo: ページ全体を翻訳']());
   assert.match(await page.locator('#p').textContent(), /^日本語/);
   assert.equal(await page.getByRole('button', { name: '日本語に翻訳', exact: true }).isVisible(), true);
   await page.evaluate(() => { history.pushState({}, '', '/contests/m2/problems/C'); document.querySelector('main').innerHTML = '<div class="prose"><p id="p">Another problem in the same Math contest.</p></div>'; });
-  await page.waitForFunction(() => document.querySelector('#plamo-for-cp').hidden);
+  await page.waitForFunction(() => document.querySelector('#cp-translator').hidden);
   assert.equal(await page.locator('#p').textContent(), 'Another problem in the same Math contest.');
   await page.evaluate(() => { history.pushState({}, '', '/contests/30/problems/H'); document.title = 'Example - Repovive Premier Round 10 | Repovive'; document.querySelector('main').innerHTML = '<div class="prose"><p id="p">Ordinary problem restored.</p></div>'; });
   await translate(page); assert.match(await page.locator('#p').textContent(), /日本語/);
@@ -1042,9 +1204,9 @@ for (const item of [
 ]) {
   test(`${item.name}: selected prose within a problem retains its adapter language`, async () => {
     const page = await fixture(item.html, item.url);
-    await page.evaluate(async () => { getSelection().selectAllChildren(document.querySelector('#p')); await window.__plamoCommands['PLaMo: 選択範囲を翻訳'](); });
+    await page.evaluate(async () => { getSelection().selectAllChildren(document.querySelector('#p')); await window.__cpTranslatorCommands['PLaMo: 選択範囲を翻訳'](); });
     assert.match(await page.locator('#p').textContent(), /日本語/);
-    assert.equal(await page.evaluate(() => window.__plamoRequests.find(request => request.payload).payload.source_lang), item.language);
+    assert.equal(await page.evaluate(() => window.__cpTranslatorRequests.find(request => request.payload).payload.source_lang), item.language);
     await page.close();
   });
 }

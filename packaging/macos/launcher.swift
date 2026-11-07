@@ -1,4 +1,5 @@
 import AppKit
+import CoreServices
 import Darwin
 import Foundation
 
@@ -15,10 +16,16 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate {
     private var outputPipe: Pipe?
     private var quitting = false
     private var ready = false
+    private var protocolLaunch = false
     private let logURL = FileManager.default.homeDirectoryForCurrentUser
         .appendingPathComponent(".cache/plamo-cp/logs/desktop.log")
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Register this normal .app launch, not a developer staging build step.
+        // LaunchServices handles the user's browser consent and app selection.
+        if Bundle.main.bundleURL.pathExtension == "app" {
+            LSRegisterURL(Bundle.main.bundleURL as CFURL, true)
+        }
         if let iconURL = Bundle.main.url(forResource: "app-icon", withExtension: "icns"),
            let icon = NSImage(contentsOf: iconURL) {
             NSApplication.shared.applicationIconImage = icon
@@ -30,14 +37,29 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        window.makeKeyAndOrderFront(nil)
+        bringToForeground()
         return true
+    }
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        guard AppLaunchProtocol.accepts(urls) else { return }
+        protocolLaunch = true
+        // A cold-launch URL event can precede applicationDidFinishLaunching.
+        // buildWindow() foregrounds the window later when it does not exist yet.
+        bringToForeground()
+    }
+
+    private func bringToForeground() {
+        guard let window = window else { return }
+        if window.isMiniaturized { window.deminiaturize(nil) }
+        window.makeKeyAndOrderFront(nil)
+        NSApplication.shared.activate(ignoringOtherApps: true)
     }
 
     private func buildWindow() {
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 480, height: 300),
                           styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
-        window.title = "PLaMo for CP"
+        window.title = "PLaMo for 競プロ"
         window.isReleasedWhenClosed = false
         window.center()
         let container = NSStackView()
@@ -45,7 +67,7 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate {
         container.alignment = .leading
         container.spacing = 18
         container.translatesAutoresizingMaskIntoConstraints = false
-        let title = NSTextField(labelWithString: "PLaMo for CP")
+        let title = NSTextField(labelWithString: "PLaMo for 競プロ")
         title.font = .systemFont(ofSize: 25, weight: .bold)
         let description = NSTextField(wrappingLabelWithString:
             "翻訳を、このMacで実行します。\n標準は2B。モデルや保存先は管理画面で変更できます。")
@@ -80,8 +102,7 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate {
             statusLabel.widthAnchor.constraint(equalTo: container.widthAnchor),
             footnote.widthAnchor.constraint(equalTo: container.widthAnchor)
         ])
-        window.makeKeyAndOrderFront(nil)
-        NSApplication.shared.activate(ignoringOtherApps: true)
+        bringToForeground()
     }
 
     private func probe(_ callback: @escaping (Bool, Bool) -> Void) {
@@ -93,7 +114,7 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate {
     private func inspectExistingService() {
         probe { ours, occupied in
             if ours { self.markReady(existing: true) }
-            else if occupied { self.fail("別のアプリが通信先を使用しています。ほかのPLaMo for CPを終了して、もう一度開いてください。") }
+            else if occupied { self.fail("別のアプリが通信先を使用しています。ほかのPLaMo for 競プロを終了して、もう一度開いてください。") }
             else { self.startBackend() }
         }
     }
@@ -155,11 +176,11 @@ final class ApplicationDelegate: NSObject, NSApplicationDelegate {
 
     private func markReady(existing: Bool) {
         ready = true
-        statusLabel.stringValue = existing ? "起動済みのPLaMo for CPに接続しました。" : "起動しました。管理画面でモデルや保存先を確認できます。"
+        statusLabel.stringValue = existing ? "起動済みのPLaMo for 競プロに接続しました。" : "起動しました。管理画面でモデルや保存先を確認できます。"
         statusLabel.textColor = .secondaryLabelColor
         openButton.isEnabled = true
         textButton.isEnabled = true
-        openSetup()
+        if !protocolLaunch { openSetup() }
     }
 
     private func fail(_ message: String) {
@@ -208,11 +229,19 @@ struct ApplicationMain {
                 fputs("The bundled application icon is missing or invalid.\n", stderr)
                 exit(1)
             }
+            let urlTypes = Bundle.main.infoDictionary?["CFBundleURLTypes"] as? [[String: Any]] ?? []
+            guard urlTypes.contains(where: {
+                ($0["CFBundleURLSchemes"] as? [String]) == ["plamo-for-cp"]
+            }) else {
+                fputs("The fixed application launch protocol is missing.\n", stderr)
+                exit(1)
+            }
             let result: [String: Any] = [
                 "bundle": Bundle.main.bundlePath,
                 "backend": executable.path,
                 "minimum_macos": Bundle.main.infoDictionary?["LSMinimumSystemVersion"] as? String ?? "unknown",
-                "icon": icon.path
+                "icon": icon.path,
+                "launch_url": AppLaunchProtocol.openURL
             ]
             if let data = try? JSONSerialization.data(withJSONObject: result, options: [.sortedKeys]),
                let text = String(data: data, encoding: .utf8) { print(text) }

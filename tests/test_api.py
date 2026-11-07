@@ -1,6 +1,7 @@
 """The HTTP boundary is tested without loading/downloading a model."""
 
 import asyncio
+import io
 import json
 import threading
 import time
@@ -8,6 +9,7 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
+from plamo_cp import __version__
 from plamo_cp.api import create_app
 
 HEADERS = {"X-Plamo-Client": "userscript"}
@@ -77,6 +79,7 @@ def payload(text="Find the maximum value of [[PLM_0]].", **changes):
 
 def test_health_and_model_sizes(client_and_engine):
     client, engine = client_and_engine
+    assert client.app.version == __version__
     health = client.get("/api/health").json()
     assert health["status"] == "ok"
     assert health["engine"] == engine.status
@@ -98,6 +101,35 @@ def test_fresh_translation_defaults_to_2b_without_hiding_other_models(client_and
     assert response.status_code == 200 and response.json()["model"] == "2b"
     assert engine.calls[0][1] == "2b"
     assert client.get("/api/models").json()["default_model"] == "2b"
+
+
+def test_api_accepts_a_32_paragraph_request_and_publishes_all_supported_windows(
+    client_and_engine, monkeypatch
+):
+    client, engine = client_and_engine
+    monkeypatch.setattr(engine, "supported_batch_sizes", tuple(range(1, 33)), raising=False)
+    response = client.post(
+        "/api/translate",
+        json=payload(
+            batch_size=32,
+            segments=[
+                {"id": f"p{index}", "text": f"Find answer number {index}."} for index in range(32)
+            ],
+        ),
+        headers=HEADERS,
+    )
+    assert response.status_code == 200
+    assert len(response.json()["translations"]) == len(engine.calls) == 32
+    assert client.get("/api/setup").json()["supported_batch_sizes"] == list(range(1, 33))
+
+
+@pytest.mark.parametrize("batch_size", [33, 32.0, True, False])
+def test_api_rejects_non_integer_or_oversized_client_windows_before_inference(
+    client_and_engine, batch_size
+):
+    client, engine = client_and_engine
+    response = client.post("/api/translate", json=payload(batch_size=batch_size), headers=HEADERS)
+    assert response.status_code == 422 and engine.calls == []
 
 
 @pytest.mark.parametrize("language", ["Chinese", "zh", "Indonesian", "id", "auto"])
@@ -316,9 +348,10 @@ def test_setup_exposes_copied_initial_glossary_without_model_work(client_and_eng
         {"source": "sequence", "target": "列"},
         {"source": "visualizer", "target": "ビジュアライザ"},
         {"source": "forest", "target": "森"},
+        {"source": "node", "target": "頂点"},
     ]
     first.clear()
-    assert len(client.get("/api/setup").json()["default_glossary"]) == 11
+    assert len(client.get("/api/setup").json()["default_glossary"]) == 12
     assert engine.calls == []
 
 
@@ -687,10 +720,16 @@ def test_userscript_installation_serves_fixed_source_or_packaged_file(
     source = tmp_path / "dist" / "plamo-for-cp.user.js"
     packaged = tmp_path / "assets" / "plamo-for-cp.user.js"
     packaged.parent.mkdir()
-    packaged.write_text("// ==UserScript==\n// 日本語の配布スクリプト\n", encoding="utf-8")
+    packaged.write_text(
+        "// ==UserScript==\n// @version 1.2.3\n// ==/UserScript==\n// 日本語の配布スクリプト\n",
+        encoding="utf-8",
+    )
     if use_source:
         source.parent.mkdir()
-        source.write_text("// ==UserScript==\n// 最新のスクリプト\n", encoding="utf-8")
+        source.write_text(
+            "// ==UserScript==\n// @version 2.3.4\n// ==/UserScript==\n// 最新のスクリプト\n",
+            encoding="utf-8",
+        )
     monkeypatch.setattr(api, "USER_SCRIPT_DIST", source)
     monkeypatch.setattr(api, "SETUP_ASSETS", packaged.parent)
     client, engine = client_and_engine
@@ -699,6 +738,9 @@ def test_userscript_installation_serves_fixed_source_or_packaged_file(
     assert response.headers["content-type"] == "application/javascript; charset=utf-8"
     assert response.headers["cache-control"] == "no-cache"
     assert response.text == (source if use_source else packaged).read_text(encoding="utf-8")
+    assert client.get("/api/health").json()["userscript_version"] == (
+        "2.3.4" if use_source else "1.2.3"
+    )
     assert engine.calls == []
 
 
@@ -711,7 +753,158 @@ def test_missing_userscript_returns_404_without_reintroducing_chrome_zip(
     monkeypatch.setattr(api, "SETUP_ASSETS", tmp_path)
     client, _ = client_and_engine
     assert client.get("/install.user.js").status_code == 404
+    health = client.get("/api/health")
+    assert health.status_code == 200 and health.json()["userscript_version"] is None
     assert client.get("/extension.zip").status_code == 404
+
+
+def test_userscript_health_tracks_replacements_and_preferred_file_removal(
+    client_and_engine, tmp_path, monkeypatch
+):
+    from plamo_cp import api
+
+    source = tmp_path / "source.user.js"
+    packaged = tmp_path / "plamo-for-cp.user.js"
+
+    def content(version):
+        return f"// ==UserScript==\n// @version {version}\n// ==/UserScript==\nvoid 0;\n"
+
+    source.write_text(content("3.4.5"), encoding="utf-8")
+    packaged.write_text(content("1.0.0"), encoding="utf-8")
+    monkeypatch.setattr(api, "USER_SCRIPT_DIST", source)
+    monkeypatch.setattr(api, "SETUP_ASSETS", tmp_path)
+    client, _ = client_and_engine
+    assert client.get("/api/health").json()["userscript_version"] == "3.4.5"
+    source.write_text(content("3.4.6"), encoding="utf-8")
+    assert client.get("/api/health").json()["userscript_version"] == "3.4.6"
+    assert client.get("/install.user.js").text == content("3.4.6")
+    source.unlink()
+    assert client.get("/api/health").json()["userscript_version"] == "1.0.0"
+    assert client.get("/install.user.js").text == content("1.0.0")
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        "// @version 1.2.3\n",  # No userscript metadata block.
+        "// ==UserScript==\n// @name Example\n// ==/UserScript==\n// @version 1.2.3\n",
+        "// ==UserScript==\n// @version 1.2.3\n",  # Incomplete metadata.
+        "// ==UserScript==\n// @version 1.2.3\n// @version 4.5.6\n// ==/UserScript==\n",
+        "// ==UserScript==\n// @version\n// ==/UserScript==\n",
+        "// ==UserScript==\n// @version two words\n// ==/UserScript==\n",
+        "// ==UserScript==\n// @version <script>\n// ==/UserScript==\n",
+        "// ==UserScript==\n// @version 1 2 3\n// ==/UserScript==\n",
+        "// ==UserScript==\n// @version " + "1" * 129 + "\n// ==/UserScript==\n",
+        "// ==UserScript==\nconsole.log('not metadata');\n// @version 1.2.3\n// ==/UserScript==\n",
+    ],
+)
+def test_invalid_userscript_metadata_is_null_and_does_not_break_health(
+    client_and_engine, tmp_path, monkeypatch, metadata
+):
+    from plamo_cp import api
+
+    source = tmp_path / "source.user.js"
+    source.write_text(metadata, encoding="utf-8")
+    # A valid fallback must not be advertised when the preferred script exists
+    # and /install.user.js would serve its invalid metadata instead.
+    (tmp_path / "plamo-for-cp.user.js").write_text(
+        "// ==UserScript==\n// @version 9.9.9\n// ==/UserScript==\n", encoding="utf-8"
+    )
+    monkeypatch.setattr(api, "USER_SCRIPT_DIST", source)
+    monkeypatch.setattr(api, "SETUP_ASSETS", tmp_path)
+    client, _ = client_and_engine
+    result = client.get("/api/health")
+    assert result.status_code == 200 and result.json()["userscript_version"] is None
+    assert client.get("/install.user.js").text == metadata
+
+
+def test_userscript_version_reads_only_a_bounded_prefix_and_accepts_bom_crlf(
+    client_and_engine, tmp_path, monkeypatch
+):
+    from pathlib import Path
+
+    from plamo_cp import api
+
+    source = tmp_path / "source.user.js"
+    source.touch()
+    monkeypatch.setattr(api, "USER_SCRIPT_DIST", source)
+    monkeypatch.setattr(api, "SETUP_ASSETS", tmp_path)
+    reads = []
+    content = (
+        "\ufeff// ==UserScript==\r\n// @version 2026.11.7.1\r\n// ==/UserScript==\r\n"
+        + "// 不要な本文" * 2000
+    ).encode()
+
+    class BoundedReader(io.BytesIO):
+        def read(self, size=-1):
+            reads.append(size)
+            assert size == 8192
+            return super().read(size)
+
+    original_open = Path.open
+
+    def open_script(path, *args, **kwargs):
+        if path == source:
+            assert args == ("rb",)
+            return BoundedReader(content)
+        return original_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", open_script)
+    client, _ = client_and_engine
+    assert client.get("/api/health").json()["userscript_version"] == "2026.11.7.1"
+    assert reads == [8192]
+
+
+def test_userscript_metadata_after_the_prefix_is_not_scanned(
+    client_and_engine, tmp_path, monkeypatch
+):
+    from plamo_cp import api
+
+    source = tmp_path / "source.user.js"
+    source.write_text(
+        "// ==UserScript==\n" + "// padding\n" * 900 + "// @version 1.2.3\n// ==/UserScript==\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(api, "USER_SCRIPT_DIST", source)
+    monkeypatch.setattr(api, "SETUP_ASSETS", tmp_path)
+    client, _ = client_and_engine
+    assert client.get("/api/health").json()["userscript_version"] is None
+
+
+def test_unreadable_userscript_does_not_break_health(client_and_engine, tmp_path, monkeypatch):
+    from pathlib import Path
+
+    from plamo_cp import api
+
+    source = tmp_path / "source.user.js"
+    source.touch()
+    monkeypatch.setattr(api, "USER_SCRIPT_DIST", source)
+    monkeypatch.setattr(api, "SETUP_ASSETS", tmp_path)
+    original_open = Path.open
+
+    def denied(path, *args, **kwargs):
+        if path == source:
+            raise PermissionError("not a readable distribution")
+        return original_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", denied)
+    client, _ = client_and_engine
+    result = client.get("/api/health")
+    assert result.status_code == 200 and result.json()["userscript_version"] is None
+
+
+def test_userscript_version_helper_is_served_only_from_its_fixed_asset(
+    client_and_engine, tmp_path, monkeypatch
+):
+    from plamo_cp import api
+
+    text = "function compareUserscriptVersions() { return null; }\n"
+    (tmp_path / "userscript-version.js").write_text(text, encoding="utf-8")
+    monkeypatch.setattr(api, "SETUP_ASSETS", tmp_path)
+    client, _ = client_and_engine
+    result = client.get("/userscript-version.js?path=/untrusted.js")
+    assert result.status_code == 200 and result.text == text
+    assert result.headers["content-type"] == "application/javascript"
 
 
 def test_browser_disconnect_cancels_inference(tmp_path):

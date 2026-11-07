@@ -59,8 +59,9 @@ def make_ico(images: dict[int, bytes]) -> bytes:
     for size in ICO_SIZES:
         data = images[size]
         dimension = 0 if size == 256 else size
+        bit_depth = 32 if data[25] == 6 else 24
         entries.append(
-            struct.pack("<BBBBHHII", dimension, dimension, 0, 0, 1, 32, len(data), offset)
+            struct.pack("<BBBBHHII", dimension, dimension, 0, 0, 1, bit_depth, len(data), offset)
         )
         payloads.append(data)
         offset += len(data)
@@ -79,8 +80,8 @@ def main() -> None:
     if not original.startswith(PNG_SIGNATURE):
         parser.error("The source must be a PNG.")
     width, height = struct.unpack_from(">II", original, 16)
-    if width != height or width < 1024 or original[25] != 6:
-        parser.error("Use a square RGBA PNG of at least 1024 pixels.")
+    if width != height or width < 1024 or original[25] not in {2, 6}:
+        parser.error("Use a square RGB or RGBA PNG of at least 1024 pixels.")
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="plamo-app-icons-") as temporary:

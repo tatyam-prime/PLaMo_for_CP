@@ -32,18 +32,22 @@ jobs:
         run: node scripts/build_userscript.mjs
       - name: Prepare the pinned Windows inference runtime
         run: uv run --no-sync python -m plamo_cp.llama_backend --output .local/windows-runtime/llama
-      - name: Run Python checks
-        run: uv run --no-sync python -m pytest -q
-      - name: Build standalone Windows application
+      - name: Verify Windows streaming jobs without weights or a native model process
+        env:
+          HF_HUB_OFFLINE: '1'
+        run: uv run --no-sync python -m pytest -q tests/test_windows_translation_jobs.py
+      - name: Run remaining Python checks
+        run: uv run --no-sync python -m pytest -q --ignore=tests/test_windows_translation_jobs.py
+      - name: Build Windows app with pinned Vulkan DLLs, local bridge, and model-free ABI checks
         run: uv run --no-sync python -m scripts.build_windows_app --installer
       - name: Verify startup and bundled setup files without model downloads
-        run: uv run --no-sync python -m scripts.smoke_desktop_bundle "dist/windows/PLaMo for CP/PLaMo for CP.exe" --windows
+        run: uv run --no-sync python -m scripts.smoke_desktop_bundle "dist/windows/PLaMo for 競プロ/PLaMo for 競プロ.exe" --windows
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: PLaMo-for-CP-Windows-x64-unsigned
+          name: PLaMo-for-競プロ-Windows-x64-unsigned
           path: |
-            dist/windows/PLaMo-for-CP-Windows.zip
-            dist/windows/PLaMo-for-CP-Windows-Setup.exe
+            dist/windows/PLaMo-for-競プロ-Windows.zip
+            dist/windows/PLaMo-for-競プロ-Windows-Setup.exe
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: failure()
         with:
@@ -75,11 +79,11 @@ jobs:
       - name: Build standalone Mac application
         run: uv run --no-sync python -m scripts.build_macos_app
       - name: Verify startup and bundled setup files without model downloads
-        run: uv run --no-sync python -m scripts.smoke_desktop_bundle "dist/macos/PLaMo for CP.app/Contents/Resources/backend/plamo-cp-backend"
+        run: uv run --no-sync python -m scripts.smoke_desktop_bundle "dist/macos/PLaMo for 競プロ.app/Contents/Resources/backend/plamo-cp-backend"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: PLaMo-for-CP-macOS-AppleSilicon-adhoc
-          path: dist/macos/PLaMo-for-CP-macOS-AppleSilicon.zip
+          name: PLaMo-for-競プロ-macOS-AppleSilicon-adhoc
+          path: dist/macos/PLaMo-for-競プロ-macOS-AppleSilicon.zip
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: failure()
         with:

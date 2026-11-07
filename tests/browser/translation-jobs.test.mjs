@@ -87,6 +87,39 @@ test('timed startup admits later paragraphs before any result and Stop clears th
   assert.equal(posted.length, 4); assert.equal(cancelled.length, 4);
 });
 
+test('the default startup interval admits one additional paragraph every three hundred milliseconds', async () => {
+  let now = 0, nextTimer = 0;
+  const timers = new Map(), posted = [], jobs = new Map();
+  const flush = async () => { for (let index = 0; index < 8; index++) await Promise.resolve(); };
+  const clockStart = runInNewContext(source + '\nstartTranslationPipeline;', {
+    Promise,
+    setTimeout(callback, delay) { const id = ++nextTimer; timers.set(id, { callback, at: now + delay }); return id; },
+    clearTimeout(id) { timers.delete(id); },
+  });
+  async function advance(milliseconds) {
+    const end = now + milliseconds;
+    while (true) {
+      const next = [...timers].filter(([, timer]) => timer.at <= end).sort((left, right) => left[1].at - right[1].at)[0];
+      if (!next) break;
+      now = next[1].at; timers.delete(next[0]); next[1].callback(); await flush();
+    }
+    now = end; await flush();
+  }
+  const request = async (path, body) => {
+    if (path === '/api/translation-jobs') { const job = { id: id(posted.length + 1) }; jobs.set(job.id, job); posted.push({ at: now, body }); return { id: job.id }; }
+    const job = jobs.get(path.split('/')[3].split('?')[0]);
+    return { id: job.id, state: path.endsWith('/cancel') ? 'cancelled' : 'running', cursor: 0, events: [] };
+  };
+  const pipeline = clockStart({ segments: segments(4), batchSize: 3, request });
+  await flush(); assert.deepEqual(posted.map(item => item.at), [0]);
+  await advance(299); assert.equal(posted.length, 1);
+  await advance(1); assert.deepEqual(posted.map(item => item.at), [0, 300]);
+  await advance(299); assert.equal(posted.length, 2);
+  await advance(1); assert.deepEqual(posted.map(item => item.at), [0, 300, 600]);
+  pipeline.cancel(); await pipeline.promise; await flush();
+  assert.equal(timers.size, 0);
+});
+
 test('429 backpressure retries the reserved work and delivers cached and per-segment failures exactly once', async () => {
   let attempts = 0;
   const results = [], jobs = new Map();
@@ -164,8 +197,8 @@ test('a DOM validator failure cancels the job and never delivers later events', 
   assert.deepEqual(results, ['0']);
 });
 
-test('integer page windows1..16 work without a powers-of-two restriction and reject invalid limits', async () => {
-  for (let count = 1; count <= 16; count++) {
+test('integer page windows1..32 work without a powers-of-two restriction and reject invalid limits', async () => {
+  for (let count = 1; count <= 32; count++) {
     const jobs = new Map(), posted = [], results = [];
     const request = async (path, body) => {
       if (path === '/api/translation-jobs') {
@@ -181,7 +214,7 @@ test('integer page windows1..16 work without a powers-of-two restriction and rej
     assert.ok(posted.every(body => body.batch_size === count));
     assert.ok(posted.slice(1).every(body => body.segments.length <= count));
   }
-  for (const invalid of [0, 17, 1.5]) assert.throws(() => start({ startIntervalMs: 0, segments: segments(1), batchSize: invalid, request() {} }), /Invalid translation worklist/);
+  for (const invalid of [0, 33, 1.5]) assert.throws(() => start({ startIntervalMs: 0, segments: segments(1), batchSize: invalid, request() {} }), /Invalid translation worklist/);
 });
 
 test('preview revisions replace drafts independently of the verified cursor and ignore completed IDs', async () => {
@@ -225,4 +258,102 @@ test('the preview character cap counts Unicode code points like the backend', as
   const pipeline = start({ segments: segments(1), batchSize: 1, request, onPreview: preview => previews.push(preview.text) });
   assert.equal((await pipeline.promise).completed, 1);
   assert.deepEqual(previews, [text]);
+});
+
+test('a priority retry starts before a held primary finishes and before unsubmitted primaries', async () => {
+  const jobs = new Map(), posted = [], delivered = [], updates = [];
+  let releaseSlow = false, sequence = 0, pipeline;
+  const request = async (path, body) => {
+    if (path === '/api/translation-jobs') {
+      posted.push(body);
+      assert.ok(posted.reduce((total, entry) => total + entry.segments.length, 0) - delivered.length <= 2);
+      const job = { id: id(++sequence), segments: body.segments }; jobs.set(job.id, job); return { id: job.id };
+    }
+    if (path.endsWith('/cancel')) return { state: 'cancelled' };
+    const job = jobs.get(path.split('/')[3].split('?')[0]);
+    const after = Number(new URL(path, 'http://local').searchParams.get('after'));
+    const events = job.id === id(1)
+      ? [{ seq: 1, type: 'segment_error', id: '0', message: 'Retry this sentence' }, ...(releaseSlow ? [{ seq: 2, type: 'translation', id: '1', text: 'Slow result' }] : [])]
+      : job.segments.map((segment, index) => ({ seq: index + 1, type: 'translation', id: segment.id, text: 'Result' }));
+    return { id: job.id, state: job.id === id(1) && !releaseSlow ? 'running' : 'completed', cursor: events.length, events: events.filter(event => event.seq > after) };
+  };
+  pipeline = start({ segments: segments(4), batchSize: 2, startIntervalMs: 0, pollInterval: 50, request,
+    onResult(event) { delivered.push(event); if (event.id === '0') pipeline.enqueue([{ id: 'retry-0', text: 'A balanced sentence retry.' }], { priority: true }); },
+    onProgress(value) { updates.push(value); },
+  });
+  try {
+    await until(() => delivered.some(event => event.id === 'retry-0'));
+    assert.equal(delivered.some(event => event.id === '1'), false);
+    assert.deepEqual(posted[1].segments.map(segment => segment.id), ['retry-0']);
+    assert.ok(updates.every(value => value.outstanding <= 2 && value.submitted - value.completed <= 2));
+    releaseSlow = true;
+    const result = await pipeline.promise;
+    assert.equal(result.total, 5); assert.equal(result.completed, 5);
+    assert.equal(new Set(delivered.map(event => event.id)).size, 5);
+  } finally { pipeline.cancel(); await pipeline.promise.catch(() => {}); }
+});
+
+test('last-result enqueue stays active, copies work, and rejects reused IDs atomically for the whole lifetime', async () => {
+  const jobs = new Map(), posted = [], initial = segments(1);
+  let pipeline;
+  const request = async (path, body) => {
+    if (path === '/api/translation-jobs') { posted.push(body); const job = { id: id(posted.length), segments: body.segments }; jobs.set(job.id, job); return { id: job.id }; }
+    const job = jobs.get(path.split('/')[3].split('?')[0]);
+    return { id: job.id, state: 'completed', cursor: job.segments.length, events: job.segments.map((segment, index) => ({ seq: index + 1, type: 'translation', id: segment.id, text: 'Result' })) };
+  };
+  pipeline = start({ segments: initial, batchSize: 1, startIntervalMs: 0, request, onResult(event) {
+    if (event.id === '0') {
+      const child = { id: 'child', text: 'Original retry text' };
+      pipeline.enqueue([child], { priority: true }); child.text = 'Changed after admission';
+    } else if (event.id === 'child') {
+      assert.throws(() => pipeline.enqueue([{ id: 'valid', text: 'Next' }, { id: '0', text: 'Duplicate completed ID' }]), /duplicate/);
+      pipeline.enqueue([{ id: 'valid', text: 'Next' }]);
+    }
+  } });
+  const result = await pipeline.promise;
+  assert.equal(result.total, 3); assert.equal(result.completed, 3);
+  assert.equal(initial.length, 1);
+  assert.equal(posted[1].segments[0].text, 'Original retry text');
+  assert.throws(() => pipeline.enqueue([{ id: 'after', text: 'After completion' }]), /ended/);
+});
+
+test('Stop cancels an enqueued retry whose creation response is late and never submits pending work', async () => {
+  let pipeline, creationCount = 0, resolveRetry;
+  const delivered = [], cancelled = [];
+  const request = async (path, body) => {
+    if (path === '/api/translation-jobs') {
+      creationCount++;
+      if (creationCount === 2) { assert.equal(body.segments[0].id, 'retry-a'); return new Promise(resolve => { resolveRetry = resolve; }); }
+      return { id: id(1) };
+    }
+    if (path.endsWith('/cancel')) { cancelled.push(path); return { state: 'cancelled' }; }
+    return { id: id(1), state: 'completed', cursor: 1, events: [{ seq: 1, type: 'segment_error', id: '0', message: 'Retry' }] };
+  };
+  pipeline = start({ segments: segments(2), batchSize: 1, startIntervalMs: 0, request, onResult(event) {
+    delivered.push(event.id);
+    pipeline.enqueue([{ id: 'retry-a', text: 'Retry A' }, { id: 'retry-b', text: 'Retry B' }], { priority: true });
+  } });
+  await until(() => resolveRetry);
+  pipeline.cancel();
+  const result = await pipeline.promise;
+  assert.equal(result.cancelled, true); assert.equal(result.total, 4);
+  assert.throws(() => pipeline.enqueue([{ id: 'after', text: 'Stopped' }]), /ended/);
+  resolveRetry({ id: id(2) });
+  await until(() => cancelled.includes('/api/translation-jobs/' + id(2) + '/cancel'));
+  assert.equal(creationCount, 2);
+  assert.deepEqual(delivered, ['0']);
+});
+
+test('dynamic work validates IDs and rejects positional context without changing the existing context API', async () => {
+  const request = async path => path === '/api/translation-jobs' ? { id: id(1) } : { id: id(1), state: 'running', events: [], cursor: 0 };
+  const pipeline = start({ segments: segments(1), request });
+  try {
+    for (const invalid of [[], null, [{ id: '', text: 'Empty ID' }], [{ id: 'x'.repeat(129), text: 'Long ID' }], [{ id: 'x', text: 7 }], [{ id: 'x', text: 'First' }, { id: 'x', text: 'Repeated' }], [{ id: '0', text: 'Already known' }]]) {
+      assert.throws(() => pipeline.enqueue(invalid), /Invalid|duplicate/);
+    }
+    pipeline.enqueue([{ id: 'x', text: 'ID unused by invalid admissions' }]);
+  } finally { pipeline.cancel(); await pipeline.promise; }
+  const contextual = start({ segments: segments(1), contextForChunk: (first, end) => `${first}:${end}`, request });
+  try { assert.throws(() => contextual.enqueue([{ id: 'later', text: 'Later' }]), /contextForChunk/); }
+  finally { contextual.cancel(); await contextual.promise; }
 });

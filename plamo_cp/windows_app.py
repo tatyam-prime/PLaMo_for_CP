@@ -45,7 +45,7 @@ def stop_owned_process(child: subprocess.Popen | None) -> None:
         child.terminate()
 
 
-def main() -> None:
+def main(*, protocol_launch: bool = False) -> None:
     import tkinter as tk
     from tkinter import ttk
 
@@ -57,7 +57,7 @@ def main() -> None:
         except (AttributeError, OSError):
             pass
     root = tk.Tk()
-    root.title("PLaMo for CP")
+    root.title("PLaMo for 競プロ")
     icon = application_icon()
     if sys.platform == "win32" and icon.is_file():
         try:
@@ -66,9 +66,13 @@ def main() -> None:
             pass
     root.geometry("480x340")
     root.resizable(False, False)
+    if protocol_launch:
+        root.deiconify()
+        root.lift()
+        root.after_idle(root.focus_force)
     content = ttk.Frame(root, padding=24)
     content.pack(fill="both", expand=True)
-    ttk.Label(content, text="PLaMo for CP", font=("Segoe UI", 20, "bold")).pack(anchor="w")
+    ttk.Label(content, text="PLaMo for 競プロ", font=("Segoe UI", 20, "bold")).pack(anchor="w")
     ttk.Label(
         content,
         text="翻訳を、このパソコンで実行します。\n標準は2B。モデルや保存先は管理画面で変更できます。",
@@ -108,13 +112,14 @@ def main() -> None:
         nonlocal ready
         ready = True
         status.set(
-            "起動済みのPLaMo for CPに接続しました。"
+            "起動済みのPLaMo for 競プロに接続しました。"
             if existing
             else "起動しました。管理画面でモデルや保存先を確認できます。"
         )
         open_button.configure(state="normal")
         text_button.configure(state="normal")
-        open_setup()
+        if not protocol_launch:
+            open_setup()
 
     def poll(attempt=0):
         if closing:
@@ -138,7 +143,7 @@ def main() -> None:
             return
         if existing_state == "other":
             status.set(
-                "別のアプリが通信先を使用しています。ほかのPLaMo for CPを終了して、もう一度開いてください。"
+                "別のアプリが通信先を使用しています。ほかのPLaMo for 競プロを終了して、もう一度開いてください。"
             )
             return
         try:

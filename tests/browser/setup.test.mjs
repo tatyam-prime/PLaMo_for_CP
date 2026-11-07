@@ -14,7 +14,7 @@ function snapshot() {
     { id: '8b', weight_gb: 5.28, min_memory_gb: 24, compatible: false, available: false },
   ];
   return {
-    setup: { application: 'plamo-for-cp', selected_model: '2b', device: { system: 'Windows', memory_gb: 16, supported: true }, models, preparation: { stage: 'idle', model: null, bytes_received: 0, error: null }, download: { stage: 'idle', model: null, bytes_received: 0, error: null } },
+    setup: { application: 'plamo-for-cp', selected_model: '2b', quiet_level: 0, quiet_mode: false, device: { system: 'Windows', memory_gb: 16, supported: true }, models, preparation: { stage: 'idle', model: null, bytes_received: 0, error: null }, download: { stage: 'idle', model: null, bytes_received: 0, error: null } },
     health: { app: 'plamo-for-cp', engine: { loaded_model: null, state: 'idle' } },
     storage: { folder: 'C:\\Users\\競プロer\\Models', shared: false, models: [...models.map(model => ({ ...model, downloaded: model.available, on_disk_bytes: model.available ? 2 * 1024 ** 3 : 0 })), { id: '31b', on_disk_bytes: 0 }] },
     cache: { entries: 12, bytes: 512 * 1024, max_bytes: 1024 ** 2, retention_days: 7 },
@@ -26,8 +26,10 @@ async function fixture() {
   const control = { ...snapshot(), offline: false, actionError: null, requests: [], folderResult: null, folderWait: null, cancelWait: null };
   const html = await readFile(new URL('../../plamo_cp/assets/setup.html', import.meta.url));
   const script = await readFile(new URL('../../plamo_cp/assets/setup.js', import.meta.url));
+  const versions = await readFile(new URL('../../plamo_cp/assets/userscript-version.js', import.meta.url));
   await page.route('http://127.0.0.1:8765/', route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: html }));
   await page.route('http://127.0.0.1:8765/setup.js', route => route.fulfill({ contentType: 'application/javascript; charset=utf-8', body: script }));
+  await page.route('http://127.0.0.1:8765/userscript-version.js', route => route.fulfill({ contentType: 'application/javascript; charset=utf-8', body: versions }));
   await page.route('http://127.0.0.1:8765/api/**', async route => {
     const request = route.request();
     const path = new URL(request.url()).pathname;
@@ -45,6 +47,11 @@ async function fixture() {
     if (path === '/api/models/choose-folder') { if (control.folderWait) await control.folderWait; result = control.folderResult || { cancelled: true }; if (!result.cancelled) { control.storage.folder = result.folder; control.health.engine.loaded_model = null; control.setup.preparation.stage = 'idle'; } }
     if (path === '/api/cache/policy') { control.cache.max_bytes = body.max_kib * 1024; result = control.cache; }
     if (path === '/api/cache/clear') { control.cache.entries = 0; control.cache.bytes = 0; result = control.cache; }
+    if (path === '/api/performance') {
+      control.setup.quiet_level = body.quiet_level ?? (body.quiet_mode ? 3 : 0);
+      control.setup.quiet_mode = control.setup.quiet_level > 0;
+      result = { quiet_level: control.setup.quiet_level, quiet_mode: control.setup.quiet_mode };
+    }
     return route.fulfill({ status: path === '/api/models/download' ? 202 : 200, json: result });
   });
   await page.goto('http://127.0.0.1:8765/');
@@ -54,6 +61,179 @@ async function fixture() {
 async function poll(page) { await page.evaluate(() => refresh()); }
 const row = (page, model) => page.locator(`[data-model="${model}"]`);
 const posts = control => control.requests.filter(request => request.method === 'POST');
+
+async function mountBrowserSettings(page, version, { ready = true, notify = true, legacy = false } = {}) {
+  await page.evaluate(({ version, ready, notify, legacy }) => {
+    const host = document.createElement('div'); host.setAttribute(legacy ? 'data-plamo-ui' : 'data-cp-translator-ui', '');
+    if (version !== undefined) host.setAttribute(legacy ? 'data-plamo-userscript-version' : 'data-cp-translator-userscript-version', version);
+    const heading = document.createElement('h2'); heading.textContent = 'Installed browser settings';
+    host.attachShadow({ mode: 'open' }).append(heading);
+    document.getElementById('browser-settings').replaceChildren(host);
+    delete document.documentElement.dataset.plamoUserscript;
+    delete document.documentElement.dataset.cpTranslatorUserscript;
+    if (ready) document.documentElement.dataset[legacy ? 'plamoUserscript' : 'cpTranslatorUserscript'] = 'ready';
+    if (notify) document.dispatchEvent(new Event(legacy ? 'plamo-browser-settings-ready' : 'cp-translator-browser-settings-ready'));
+  }, { version, ready, notify, legacy });
+}
+
+test('native update notice compares numeric versions without blocking ongoing work or changing settings', async () => {
+  const { page, control } = await fixture();
+  try {
+    control.health.userscript_version = '0.4.10';
+    control.health.engine = { loaded_model: '2b', state: 'translating' };
+    await poll(page);
+    await mountBrowserSettings(page, '0.4.9');
+    const update = page.locator('#userscript-update');
+    await update.waitFor({ state: 'visible' });
+    assert.match(await page.locator('#userscript-update-detail').textContent(), /現在 v0\.4\.9 → 最新 v0\.4\.10/);
+    assert.match(await update.textContent(), /再読み込み/);
+    const link = update.getByRole('link', { name: '更新する', exact: true });
+    assert.equal(await link.getAttribute('href'), '/install.user.js');
+    assert.equal(await link.getAttribute('target'), '_blank');
+    assert.match(await link.getAttribute('rel'), /noopener/);
+    assert.equal(await update.evaluate(node => node.nextElementSibling?.id), 'browser-settings');
+    assert.equal(await page.locator('#browser-settings').getByRole('heading', { name: 'Installed browser settings' }).count(), 1);
+    assert.equal(await page.getByLabel('推論の稼働率', { exact: true }).isEnabled(), true);
+    assert.deepEqual(control.health.engine, { loaded_model: '2b', state: 'translating' });
+    assert.deepEqual(posts(control), []);
+    // Attribute changes must refresh the notice without another API poll or a
+    // full native page reload after the newly installed script mounts.
+    await page.locator('#browser-settings > [data-cp-translator-ui]').evaluate(host => { host.dataset.cpTranslatorUserscriptVersion = '0.4.10'; });
+    await update.waitFor({ state: 'hidden' });
+  } finally { await page.close(); }
+});
+
+test('same/newer installed versions and unfamiliar or missing version data never request an update', async () => {
+  const { page, control } = await fixture();
+  try {
+    for (const item of [
+      { installed: '0.4.16', available: '0.4.16' },
+      { installed: '0.4.17', available: '0.4.16' },
+      { installed: '0.4.10', available: '0.4.9' },
+      { installed: '0.4.15', available: undefined },
+      { installed: '0.4.15', available: 'not-a-version' },
+      { installed: '0.4.15', available: '99999999999999999999.0.0' },
+      { installed: '', available: '0.4.16' },
+      { installed: 'broken', available: '0.4.16' },
+      { installed: '0.4.15', available: '<img src=x onerror="window.__versionXSS=true">' },
+    ]) {
+      control.health.userscript_version = item.available;
+      await poll(page);
+      await mountBrowserSettings(page, item.installed);
+      assert.equal(await page.locator('#userscript-update').isHidden(), true, JSON.stringify(item));
+    }
+    assert.equal(await page.locator('#userscript-update img, #userscript-update script').count(), 0);
+    assert.equal(await page.evaluate(() => window.__versionXSS), undefined);
+    assert.equal(await page.getByLabel('推論の稼働率', { exact: true }).isEnabled(), true);
+    assert.deepEqual(posts(control), []);
+  } finally { await page.close(); }
+});
+
+test('an installed legacy settings host is distinguished from an absent or unrelated userscript UI', async () => {
+  const { page, control } = await fixture();
+  try {
+    control.health.userscript_version = '0.4.16';
+    await poll(page);
+    assert.equal(await page.locator('#userscript-update').isHidden(), true);
+    assert.equal(await page.locator('#browser-settings-placeholder').isVisible(), true);
+    await page.evaluate(() => {
+      document.documentElement.dataset.plamoUserscript = 'ready';
+      const unrelated = document.createElement('div'); unrelated.dataset.plamoUi = ''; document.body.append(unrelated);
+      document.dispatchEvent(new Event('plamo-browser-settings-ready'));
+    });
+    assert.equal(await page.locator('#userscript-update').isHidden(), true);
+    await mountBrowserSettings(page, undefined, { ready: false, legacy: true });
+    assert.equal(await page.locator('#userscript-update').isHidden(), true);
+    await page.evaluate(() => { document.documentElement.dataset.plamoUserscript = 'ready'; document.dispatchEvent(new Event('plamo-browser-settings-ready')); });
+    await page.locator('#userscript-update').waitFor({ state: 'visible' });
+    assert.match(await page.locator('#userscript-update-detail').textContent(), /最新版は v0\.4\.16/);
+    assert.doesNotMatch(await page.locator('#userscript-update-detail').textContent(), /undefined|null|現在 v/);
+    control.health.userscript_version = '0.4.15';
+    await poll(page);
+    assert.equal(await page.locator('#userscript-update').isHidden(), true);
+    delete control.health.userscript_version;
+    await poll(page);
+    assert.equal(await page.locator('#userscript-update').isHidden(), true);
+    assert.deepEqual(posts(control), []);
+  } finally { await page.close(); }
+});
+
+test('delayed userscript mounting is observed and its update notice follows connection loss and recovery', async () => {
+  const { page, control } = await fixture();
+  try {
+    control.health.userscript_version = '0.4.16';
+    await poll(page);
+    assert.equal(await page.locator('#userscript-update').isHidden(), true);
+    // No ready event: observe the late host insertion itself.
+    await mountBrowserSettings(page, '0.4.15', { notify: false });
+    await page.locator('#userscript-update').waitFor({ state: 'visible' });
+    control.offline = true;
+    await poll(page);
+    assert.equal(await page.locator('#userscript-update').isHidden(), true);
+    control.offline = false;
+    await poll(page);
+    assert.equal(await page.locator('#userscript-update').isVisible(), true);
+    await mountBrowserSettings(page, '0.4.16', { notify: false });
+    await page.locator('#userscript-update').waitFor({ state: 'hidden' });
+    assert.equal(await page.locator('#userscript-update').count(), 1);
+    assert.deepEqual(posts(control), []);
+  } finally { await page.close(); }
+});
+
+test('eight logarithmic utilization levels can change during translation and stay saved when management is reopened', async () => {
+  const { page, control } = await fixture();
+  try {
+    const quiet = page.getByLabel('推論の稼働率', { exact: true });
+    assert.equal(await quiet.inputValue(), '0');
+    assert.deepEqual(await quiet.locator('option').allTextContents(), ['100%（通常）', '80%', '64%', '50%', '40%', '32%', '25%', '20%']);
+    assert.equal(posts(control).length, 0);
+    control.health.engine.state = 'translating';
+    await poll(page);
+    assert.equal(await quiet.isEnabled(), true);
+    await quiet.selectOption('3');
+    await page.getByText('推論の稼働率を50%にしました', { exact: true }).waitFor();
+    await page.waitForFunction(() => !document.querySelector('#quiet-level').disabled);
+    await page.reload();
+    await page.getByText('アプリに接続済み', { exact: true }).waitFor();
+    assert.equal(await quiet.inputValue(), '3');
+    assert.equal(control.setup.selected_model, '2b');
+    assert.equal(control.health.engine.state, 'translating');
+    assert.deepEqual(posts(control), [{ path: '/api/performance', method: 'POST', body: { quiet_level: 3 }, client: 'setup' }]);
+    await quiet.selectOption('7');
+    await page.getByText('推論の稼働率を20%にしました', { exact: true }).waitFor();
+    await page.waitForFunction(() => !document.querySelector('#quiet-level').disabled);
+    await quiet.selectOption('0');
+    await page.getByText('推論の稼働率を100%にしました', { exact: true }).waitFor();
+    assert.deepEqual(posts(control).map(request => request.body), [{ quiet_level: 3 }, { quiet_level: 7 }, { quiet_level: 0 }]);
+    control.offline = true;
+    await poll(page);
+    assert.equal(await quiet.isDisabled(), true);
+  } finally { await page.close(); }
+});
+
+test('a rejected utilization change restores the saved level and reports the reason', async () => {
+  const { page, control } = await fixture();
+  try {
+    control.actionError = '静音モードを適用できませんでした。';
+    await page.getByLabel('推論の稼働率', { exact: true }).selectOption('3');
+    await page.getByText(control.actionError, { exact: true }).waitFor();
+    await page.waitForFunction(() => document.querySelector('#quiet-level').value === '0' && !document.querySelector('#quiet-level').disabled);
+    assert.equal(control.setup.quiet_mode, false);
+    assert.equal(control.setup.quiet_level, 0);
+    assert.equal(posts(control).length, 1);
+  } finally { await page.close(); }
+});
+
+test('the former quiet-mode switch is displayed as its original 50 percent level', async () => {
+  const { page, control } = await fixture();
+  try {
+    delete control.setup.quiet_level;
+    control.setup.quiet_mode = true;
+    await poll(page);
+    assert.equal(await page.getByLabel('推論の稼働率', { exact: true }).inputValue(), '3');
+    assert.equal(posts(control).length, 0);
+  } finally { await page.close(); }
+});
 
 test('dashboard shows actual storage, selected versus loaded state, and never starts downloads on render', async () => {
   const { page, control } = await fixture();
@@ -88,9 +268,33 @@ test('dashboard shows actual storage, selected versus loaded state, and never st
   await page.close();
 });
 
+test('management displays the actual selected GPU and an honest CPU fallback without starting model work', async () => {
+  const { page, control } = await fixture();
+  try {
+    control.health.engine = { backend: 'llama.cpp-native', loaded_model: '2b', state: 'idle', native: {
+      device_index: 1, devices: [{ index: 0, type: 'cpu', name: 'CPU' }, { index: 1, type: 'gpu', name: 'Vulkan0', description: 'Test GPU' }], fallback_reason: '',
+    } };
+    await poll(page);
+    assert.match(await page.locator('#engine-state').textContent(), /GPU · Test GPU/);
+    assert.equal(await page.locator('#engine-detail').isHidden(), true);
+    control.health.engine.native.device_index = -2;
+    control.health.engine.native.fallback_reason = 'GPU model initialization failed';
+    await poll(page);
+    assert.match(await page.locator('#engine-state').textContent(), /CPU/);
+    assert.doesNotMatch(await page.locator('#engine-state').textContent(), /Test GPU/);
+    assert.equal(await page.locator('#engine-detail').isVisible(), true);
+    assert.equal(await page.locator('#engine-detail').getAttribute('title'), 'GPU model initialization failed');
+    control.health.engine = { backend: 'llama.cpp', loaded_model: '2b', state: 'idle', native_fallback_reason: 'Native runtime validation failed' };
+    await poll(page);
+    assert.match(await page.locator('#engine-state').textContent(), /CPU/);
+    assert.equal(await page.locator('#engine-detail').getAttribute('title'), 'Native runtime validation failed');
+    assert.deepEqual(posts(control), []);
+  } finally { await page.close(); }
+});
+
 test('explicit download shows progress without selecting or loading the model, then explicit Use syncs only after ready', async () => {
   const { page, control } = await fixture();
-  await page.evaluate(() => { window.chosenModels = []; document.addEventListener('plamo-model-selected', event => window.chosenModels.push(event.detail.model)); });
+  await page.evaluate(() => { window.chosenModels = []; document.addEventListener('cp-translator-model-selected', event => window.chosenModels.push(event.detail.model)); });
   const prepare = row(page, '0.8b').locator('[data-action="prepare"]');
   assert.match(await prepare.textContent(), /ダウンロード.*0\.57 GB/);
   await prepare.click();
@@ -174,7 +378,7 @@ test('a new download can start during inference without changing the active mode
 
 test('download cancellation disables duplicate cancel actions, keeps saved data and never selects the cancelled model', async () => {
   const { page, control } = await fixture();
-  await page.evaluate(() => { window.chosenModels = []; document.addEventListener('plamo-model-selected', event => window.chosenModels.push(event.detail.model)); });
+  await page.evaluate(() => { window.chosenModels = []; document.addEventListener('cp-translator-model-selected', event => window.chosenModels.push(event.detail.model)); });
   await row(page, '0.8b').locator('[data-action="prepare"]').click();
   await page.locator('#download-title').filter({ hasText: 'ダウンロードしています' }).waitFor();
   let release; control.cancelWait = new Promise(resolve => { release = resolve; });

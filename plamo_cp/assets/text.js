@@ -1,15 +1,22 @@
 'use strict';
 
 const ui = Object.fromEntries(['model', 'prefetch', 'source-language', 'document-type', 'translate', 'stop', 'progress', 'model-info', 'status', 'source', 'clear', 'copy', 'results'].map(id => [id, document.getElementById(id)]));
-const defaults = { '0.8b': 4, '2b': 4, '8b': 8 };
-let preferences = {}, setup = null, modelChosen = false, busy = false, generation = 0, controller = null, pipeline = null;
+let batchPreference = 16, setup = null, modelChosen = false, busy = false, generation = 0, controller = null, pipeline = null;
 let segments = [];
 const outputs = new Map(), rows = new Map();
+for (const value of TRANSLATION_BATCH_SIZES) {
+  const option = document.createElement('option'); option.value = String(value); option.textContent = String(value); ui.prefetch.append(option);
+}
 function readPreferences() {
-  try { const value = JSON.parse(localStorage.getItem('plamo-text-prefetch') || '{}'); preferences = value && typeof value === 'object' && !Array.isArray(value) ? value : {}; } catch { preferences = {}; }
+  batchPreference = 16;
+  try { const value = JSON.parse(localStorage.getItem('cp-translator-batch-size')); if (TRANSLATION_BATCH_SIZES.includes(value)) batchPreference = value; } catch {}
+  try {
+    if (localStorage.getItem('cp-translator-batch-size') !== String(batchPreference)) localStorage.setItem('cp-translator-batch-size', String(batchPreference));
+  } catch {}
 }
 readPreferences();
-function preferredBatch() { const value = Number(preferences[ui.model.value] ?? defaults[ui.model.value]); return Number.isInteger(value) && value >= 1 && value <= 16 ? value : defaults[ui.model.value]; }
+ui.prefetch.value = String(batchPreference);
+function preferredBatch() { return batchPreference; }
 function status(message, error = false) { ui.status.textContent = message; ui.status.classList.toggle('error', error); }
 function render() {
   const model = setup?.models.find(item => item.id === ui.model.value);
@@ -18,7 +25,7 @@ function render() {
   ui.translate.disabled = busy || !ui.source.value.trim() || !model?.available || model.compatible === false;
   ui.stop.hidden = !busy; ui.progress.hidden = !busy;
   ui.copy.disabled = !outputs.size;
-  ui['model-info'].textContent = !setup ? 'アプリに接続できません。PLaMo for CP アプリを開いてください。' : model?.compatible === false ? 'このモデルはこのパソコンでは利用できません。' : !model?.available ? 'このモデルは未取得です。設定・管理からダウンロードしてください。' : '少しずつ開始をずらし、設定した数まで翻訳を依頼します。';
+  ui['model-info'].textContent = !setup ? 'アプリに接続できません。PLaMo for 競プロ アプリを開いてください。' : model?.compatible === false ? 'このモデルはこのパソコンでは利用できません。' : !model?.available ? 'このモデルは未取得です。設定・管理からダウンロードしてください。' : setup.supported_batch_sizes?.length <= 1 || !setup.supported_batch_sizes?.includes(preferredBatch()) ? 'この環境では並列翻訳を利用できず、1つずつ翻訳します。' : '大きくすると、一度に行う計算量はほぼ比例して増え、メモリ使用量は少し増えます。個々の翻訳は少し遅くなりますが、全体の翻訳を効率よく進められます。標準は16です。';
 }
 function clearDrafts() { for (const segment of segments) { const row = rows.get(segment.id); if (row?.classList.contains('draft')) { row.textContent = segment.original; row.className = 'paragraph pending'; row.removeAttribute('title'); } } }
 function cancel(message) {
@@ -58,7 +65,7 @@ function splitSource(value) {
 function restore(text, slots) { return text.replace(/\[\[PLM_\d+\]\]/g, token => slots.get(token) ?? token); }
 function configuredGlossary() {
   let saved = null;
-  try { const raw = localStorage.getItem('plamo-glossary'); if (raw !== null) { const value = JSON.parse(raw); if (Array.isArray(value) && value.every(pair => pair && typeof pair.source === 'string' && typeof pair.target === 'string')) saved = value; } } catch {}
+  try { const raw = localStorage.getItem('cp-translator-glossary'); if (raw !== null) { const value = JSON.parse(raw); if (Array.isArray(value) && value.every(pair => pair && typeof pair.source === 'string' && typeof pair.target === 'string')) saved = value; } } catch {}
   const defaults = Array.isArray(setup?.default_glossary) ? setup.default_glossary : [];
   if (ui['document-type'].value === 'problem') return saved ?? defaults;
   return (saved ?? []).filter(pair => !defaults.some(term => term.source.toLowerCase() === pair.source.toLowerCase() && term.target === pair.target));
@@ -111,9 +118,9 @@ ui.clear.addEventListener('click', () => { cancel(); ui.source.value = ''; clear
 ui.translate.addEventListener('click', translate);
 ui.stop.addEventListener('click', () => cancel('停止しました。完了した訳文は残っています。'));
 ui.model.addEventListener('change', () => { modelChosen = true; render(); });
-ui.prefetch.addEventListener('change', () => { const value = ui.prefetch.valueAsNumber; if (!Number.isInteger(value) || value < 1 || value > 16) { status('同時に翻訳する段落数は1〜16の整数で指定してください。', true); render(); return; } preferences[ui.model.value] = value; try { localStorage.setItem('plamo-text-prefetch', JSON.stringify(preferences)); } catch {} render(); });
+ui.prefetch.addEventListener('change', () => { const value = Number(ui.prefetch.value); if (!TRANSLATION_BATCH_SIZES.includes(value)) { status('翻訳の並列数を候補から選んでください。', true); render(); return; } batchPreference = value; try { localStorage.setItem('cp-translator-batch-size', String(value)); window.dispatchEvent(new Event('cp-translator-batch-size-changed')); } catch {} render(); });
 ui.copy.addEventListener('click', async () => { try { await navigator.clipboard.writeText(segments.filter(segment => outputs.has(segment.id)).map(segment => outputs.get(segment.id)).join('\n\n')); status('訳文をコピーしました。'); } catch { status('コピーできませんでした。訳文を選択してコピーしてください。', true); } });
-window.addEventListener('storage', event => { if (event.key === 'plamo-text-prefetch' || event.key === null) { readPreferences(); render(); } });
+window.addEventListener('storage', event => { if (event.key === 'cp-translator-batch-size' || event.key === null) { readPreferences(); render(); } });
 window.addEventListener('focus', refreshModels);
 window.addEventListener('pagehide', () => cancel());
 refreshModels();

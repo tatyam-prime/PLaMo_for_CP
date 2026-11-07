@@ -1,94 +1,84 @@
 (() => {
   'use strict';
-  if (globalThis.__plamoUserscriptStarted) return;
-  globalThis.__plamoUserscriptStarted = true;
-  const API = '__PLAMO_API__';
+  if (globalThis.__cpTranslatorUserscriptStarted) return;
+  globalThis.__cpTranslatorUserscriptStarted = true;
+  const API = '__TRANSLATOR_API__';
+  const USERSCRIPT_VERSION = '__TRANSLATOR_USERSCRIPT_VERSION__';
   const MODELS = ['0.8b', '2b', '8b'];
-  const keys = ['plamo-model', 'plamo-pending-model', 'plamo-disabled-sites', 'plamo-panel-position', 'plamo-panel-offset', 'plamo-glossary', 'plamo-default-glossary', 'plamo-glossary-version', 'plamo-custom-sites', 'plamo-auto-sites', 'plamo-batch-sizes', 'plamo-supported-batch-sizes', 'plamo-translation-previews'];
+  const keys = ['cp-translator-model', 'cp-translator-pending-model', 'cp-translator-disabled-sites', 'cp-translator-panel-position', 'cp-translator-panel-offset', 'cp-translator-glossary', 'cp-translator-default-glossary', 'cp-translator-custom-sites', 'cp-translator-auto-sites', 'cp-translator-batch-size', 'cp-translator-supported-batch-sizes', 'cp-translator-translation-previews'];
   const nativePage = location.origin === API && ['/', '/text'].includes(location.pathname);
-  __PLAMO_SITE_RULES__
-  __PLAMO_SITE_REGISTRY__
-  __PLAMO_TRANSLATION_JOBS__
+  __TRANSLATOR_TRANSLATION_JOBS__
+  const validBatchSize = value => TRANSLATION_BATCH_SIZES.includes(value);
+  if (!validBatchSize(GM_getValue('cp-translator-batch-size', null))) GM_setValue('cp-translator-batch-size', 16);
+  for (const [key, value] of [['cp-translator-auto-sites', {}], ['cp-translator-disabled-sites', []], ['cp-translator-custom-sites', []]]) {
+    if (GM_getValue(key, null) === null) GM_setValue(key, value);
+  }
+  __TRANSLATOR_SITE_RULES__
+  __TRANSLATOR_SITE_REGISTRY__
+  __TRANSLATOR_USERSCRIPT_VERSION_HELPER__
   const builtinSites = SITE_REGISTRY;
   const builtin = () => builtinSites.find(site => site.host.test(location.hostname));
-  const matchingCustomSite = () => { const sites = GM_getValue('plamo-custom-sites', []); return Array.isArray(sites) ? sites.find(site => site.enabled && siteMatches(site.pattern, location.href)) : undefined; };
-  const isCustomSite = () => { const sites = GM_getValue('plamo-custom-sites', []); return Array.isArray(sites) && sites.some(site => site.enabled && siteMatches(site.pattern, location.href)); };
+  const matchingCustomSite = () => { const sites = GM_getValue('cp-translator-custom-sites', []); return Array.isArray(sites) ? sites.find(site => site.enabled && siteMatches(site.pattern, location.href)) : undefined; };
+  const isCustomSite = () => { const sites = GM_getValue('cp-translator-custom-sites', []); return Array.isArray(sites) && sites.some(site => site.enabled && siteMatches(site.pattern, location.href)); };
   const currentSite = () => {
     const site = builtin();
     if (site?.documentType === 'general' && matchingCustomSite()) return matchingCustomSite().id;
-    if (problemRoots(site).length) return GM_getValue('plamo-disabled-sites', []).includes(site.id) ? null : site.id;
+    if (problemRoots(site).length) return GM_getValue('cp-translator-disabled-sites', []).includes(site.id) ? null : site.id;
     return matchingCustomSite()?.id || null;
   };
-  // Replace the former global switch once, without overriding explicit choices.
-  if (GM_getValue('plamo-auto-sites-migrated', false) !== true) {
-    const automatic = { ...GM_getValue('plamo-auto-sites', {}) };
-    if (GM_getValue('plamo-auto-translate', false) === true) {
-      const disabled = GM_getValue('plamo-disabled-sites', []);
-      for (const { id, documentType } of builtinSites) if (documentType !== 'general' && !disabled.includes(id) && automatic[id] === undefined) automatic[id] = true;
-      for (const site of GM_getValue('plamo-custom-sites', [])) if (site.enabled && automatic[site.id] === undefined) automatic[site.id] = true;
-      GM_setValue('plamo-auto-sites', automatic);
-    }
-    GM_setValue('plamo-auto-sites-migrated', true);
-    GM_deleteValue('plamo-auto-translate');
-  }
-  const automatic = GM_getValue('plamo-auto-sites', {}), retiredSites = ['spoj', 'dmoj'];
-  if (retiredSites.some(id => Object.hasOwn(automatic, id))) { const cleaned = { ...automatic }; for (const id of retiredSites) delete cleaned[id]; GM_setValue('plamo-auto-sites', cleaned); }
-  const disabledSites = GM_getValue('plamo-disabled-sites', []);
-  if (retiredSites.some(id => disabledSites.includes(id))) GM_setValue('plamo-disabled-sites', disabledSites.filter(id => !retiredSites.includes(id)));
-  const readPreference = (key, fallback) => key === 'plamo-custom-site' ? isCustomSite() : key === 'plamo-current-site' ? currentSite() : GM_getValue(key, fallback);
+  const readPreference = (key, fallback) => key === 'cp-translator-custom-site' ? isCustomSite() : key === 'cp-translator-current-site' ? currentSite() : GM_getValue(key, fallback);
   function publishGlossary() {
     if (!nativePage) return;
-    const glossary = GM_getValue('plamo-glossary', null);
+    const glossary = GM_getValue('cp-translator-glossary', null);
     if (!Array.isArray(glossary)) return;
     try {
       const serialized = JSON.stringify(glossary);
-      if (localStorage.getItem('plamo-glossary') !== serialized) localStorage.setItem('plamo-glossary', serialized);
+      if (localStorage.getItem('cp-translator-glossary') !== serialized) localStorage.setItem('cp-translator-glossary', serialized);
+    } catch {}
+  }
+  function publishBatchSize() {
+    if (!nativePage) return;
+    try {
+      const value = GM_getValue('cp-translator-batch-size', 16), serialized = String(validBatchSize(value) ? value : 16);
+      const previous = localStorage.getItem('cp-translator-batch-size');
+      if (previous !== serialized) {
+        localStorage.setItem('cp-translator-batch-size', serialized);
+        window.dispatchEvent(new StorageEvent('storage', { key: 'cp-translator-batch-size', oldValue: previous, newValue: serialized, storageArea: localStorage }));
+      }
     } catch {}
   }
   function initializeGlossary(defaults) {
     if (!Array.isArray(defaults) || defaults.some(pair => typeof pair?.source !== 'string' || typeof pair?.target !== 'string')) return;
-    const previousDefaults = GM_getValue('plamo-default-glossary', null);
-    const current = GM_getValue('plamo-glossary', null);
-    const samePairs = (left, right) => Array.isArray(left) && Array.isArray(right) && left.length === right.length
-      && left.every((pair, index) => typeof pair?.source === 'string' && typeof right[index]?.source === 'string' && pair.source.toLowerCase() === right[index].source.toLowerCase() && pair.target === right[index].target);
-    if (GM_getValue('plamo-glossary-version', 0) === 1 && Array.isArray(current) && current.length && Array.isArray(previousDefaults) && previousDefaults.length
-      && samePairs(current, previousDefaults) && !samePairs(previousDefaults, defaults)) {
-      GM_setValue('plamo-glossary', defaults);
-    }
-    if (GM_getValue('plamo-glossary-version', 0) !== 1) {
-      const saved = GM_getValue('plamo-glossary', []), overrides = new Map();
-      if (Array.isArray(saved)) for (const pair of saved) if (typeof pair?.source === 'string' && typeof pair?.target === 'string' && pair.source.trim() && pair.target.trim()) overrides.set(pair.source.toLowerCase(), { source: pair.source, target: pair.target });
-      const missing = defaults.filter(pair => !overrides.has(pair.source.toLowerCase()));
-      // Preserve the former custom list before using remaining space for defaults.
-      let count = overrides.size, characters = [...overrides.values()].reduce((sum, pair) => sum + pair.source.length + pair.target.length, 0);
-      const included = new Set();
-      for (const pair of missing) if (count < 64 && characters + pair.source.length + pair.target.length <= 6000) { included.add(pair.source.toLowerCase()); count++; characters += pair.source.length + pair.target.length; }
-      const merged = defaults.filter(pair => included.has(pair.source.toLowerCase()) || overrides.has(pair.source.toLowerCase())).map(pair => overrides.get(pair.source.toLowerCase()) || pair);
-      const defaultKeys = new Set(defaults.map(pair => pair.source.toLowerCase()));
-      merged.push(...[...overrides].filter(([key]) => !defaultKeys.has(key)).map(([, pair]) => pair));
-      GM_setValue('plamo-glossary', merged); GM_setValue('plamo-glossary-version', 1);
-    }
-    GM_setValue('plamo-default-glossary', defaults);
+    if (GM_getValue('cp-translator-glossary', null) === null) GM_setValue('cp-translator-glossary', defaults);
+    GM_setValue('cp-translator-default-glossary', defaults);
     publishGlossary();
   }
-  const notifyPreferences = () => { publishGlossary(); document.dispatchEvent(new Event('plamo-preferences-changed')); };
+  const notifyPreferences = () => { publishGlossary(); publishBatchSize(); document.dispatchEvent(new Event('cp-translator-preferences-changed')); };
   const writePreference = (key, value) => { GM_setValue(key, value); notifyPreferences(); };
   function resetBrowserPreferences() {
     const defaults = {
-      'plamo-auto-sites': {}, 'plamo-disabled-sites': [], 'plamo-custom-sites': [],
-      'plamo-model': '2b', 'plamo-glossary': GM_getValue('plamo-default-glossary', []),
-      'plamo-batch-sizes': { '0.8b': 4, '2b': 4, '8b': 8 },
-      'plamo-panel-position': 'right-bottom', 'plamo-panel-offset': null,
+      'cp-translator-auto-sites': {}, 'cp-translator-disabled-sites': [], 'cp-translator-custom-sites': [],
+      'cp-translator-model': '2b', 'cp-translator-glossary': GM_getValue('cp-translator-default-glossary', []),
+      'cp-translator-batch-size': 16,
+      'cp-translator-panel-position': 'right-bottom', 'cp-translator-panel-offset': null,
     };
     for (const [key, value] of Object.entries(defaults)) GM_setValue(key, value);
-    GM_setValue('plamo-glossary-version', 1);
-    for (const key of ['plamo-pending-model', 'plamo-auto-translate', 'plamo-use-history', 'plamo-use-source-context', 'plamo-batch-size']) GM_deleteValue(key);
+    GM_deleteValue('cp-translator-pending-model');
     notifyPreferences();
   }
   for (const key of keys) GM_addValueChangeListener(key, notifyPreferences);
-  const savedModel = GM_getValue('plamo-model', null);
-  if (savedModel && !MODELS.includes(savedModel)) GM_setValue('plamo-model', '2b');
-  if (GM_getValue('plamo-pending-model', null) && !MODELS.includes(GM_getValue('plamo-pending-model'))) GM_deleteValue('plamo-pending-model');
+  const savedModel = GM_getValue('cp-translator-model', null);
+  if (savedModel && !MODELS.includes(savedModel)) GM_setValue('cp-translator-model', '2b');
+  if (GM_getValue('cp-translator-pending-model', null) && !MODELS.includes(GM_getValue('cp-translator-pending-model'))) GM_deleteValue('cp-translator-pending-model');
+  if (nativePage) {
+    publishBatchSize();
+    window.addEventListener('cp-translator-batch-size-changed', () => {
+      try {
+        const value = JSON.parse(localStorage.getItem('cp-translator-batch-size'));
+        if (validBatchSize(value)) writePreference('cp-translator-batch-size', value);
+      } catch {}
+    });
+  }
   const openManagement = () => GM_openInTab(API + '/#browser-settings', { active: true, insert: true });
   const openText = () => GM_openInTab(API + '/text', { active: true, insert: true });
   const commands = new Map();
@@ -126,34 +116,63 @@
     return { abort: cancel };
   }
   window.addEventListener('pagehide', () => { for (const cancel of [...requests]) cancel(); });
-  async function setupPreferences() {
-    const setup = await new Promise(resolve => requestHTTP({ method: 'GET', url: API + '/api/setup', timeout: 2500,
-      onload(response) { try { const setup = JSON.parse(response.responseText); resolve(response.status === 200 && setup.application === 'plamo-for-cp' ? setup : null); } catch { resolve(null); } }, onerror: () => resolve(null), onabort: () => resolve(null), ontimeout: () => resolve(null) }));
-    if (!setup) return null;
+  function readLocalState(path, { signal } = {}) {
+    return new Promise(resolve => {
+      if (signal?.aborted) { resolve(null); return; }
+      let handle;
+      const cancel = () => handle?.abort();
+      const finish = value => { signal?.removeEventListener('abort', cancel); resolve(signal?.aborted ? null : value); };
+      handle = requestHTTP({ method: 'GET', url: API + path, timeout: 1800,
+        onload(response) { try { finish(response.status === 200 ? JSON.parse(response.responseText) : null); } catch { finish(null); } },
+        onerror: () => finish(null), onabort: () => finish(null), ontimeout: () => finish(null) });
+      signal?.addEventListener('abort', cancel, { once: true });
+      if (signal?.aborted) cancel();
+    });
+  }
+  async function setupPreferences(options = {}) {
+    const setup = await readLocalState('/api/setup', options);
+    if (!setup || setup.application !== 'plamo-for-cp' || options.signal?.aborted) return null;
     initializeGlossary(setup.default_glossary);
-    const pending = GM_getValue('plamo-pending-model', null);
-    if (pending && setup.preparation?.stage === 'ready' && setup.preparation.model === pending) { GM_setValue('plamo-model', pending); GM_deleteValue('plamo-pending-model'); }
-    if (!GM_getValue('plamo-model', null) && MODELS.includes(setup.selected_model)) GM_setValue('plamo-model', setup.selected_model);
-    if (Array.isArray(setup.models)) GM_setValue('plamo-model-weights', Object.fromEntries(setup.models.filter(model => Number.isFinite(model.weight_gb) && model.weight_gb > 0).map(model => [model.id, model.weight_gb.toFixed(2)])));
-    GM_setValue('plamo-supported-batch-sizes', Array.isArray(setup.supported_batch_sizes) ? setup.supported_batch_sizes.filter(size => Number.isInteger(size) && size >= 1 && size <= 16) : [1]);
-    GM_setValue('plamo-translation-jobs', setup.supported_translation_jobs === true);
-    GM_setValue('plamo-translation-previews', setup.supported_translation_previews === true);
+    const pending = GM_getValue('cp-translator-pending-model', null);
+    if (pending && setup.preparation?.stage === 'ready' && setup.preparation.model === pending) { GM_setValue('cp-translator-model', pending); GM_deleteValue('cp-translator-pending-model'); }
+    if (!GM_getValue('cp-translator-model', null) && MODELS.includes(setup.selected_model)) GM_setValue('cp-translator-model', setup.selected_model);
+    if (Array.isArray(setup.models)) GM_setValue('cp-translator-model-weights', Object.fromEntries(setup.models.filter(model => Number.isFinite(model.weight_gb) && model.weight_gb > 0).map(model => [model.id, model.weight_gb.toFixed(2)])));
+    GM_setValue('cp-translator-supported-batch-sizes', Array.isArray(setup.supported_batch_sizes) ? TRANSLATION_BATCH_SIZES.filter(size => setup.supported_batch_sizes.includes(size)) : [1]);
+    GM_setValue('cp-translator-translation-jobs', setup.supported_translation_jobs === true);
+    GM_setValue('cp-translator-translation-previews', setup.supported_translation_previews === true);
     return setup;
+  }
+  let connectionSetup;
+  async function refreshConnection({ signal, refreshSetup = false } = {}) {
+    const health = await readLocalState('/api/health', { signal });
+    if (!health || (health.application || health.app) !== 'plamo-for-cp') {
+      connectionSetup = null;
+      return { connected: false, ready: false };
+    }
+    const userscript = { installed: USERSCRIPT_VERSION, available: health.userscript_version,
+      update: compareUserscriptVersions(USERSCRIPT_VERSION, health.userscript_version) === -1 };
+    if (refreshSetup || !connectionSetup) {
+      const setup = await setupPreferences({ signal });
+      if (!setup) return { connected: true, ready: false, userscript };
+      connectionSetup = setup;
+    }
+    return { connected: true, ready: true, setup: connectionSetup, userscript };
   }
   let starting, started = false;
   function ensureCore() {
     if (started) return Promise.resolve();
     if (starting) return starting;
-    starting = setupPreferences().then(() => {
+    const ready = document.documentElement ? Promise.resolve() : new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve, { once: true }));
+    starting = ready.then(() => {
       if (started) return; started = true;
-      __PLAMO_TRANSLATOR__
+      __TRANSLATOR_CORE__
     }).finally(() => { starting = null; });
     return starting;
   }
   GM_registerMenuCommand('このページを翻訳', () => ensureCore().then(() => commands.get('PLaMo: ページ全体を翻訳')?.()));
   GM_registerMenuCommand('テキストを翻訳', openText);
   GM_registerMenuCommand('設定・管理', openManagement);
-  __PLAMO_BROWSER_SETTINGS__
+  __TRANSLATOR_BROWSER_SETTINGS__
   if (nativePage && location.pathname === '/text') { setupPreferences().then(publishGlossary); return; }
   if (location.origin === API && location.pathname === '/') {
     setupPreferences().then(setup => {
@@ -161,9 +180,9 @@
       const mount = () => {
         const target = document.querySelector('#browser-settings'); if (!target) return false;
         renderBrowserSettings(target);
-        document.documentElement.dataset.plamoUserscript = 'ready';
-        document.addEventListener('plamo-model-selected', event => { const model = event.detail?.model; if (MODELS.includes(model)) writePreference('plamo-model', model); });
-        document.dispatchEvent(new Event('plamo-browser-settings-ready'));
+        document.documentElement.dataset.cpTranslatorUserscript = 'ready';
+        document.addEventListener('cp-translator-model-selected', event => { const model = event.detail?.model; if (MODELS.includes(model)) writePreference('cp-translator-model', model); });
+        document.dispatchEvent(new Event('cp-translator-browser-settings-ready'));
         return true;
       };
       if (!mount()) { const observer = new MutationObserver(() => { if (mount()) observer.disconnect(); }); observer.observe(document.documentElement, { childList: true, subtree: true }); }
@@ -175,7 +194,7 @@
     const site = builtin();
     if (site) {
       if (site.documentType === 'general' && site.problemPath && !site.problemPath.test(location.pathname)) return isCustomSite();
-      const disabled = GM_getValue('plamo-disabled-sites', []).includes(site.id);
+      const disabled = GM_getValue('cp-translator-disabled-sites', []).includes(site.id);
       if (site.documentType === 'general' && matchingCustomSite()) return true;
       if (!disabled) return true;
       if (problemRoots(site).length) return false;
@@ -183,7 +202,7 @@
     return isCustomSite();
   };
   if (configured()) ensureCore();
-  GM_addValueChangeListener('plamo-custom-sites', () => { if (!started && configured()) ensureCore(); });
+  GM_addValueChangeListener('cp-translator-custom-sites', () => { if (!started && configured()) ensureCore(); });
   if (builtin()?.id === 'repovive') {
     const resume = () => { if (!started && configured()) ensureCore(); };
     new MutationObserver(resume).observe(document, { childList: true, subtree: true, characterData: true });

@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field, model_validator
 from starlette.datastructures import MutableHeaders
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from . import __version__
 from .cache import RETENTION_DAYS, TranslationCache
 from .engine import (
     DEFAULT_MODEL_ID,
@@ -29,6 +30,7 @@ from .engine import (
     check_placeholders,
 )
 from .model_storage import ModelStorage
+from .performance import LEGACY_QUIET_LEVEL, MAX_QUIET_LEVEL
 from .runtime import make_engine
 from .setup import SetupController
 from .translation_jobs import JobQueueFull, TranslationScheduler
@@ -37,6 +39,45 @@ logger = logging.getLogger(__name__)
 DEFAULT_CACHE_PATH = Path.home() / ".cache" / "plamo-cp" / "translations.sqlite3"
 SETUP_ASSETS = Path(__file__).resolve().parent / "assets"
 USER_SCRIPT_DIST = Path(__file__).resolve().parent.parent / "dist" / "plamo-for-cp.user.js"
+
+
+def _userscript_path() -> Path | None:
+    """Select the same fixed source or bundled script for install and health."""
+    for path in (USER_SCRIPT_DIST, SETUP_ASSETS / "plamo-for-cp.user.js"):
+        try:
+            if path.is_file():
+                return path
+        except OSError:
+            continue
+    return None
+
+
+def _userscript_version() -> str | None:
+    path = _userscript_path()
+    if path is None:
+        return None
+    try:
+        with path.open("rb") as script:
+            # Do not read the bundled application body on each health probe.
+            # Replacement decoding also tolerates a UTF-8 codepoint cut at the
+            # bounded read's end, after an otherwise complete metadata block.
+            lines = script.read(8192).decode("utf-8-sig", errors="replace").splitlines()
+    except OSError:
+        return None
+    if not lines or lines[0].strip() != "// ==UserScript==":
+        return None
+    versions = []
+    for line in lines[1:]:
+        if line.strip() == "// ==/UserScript==":
+            return versions[0] if len(versions) == 1 else None
+        if not line.lstrip().startswith("//"):
+            return None
+        if re.match(r"\s*//\s*@version(?:\s|$)", line):
+            match = re.fullmatch(r"\s*//\s*@version[ \t]+([0-9][A-Za-z0-9._+-]{0,127})[ \t]*", line)
+            if match is None:
+                return None
+            versions.append(match[1])
+    return None
 
 
 class BrowserBoundaryMiddleware:
@@ -54,6 +95,7 @@ class BrowserBoundaryMiddleware:
             "/api/setup/prepare",
             "/api/cache/clear",
             "/api/cache/policy",
+            "/api/performance",
         }
     )
 
@@ -224,7 +266,7 @@ class TranslationRequest(BaseModel):
     precision: Literal["4bit"] = "4bit"
     document_type: Literal["problem", "general"] = "problem"
     source_context: str = Field(default="", max_length=6000)
-    batch_size: int = Field(default=1, ge=1, le=16, strict=True)
+    batch_size: int = Field(default=1, ge=1, le=32, strict=True)
     history: list[HistoryPair] = Field(default_factory=list, max_length=3)
     glossary: list[GlossaryTerm] | None = Field(default=None, max_length=64)
     source_lang: str = Field(
@@ -311,6 +353,31 @@ class ModelFolderRequest(BaseModel):
     folder: str = Field(min_length=1, max_length=4096)
 
 
+class PerformanceRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    quiet_level: int | None = Field(default=None, ge=0, le=MAX_QUIET_LEVEL, strict=True)
+    quiet_mode: bool | None = Field(default=None, strict=True)
+
+    @model_validator(mode="after")
+    def validate_setting(self):
+        if len(self.model_fields_set) != 1 or (
+            self.quiet_level is None and self.quiet_mode is None
+        ):
+            raise ValueError("quiet_level または quiet_mode のどちらか一つを指定してください。")
+        return self
+
+    @property
+    def level(self) -> int:
+        return (
+            self.quiet_level
+            if self.quiet_level is not None
+            else LEGACY_QUIET_LEVEL
+            if self.quiet_mode
+            else 0
+        )
+
+
 def _verify_translation(source: str, translated: str) -> None:
     if not isinstance(translated, str) or not translated.strip():
         raise ValueError(
@@ -367,7 +434,7 @@ def create_app(
             await asyncio.to_thread(close)
         cache.close()
 
-    app = FastAPI(title="PLaMo for CP", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="PLaMo for 競プロ", version=__version__, lifespan=lifespan)
     app.add_middleware(RequestSizeLimitMiddleware)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"])
     app.add_middleware(BrowserBoundaryMiddleware)
@@ -383,6 +450,7 @@ def create_app(
             "app": "plamo-for-cp",
             "application": "plamo-for-cp",
             "selected_model": setup.selected_model,
+            "userscript_version": await asyncio.to_thread(_userscript_version),
             "engine": engine.status,
         }
 
@@ -546,6 +614,12 @@ def create_app(
             SETUP_ASSETS / "translation-jobs.js", media_type="application/javascript"
         )
 
+    @app.get("/userscript-version.js")
+    async def userscript_version_script():
+        return FileResponse(
+            SETUP_ASSETS / "userscript-version.js", media_type="application/javascript"
+        )
+
     @app.get("/licenses/plamo-community-license-{language}.txt")
     async def model_license(language: str):
         if language not in {"ja", "en"}:
@@ -557,12 +631,8 @@ def create_app(
 
     @app.get("/install.user.js")
     async def browser_userscript():
-        path = (
-            USER_SCRIPT_DIST
-            if USER_SCRIPT_DIST.is_file()
-            else SETUP_ASSETS / "plamo-for-cp.user.js"
-        )
-        if not path.is_file():
+        path = _userscript_path()
+        if path is None:
             raise HTTPException(404, "翻訳スクリプトの配布ファイルを準備中です。")
         return FileResponse(
             path,
@@ -573,6 +643,21 @@ def create_app(
     @app.get("/api/setup")
     async def setup_status():
         return await asyncio.to_thread(setup.snapshot)
+
+    @app.post("/api/performance")
+    async def set_performance(
+        payload: PerformanceRequest, x_plamo_client: Annotated[str | None, Header()] = None
+    ):
+        if x_plamo_client != "setup":
+            raise HTTPException(403, "設定・管理画面から操作してください。")
+        try:
+            # Do not queue this behind model work: the runtime switch is safe
+            # during generation and must affect the currently running worker.
+            return await asyncio.to_thread(setup.performance.set_quiet_level, payload.level)
+        except (OSError, RuntimeError) as error:
+            raise HTTPException(
+                503, str(error) or "推論の稼働率を変更できませんでした。"
+            ) from error
 
     @app.get("/api/cache")
     async def cache_status():

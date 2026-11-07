@@ -152,7 +152,7 @@ def restore_standard_streams() -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="PLaMo for CP desktop backend")
+    parser = argparse.ArgumentParser(description="PLaMo for 競プロ desktop backend")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
@@ -165,7 +165,7 @@ def main() -> int:
     logging.getLogger("httpx").setLevel(logging.WARNING)
     state = service_state(args.port)
     if state == "ours":
-        logger.info("An existing PLaMo for CP instance owns this port.")
+        logger.info("An existing PLaMo for 競プロ instance owns this port.")
         return 0
     if state == "other":
         logger.error("Another application owns the configured local port.")

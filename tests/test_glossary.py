@@ -19,13 +19,13 @@ def test_omitted_glossary_keeps_default_prompt_but_explicit_empty_removes_user_t
     baseline = build_prompt(text, "English", "Japanese")
     assert (
         hashlib.sha256(baseline.encode()).hexdigest()
-        == "c18914a41605309d679dbb021ba04ad798bd8a14b6eb82bd70b5d8ad1f502aba"
+        == "59732083820a80527718d53118be88d9c0352ee24e763cd34b4793b0b4ffd8f2"
     )
     assert build_prompt(text, "English", "Japanese", glossary=None) == baseline
     cleared = build_prompt(text, "English", "Japanese", glossary=[])
     assert cleared != baseline
     assert "<|plamo:index|>modular inverse" not in cleared
-    assert "<|plamo:index|>[[PLM_0]]<|plamo:item|>[[PLM_0]]" in cleared
+    assert "<|plamo:index|><math-a/><|plamo:item|><math-a/>" in cleared
 
 
 def test_explicit_dictionary_is_authoritative_including_terms_absent_from_input():
@@ -151,7 +151,7 @@ def test_custom_terms_reach_windows_pfml3_glossary():
     )
     assert "<|plamo:index|>array<|plamo:item|>数列" in prompt
     assert "<|plamo:index|>array<|plamo:item|>配列" not in prompt
-    assert "<|plamo:index|>[[PLM_0]]<|plamo:item|>[[PLM_0]]" in prompt
+    assert "<|plamo:index|><math-a/><|plamo:item|><math-a/>" in prompt
 
 
 def test_canonical_terms_stay_singular_for_formatted_multiline_plural_inputs():
@@ -175,6 +175,7 @@ def test_canonical_terms_stay_singular_for_formatted_multiline_plural_inputs():
         "sequence": "列",
         "visualizer": "ビジュアライザ",
         "forest": "森",
+        "node": "頂点",
     }
 
 
@@ -204,13 +205,14 @@ def test_minimal_canonical_defaults_include_only_the_requested_corrections():
         "sequence": "列",
         "visualizer": "ビジュアライザ",
         "forest": "森",
+        "node": "頂点",
     }
-    assert PROMPT_VERSION == "pfml3-cp-v10-glossary"
+    assert PROMPT_VERSION == "pfml3-cp-v12-glossary"
     terms = translation_options(
         "An array of integers. This is a communication problem.", "English", "Japanese"
     )["glossary"]
     assert {pair["source"]: pair["target"] for pair in terms} == TERMS
-    assert len(terms) == 11
+    assert len(terms) == 12
 
 
 def test_clearing_all_terms_keeps_only_internal_protection_and_does_not_leak_to_next_request():
@@ -245,3 +247,24 @@ def test_default_glossary_is_a_fresh_copy_and_general_has_no_implicit_defaults()
         )["glossary"]
         == configured
     )
+
+
+def test_node_initial_term_does_not_override_an_empty_or_custom_dictionary():
+    text = "Find a node [[PLM_0]]."
+    protection = {"source": "[[PLM_0]]", "target": "[[PLM_0]]"}
+    assert {
+        pair["source"]: pair["target"] for pair in translation_options(text, "en", "ja")["glossary"]
+    }["node"] == "頂点"
+    assert translation_options(text, "en", "ja", glossary=[])["glossary"] == [protection]
+    custom = [{"source": "node", "target": "ノード"}]
+    assert translation_options(text, "en", "ja", glossary=custom)["glossary"] == [
+        protection,
+        *custom,
+    ]
+    assert translation_options(text, "en", "ja", document_type="general")["glossary"] == [
+        protection
+    ]
+    assert translation_options(text, "en", "ja", document_type="general", glossary=custom)[
+        "glossary"
+    ] == [protection, *custom]
+    assert custom == [{"source": "node", "target": "ノード"}]

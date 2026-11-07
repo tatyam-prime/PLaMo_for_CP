@@ -15,6 +15,7 @@ from .engine import TranslationWork, preview_prefix
 
 MAX_PREVIEW_CHARACTERS = 16384
 PREVIEW_INTERVAL = 0.05
+DEFAULT_MAX_ACTIVE = 32
 TERMINAL_STATES = frozenset({"completed", "cancelled", "failed"})
 log = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ class TranslationScheduler:
         max_segments=512,
         lease_seconds=15,
         result_ttl=60,
-        max_active=16,
+        max_active=DEFAULT_MAX_ACTIVE,
     ):
         self.engine, self.cache, self.executor = engine, cache, executor
         self.key, self.extra, self.verify = key, extra, verify

@@ -15,6 +15,10 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# Keep the executable basename ASCII. codesign can normalize a Japanese
+# basename differently from CFBundleExecutable and seal the executable as its
+# own nested resource, causing self-recursion or an invalid resource seal.
+LAUNCHER_NAME = "cp-translator"
 
 
 def minimum_version_from_otool(output: str) -> str:
@@ -44,6 +48,29 @@ def minimum_macos_version(backend: Path) -> str:
 
 def run(*args: str) -> None:
     subprocess.run(args, cwd=ROOT, check=True)
+
+
+def bundle_info(minimum: str) -> dict:
+    return {
+        "CFBundleName": "PLaMo for 競プロ",
+        "CFBundleDisplayName": "PLaMo for 競プロ",
+        "CFBundleIdentifier": "jp.plamo-for-cp.desktop",
+        "CFBundleVersion": "1",
+        "CFBundleShortVersionString": "0.2.0",
+        "CFBundlePackageType": "APPL",
+        "CFBundleExecutable": LAUNCHER_NAME,
+        "CFBundleIconFile": "app-icon.icns",
+        "LSMinimumSystemVersion": minimum,
+        "NSHighResolutionCapable": True,
+        "NSAppTransportSecurity": {"NSAllowsLocalNetworking": True},
+        "CFBundleURLTypes": [
+            {
+                "CFBundleURLName": "jp.plamo-for-cp.desktop.open",
+                "CFBundleURLSchemes": ["plamo-for-cp"],
+                "CFBundleTypeRole": "Viewer",
+            }
+        ],
+    }
 
 
 def main() -> None:
@@ -82,7 +109,7 @@ def main() -> None:
         parser.error("The frozen backend has not been built.")
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    app = output / "PLaMo for CP.app"
+    app = output / "PLaMo for 競プロ.app"
     if app.exists():
         shutil.rmtree(app)
     contents = app / "Contents"
@@ -104,7 +131,7 @@ def main() -> None:
     if userscript.is_file():
         shutil.copyfile(userscript, package_assets / "plamo-for-cp.user.js")
     minimum = minimum_macos_version(backend)
-    launcher = contents / "MacOS" / "PLaMo for CP"
+    launcher = contents / "MacOS" / LAUNCHER_NAME
     run(
         "xcrun",
         "swiftc",
@@ -117,27 +144,16 @@ def main() -> None:
         "AppKit",
         str(ROOT / "packaging/macos/BoundedLog.swift"),
         str(ROOT / "packaging/macos/HealthProbe.swift"),
+        str(ROOT / "packaging/macos/AppLaunch.swift"),
         str(ROOT / "packaging/macos/launcher.swift"),
         "-o",
         str(launcher),
     )
-    info = {
-        "CFBundleName": "PLaMo for CP",
-        "CFBundleDisplayName": "PLaMo for CP",
-        "CFBundleIdentifier": "jp.plamo-for-cp.desktop",
-        "CFBundleVersion": "1",
-        "CFBundleShortVersionString": "0.2.0",
-        "CFBundlePackageType": "APPL",
-        "CFBundleExecutable": "PLaMo for CP",
-        "CFBundleIconFile": "app-icon.icns",
-        "LSMinimumSystemVersion": minimum,
-        "NSHighResolutionCapable": True,
-        "NSAppTransportSecurity": {"NSAllowsLocalNetworking": True},
-    }
-    (contents / "Info.plist").write_bytes(plistlib.dumps(info))
+    (contents / "Info.plist").write_bytes(plistlib.dumps(bundle_info(minimum)))
     run("codesign", "--force", "--deep", "--sign", "-", str(app))
+    run("codesign", "--verify", "--deep", "--strict", str(app))
     run(str(launcher), "--check-bundle")
-    archive = output / "PLaMo-for-CP-macOS-AppleSilicon.zip"
+    archive = output / "PLaMo-for-競プロ-macOS-AppleSilicon.zip"
     if archive.exists():
         archive.unlink()
     run("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(archive))

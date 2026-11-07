@@ -1,14 +1,19 @@
 // Shared by the text workspace and the Tampermonkey bundle.
 // The caller owns transport, DOM validation, and presentation.
+const TRANSLATION_BATCH_SIZES = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32];
+
 function startTranslationPipeline(options) {
   'use strict';
   const { segments, fields = {}, contextForChunk, request, onResult, onPreview, onProgress } = options;
   const batchSize = Number(options.batchSize ?? 1);
-  if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 16 || !Array.isArray(segments) || !segments.length
-    || segments.some(segment => typeof segment.id !== 'string' || typeof segment.text !== 'string')
+  const validSegment = segment => segment && typeof segment.id === 'string' && segment.id.length > 0 && segment.id.length <= 128 && typeof segment.text === 'string';
+  if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 32 || !Array.isArray(segments) || !segments.length
+    || segments.some(segment => !validSegment(segment))
     || new Set(segments.map(segment => segment.id)).size !== segments.length) throw new Error('Invalid translation worklist');
+  const worklist = segments.map(segment => ({ ...segment }));
+  const knownIds = new Set(worklist.map(segment => segment.id));
   const interval = Math.max(50, Number(options.pollInterval) || 200);
-  const startInterval = Math.max(0, Number(options.startIntervalMs ?? 100) || 0);
+  const startInterval = Math.max(0, Number(options.startIntervalMs ?? 300) || 0);
   const jobs = new Map(), creating = new Set(), timers = new Set(), completedIds = new Set();
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   let next = 0, outstanding = 0, completed = 0, cached = 0, settled = false, cancelled = false;
@@ -31,10 +36,10 @@ function startTranslationPipeline(options) {
     if (settled) return;
     settled = true; clearTimers(); cancelKnown(); reject(error);
   }
-  function progress() { onProgress?.({ completed, total: segments.length, outstanding, submitted: next, cached }); }
+  function progress() { onProgress?.({ completed, total: worklist.length, outstanding, submitted: next, cached }); }
   function maybeDone() {
-    if (!settled && next === segments.length && !outstanding && !jobs.size && !creating.size) {
-      settled = true; clearTimers(); resolve({ completed, total: segments.length, cached, cancelled: false });
+    if (!settled && next === worklist.length && !outstanding && !jobs.size && !creating.size) {
+      settled = true; clearTimers(); resolve({ completed, total: worklist.length, cached, cancelled: false });
     }
   }
   function accept(job, event) {
@@ -117,13 +122,13 @@ function startTranslationPipeline(options) {
   }
   function fill() {
     if (settled) return;
-    while (next < segments.length) {
-      let count = Math.min(admissionLimit - outstanding, batchSize, segments.length - next);
+    while (next < worklist.length) {
+      let count = Math.min(admissionLimit - outstanding, batchSize, worklist.length - next);
       if (count <= 0) break;
       const start = next;
       const makePayload = size => ({ ...fields,
         source_context: contextForChunk ? contextForChunk(start, start + size) : fields.source_context || '',
-        batch_size: batchSize, segments: segments.slice(start, start + size) });
+        batch_size: batchSize, segments: worklist.slice(start, start + size) });
       let payload = makePayload(count);
       while (count > 1 && JSON.stringify(payload).length > 32000) payload = makePayload(--count);
       next += count; outstanding += count;
@@ -140,7 +145,23 @@ function startTranslationPipeline(options) {
     if (settled) return;
     cancelled = true; settled = true; clearTimers(); cancelKnown();
     // Pending creation callbacks retain their ID and cancel it on arrival.
-    resolve({ completed, total: segments.length, cached, cancelled });
+    resolve({ completed, total: worklist.length, cached, cancelled });
+  }
+  function enqueue(additional, { priority = false } = {}) {
+    if (settled) throw new Error('Cannot enqueue translation work after the pipeline has ended');
+    if (contextForChunk) throw new Error('Dynamic translation work does not support contextForChunk');
+    if (!Array.isArray(additional) || !additional.length || additional.some(segment => !validSegment(segment))
+      || new Set(additional.map(segment => segment.id)).size !== additional.length
+      || additional.some(segment => knownIds.has(segment.id))) throw new Error('Invalid or duplicate translation work IDs');
+    const copied = additional.map(segment => ({ ...segment }));
+    for (const segment of copied) knownIds.add(segment.id);
+    if (priority) worklist.splice(next, 0, ...copied);
+    else worklist.push(...copied);
+    // onResult runs before accept() releases its slot. Defer this refill so
+    // callback additions cannot recursively admit work against stale counts.
+    Promise.resolve().then(() => {
+      if (!settled) { try { progress(); fill(); } catch (error) { fail(error); } }
+    });
   }
   function ramp() {
     if (settled || admissionLimit >= batchSize) return;
@@ -150,5 +171,5 @@ function startTranslationPipeline(options) {
     } catch (error) { fail(error); }
   }
   Promise.resolve().then(() => { if (!settled) { try { progress(); fill(); if (!settled && admissionLimit < batchSize) later(ramp, startInterval); } catch (error) { fail(error); } } });
-  return { promise, cancel };
+  return { promise, cancel, enqueue };
 }

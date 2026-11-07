@@ -238,6 +238,129 @@ def test_polling_and_legacy_clients_merge_into_one_model_iterator_without_contex
             engine.collect.set()
 
 
+def test_global_pool_admits_32_across_requests_queues_the_33rd_and_refills_one_completion(
+    scheduler_factory,
+):
+    from plamo_cp.engine import Engine
+
+    scheduler, engine = scheduler_factory()
+    started, collect, full, complete_one, refilled, finish = (threading.Event() for _ in range(6))
+    observed = {"sizes": [], "options": None, "pool": [], "replacement": []}
+
+    def iter_work(model, take, capacity, *, cancelled, **options):
+        observed["options"] = options
+        started.set()
+        assert collect.wait(3), "Both clients must join before admission"
+        pool = take(capacity())
+        observed["pool"] = list(pool)
+        observed["sizes"].append(len(pool))
+        full.set()
+        assert complete_one.wait(3), "The held pool must be released"
+        yield pool.pop(0), "最初の訳文。"
+        # The scheduler publishes and retires that completion before resuming
+        # this iterator. Refill only the newly available global slot.
+        replacement = take(capacity() - len(pool))
+        observed["replacement"] = replacement
+        pool.extend(replacement)
+        observed["sizes"].append(len(pool))
+        refilled.set()
+        assert finish.wait(3), "Remaining mock work must be released"
+        for work in pool:
+            yield work, "日本語: " + work.text
+
+    engine.iter_work = iter_work
+    try:
+        first = scheduler.submit(
+            TranslationRequest.model_validate(
+                payload(*(f"First page paragraph {index}." for index in range(16)), batch_size=16)
+            ),
+            lease=False,
+        )
+        assert started.wait(2)
+        second = scheduler.submit(
+            TranslationRequest.model_validate(
+                payload(*(f"Other page paragraph {index}." for index in range(16)), batch_size=16)
+            ),
+            lease=False,
+        )
+        collect.set()
+        assert full.wait(2)
+        assert scheduler.max_active == 32 and scheduler.max_jobs == 32
+        assert Engine.supported_batch_sizes == tuple(range(1, 33))
+        assert observed["options"] == {"prefill_batch_size": 1, "prefill_step_size": 256}
+        assert len(scheduler._inflight) == 32
+        assert {work.key[0] for work in observed["pool"]} == {first.id, second.id}
+        third = scheduler.submit(
+            TranslationRequest.model_validate(payload("The thirty-third paragraph.", batch_size=1)),
+            lease=False,
+        )
+        assert third.active == 0 and len(third.queued) == 1
+        assert len(scheduler._inflight) == 32 and scheduler._pending == 33
+        complete_one.set()
+        assert refilled.wait(2)
+        assert len(observed["replacement"]) == 1
+        assert observed["replacement"][0].key[0] == third.id
+        assert third.active == 1 and not third.queued
+        assert len(scheduler._inflight) == 32 and scheduler._pending == 32
+        assert observed["sizes"] == [32, 32]
+        finish.set()
+        assert all(job.done.wait(2) for job in (first, second, third))
+        assert all(job.state == "completed" for job in (first, second, third))
+    finally:
+        collect.set()
+        complete_one.set()
+        finish.set()
+
+
+def test_two_32_paragraph_pages_share_32_slots_and_refill_without_doubling_capacity(
+    scheduler_factory,
+):
+    scheduler, engine = scheduler_factory()
+    collect, full, finish = (threading.Event() for _ in range(3))
+    observed = {"max_active": 0, "completions": []}
+
+    def iter_work(model, take, capacity, *, cancelled, **options):
+        assert collect.wait(3)
+        pool = take(capacity())
+        observed["max_active"] = len(pool)
+        full.set()
+        assert finish.wait(3)
+        while pool:
+            work = pool.pop(0)
+            observed["completions"].append(work.key)
+            yield work, "日本語: " + work.text
+            pool.extend(take(capacity() - len(pool)))
+            observed["max_active"] = max(observed["max_active"], len(pool))
+
+    engine.iter_work = iter_work
+    try:
+        jobs = [
+            scheduler.submit(
+                TranslationRequest.model_validate(
+                    payload(
+                        *(f"Page {page} paragraph {index}." for index in range(32)), batch_size=32
+                    )
+                ),
+                lease=False,
+            )
+            for page in range(2)
+        ]
+        collect.set()
+        assert full.wait(2)
+        assert scheduler.max_active == len(scheduler._inflight) == 32
+        assert scheduler._pending == 64
+        assert all(job.active == 16 and len(job.queued) == 16 for job in jobs)
+        finish.set()
+        assert all(job.done.wait(2) for job in jobs)
+        assert all(job.state == "completed" and job.completed == 32 for job in jobs)
+        assert observed["max_active"] == 32
+        assert len(observed["completions"]) == len(set(observed["completions"])) == 64
+        assert {key[0] for key in observed["completions"]} == {job.id for job in jobs}
+    finally:
+        collect.set()
+        finish.set()
+
+
 def test_job_endpoints_require_the_userscript_header_and_validate_id_and_cursor(api):
     client, engine = api
     assert client.post(BASE, json=payload("Find the answer.")).status_code == 403

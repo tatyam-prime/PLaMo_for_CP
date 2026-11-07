@@ -11,7 +11,7 @@ from pathlib import Path
 
 MACOS_SCRIPT = """on run argv
     try
-        set selectedFolder to choose folder with prompt "PLaMo for CP：モデルの保存先を選択" default location (POSIX file (item 1 of argv))
+        set selectedFolder to choose folder with prompt "PLaMo for 競プロ：モデルの保存先を選択" default location (POSIX file (item 1 of argv))
         return POSIX path of selectedFolder
     on error number -128
         return ""
@@ -23,7 +23,7 @@ $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
 Add-Type -AssemblyName System.Windows.Forms
 $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-$dialog.Description = 'PLaMo for CP：モデルの保存先を選択'
+$dialog.Description = 'PLaMo for 競プロ：モデルの保存先を選択'
 $dialog.SelectedPath = [Environment]::GetEnvironmentVariable('PLAMO_FOLDER_PICKER_INITIAL')
 $dialog.ShowNewFolderButton = $true
 $owner = New-Object System.Windows.Forms.Form

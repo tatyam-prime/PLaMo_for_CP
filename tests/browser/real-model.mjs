@@ -26,7 +26,7 @@ const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH 
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
   await page.route('**/*', route => route.request().url() === url ? route.fulfill({ contentType: 'text/html; charset=utf-8', body: html }) : route.abort());
-  await page.exposeFunction('__plamoHTTP', async request => {
+  await page.exposeFunction('__cpTranslatorHTTP', async request => {
     const target = new URL(request.url);
     if (target.origin !== api || !target.pathname.startsWith('/api/') || target.username || target.password || !['GET', 'POST'].includes(request.method)) throw new Error('QA requests must stay on the local translation API');
     const start = performance.now();
@@ -37,13 +37,13 @@ try {
     return { status: response.status, responseText };
   });
   await page.addInitScript(({ selectedModel, batchSize }) => {
-    const preferences = new Map([['plamo-model', selectedModel], ['plamo-batch-sizes', { [selectedModel]: batchSize }], ['plamo-supported-batch-sizes', Array.from({ length: 16 }, (_, index) => index + 1)], ['plamo-translation-jobs', true]]);
+    const preferences = new Map([['cp-translator-model', selectedModel], ['cp-translator-batch-size', batchSize], ['cp-translator-supported-batch-sizes', Array.from({ length: 16 }, (_, index) => index + 1)], ['cp-translator-translation-jobs', true]]);
     const listeners = new Map();
     window.readPreference = (key, fallback) => preferences.has(key) ? preferences.get(key) : fallback;
     window.writePreference = (key, value) => { const old = preferences.get(key); preferences.set(key, value); for (const listener of listeners.get(key) || []) listener(key, old, value, false); };
     window.openManagement = () => {};
-    window.__plamoMenus = {};
-    window.registerCommand = (label, callback) => { window.__plamoMenus[label] = callback; };
+    window.__cpTranslatorMenus = {};
+    window.registerCommand = (label, callback) => { window.__cpTranslatorMenus[label] = callback; };
     window.GM_getValue = window.readPreference;
     window.GM_setValue = window.writePreference;
     window.GM_deleteValue = key => { preferences.delete(key); };
@@ -52,7 +52,7 @@ try {
     window.GM_openInTab = () => {};
     window.requestHTTP = options => {
       let aborted = false;
-      window.__plamoHTTP({ url: options.url, method: options.method, headers: options.headers, data: options.data }).then(response => { if (!aborted) options.onload(response); }).catch(() => { if (!aborted) options.onerror(); });
+      window.__cpTranslatorHTTP({ url: options.url, method: options.method, headers: options.headers, data: options.data }).then(response => { if (!aborted) options.onload(response); }).catch(() => { if (!aborted) options.onerror(); });
       return { abort() { aborted = true; options.onabort(); } };
     };
     window.GM_xmlhttpRequest = window.requestHTTP;
@@ -69,9 +69,9 @@ try {
   }), rootSelector);
   await page.evaluate(script);
   const start = performance.now();
-  if (generated && general) await page.evaluate(() => window.__plamoMenus['このページを翻訳']());
+  if (generated && general) await page.evaluate(() => window.__cpTranslatorMenus['このページを翻訳']());
   else {
-    if (general) await page.evaluate(() => window.__plamoMenus['PLaMo: このページの本文を翻訳']());
+    if (general) await page.evaluate(() => window.__cpTranslatorMenus['PLaMo: このページの本文を翻訳']());
     const selector = page.getByLabel('モデルサイズ');
     await selector.focus();
     await selector.press(model[0]);
@@ -80,10 +80,10 @@ try {
     await page.getByRole('button', { name: '日本語に翻訳', exact: true }).click();
   }
   await page.waitForFunction(() => {
-    const shadow = document.querySelector('#plamo-for-cp')?.shadowRoot;
+    const shadow = document.querySelector('#cp-translator')?.shadowRoot;
     return shadow && shadow.querySelector('button.primary').disabled === false && shadow.querySelector('.status').textContent.includes('箇所を翻訳しました');
   }, null, { timeout: 600000 });
-  const status = await page.locator('#plamo-for-cp').locator('.status').textContent();
+  const status = await page.locator('#cp-translator').locator('.status').textContent();
   assert.match(status, /箇所を翻訳しました/, status);
   const after = await page.evaluate(root => ({
     samples: Array.from(document.querySelectorAll('pre'), node => node.outerHTML),

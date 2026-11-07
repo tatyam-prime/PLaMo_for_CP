@@ -43,7 +43,7 @@ def batched(tmp_path, monkeypatch):
             return "".join(
                 f"訳文{token - 100}。"
                 if token >= 100
-                else {10: "最初の訳文。", 11: "次の訳文[[PLM_0]]。", 12: "破損。"}[token]
+                else {10: "最初の訳文。", 11: "次の訳文<math-a/>。", 12: "破損。"}[token]
                 for token in tokens
             )
 
@@ -128,6 +128,28 @@ def test_batched_generation_preserves_uid_order_eos_bounds_and_independent_promp
         for messages, options in batched.engine._tokenizer.templates
     )
     assert batched.engine.status["state"] == "idle"
+
+
+def test_continuous_quiet_mode_paces_global_steps_without_changing_the_pool_or_results(
+    batched, monkeypatch
+):
+    batched.steps = [
+        (["prefill-progress"], []),
+        ([], [event(7, 11), event(41, 10)]),
+        ([], [event(7, 2, "stop"), event(41, 1, "stop")]),
+    ]
+    synchronized, waits = [], []
+    monkeypatch.setattr(sys.modules["mlx.core"], "synchronize", synchronized.append, raising=False)
+    monkeypatch.setattr(batched.engine, "_quiet_wait", lambda delay, *_: waits.append(delay))
+    batched.engine.set_quiet_mode(True)
+    assert batched.engine.translate_batch(["First.", "Second [[PLM_0]]."]) == [
+        "最初の訳文。",
+        "次の訳文[[PLM_0]]。",
+    ]
+    assert synchronized == [batched.stream] * 3
+    assert len(waits) == 3  # Once per global step, not once per active paragraph.
+    assert batched.generators[0].options["completion_batch_size"] == 2
+    assert batched.generators[0].closed and batched.engine.status["state"] == "idle"
 
 
 def test_eight_prompts_keep_independent_results_when_uids_finish_in_reverse_order(batched):
@@ -251,11 +273,11 @@ def test_stream_emits_a_finished_segment_and_refills_while_a_slow_sibling_is_act
     assert generator.closed
 
 
-def test_global_engine_stream_can_mix_more_than_eight_independent_jobs(batched):
-    identifiers = [41, 7, 93, 18, 57, 29, 81, 6, *range(1000, 1008)]
+def test_global_engine_stream_can_mix_32_independent_jobs(batched):
+    identifiers = [41, 7, 93, 18, 57, 29, 81, 6, *range(1000, 1024)]
     works = deque(
         TranslationWork(
-            ("left" if index < 8 else "right", index),
+            ("left" if index < 16 else "right", index),
             f"Text {index}.",
             {
                 "source_lang": "English",
@@ -263,7 +285,7 @@ def test_global_engine_stream_can_mix_more_than_eight_independent_jobs(batched):
                 "source_context": f"Context for {index}.",
             },
         )
-        for index in range(16)
+        for index in range(32)
     )
     batched.steps = [
         (["first-prefill"], []),
@@ -274,13 +296,13 @@ def test_global_engine_stream_can_mix_more_than_eight_independent_jobs(batched):
     def take(count):
         return [works.popleft() for _ in range(min(count, len(works)))]
 
-    results = list(batched.engine.iter_work("2b", take, lambda: 16))
-    assert len(results) == 16 and all(isinstance(result, str) for _, result in results)
+    results = list(batched.engine.iter_work("2b", take, lambda: 32))
+    assert len(results) == 32 and all(isinstance(result, str) for _, result in results)
     assert {work.key[0] for work, _ in results} == {"left", "right"}
-    assert batched.generators[0].options["completion_batch_size"] == 16
+    assert batched.generators[0].options["completion_batch_size"] == 32
     assert batched.generators[0].options["prefill_batch_size"] == 1
     contexts = [options["context"] for _, options in batched.engine._tokenizer.templates]
-    assert all(f"Context for {index}." in contexts[index] for index in range(16))
+    assert all(f"Context for {index}." in contexts[index] for index in range(32))
 
 
 def test_cancelling_one_work_removes_only_its_uid_and_other_work_completes(batched):
@@ -334,7 +356,7 @@ def test_closing_completion_iterator_releases_generator_and_engine_lock(batched)
 
 class BatchEngine:
     model_specs = MODEL_SPECS
-    supported_batch_sizes = tuple(range(1, 17))
+    supported_batch_sizes = tuple(range(1, 33))
 
     def __init__(self):
         self.status = {"backend": "mock", "loaded_model": None, "state": "idle"}
@@ -377,13 +399,13 @@ def send(client, body):
 
 def test_api_default_is_serial_and_setup_advertises_engine_capabilities(batch_client):
     client, engine = batch_client
-    assert client.get("/api/setup").json()["supported_batch_sizes"] == list(range(1, 17))
+    assert client.get("/api/setup").json()["supported_batch_sizes"] == list(range(1, 33))
     response = send(client, request_body(["First.", "Second."]))
     assert response.status_code == 200 and "errors" not in response.json()
     assert len(engine.serial) == 2 and not engine.calls
 
 
-@pytest.mark.parametrize("batch_size", [3, 5, 6, 7, 9, 12, 16])
+@pytest.mark.parametrize("batch_size", [3, 5, 6, 7, 9, 12, 16, 20, 24, 31, 32])
 def test_api_accepts_non_power_of_two_client_windows(batch_client, batch_size):
     client, _ = batch_client
     response = send(client, request_body(["First.", "Second."], batch_size=batch_size))
@@ -391,7 +413,7 @@ def test_api_accepts_non_power_of_two_client_windows(batch_client, batch_size):
     assert [item["id"] for item in response.json()["translations"]] == ["0", "1"]
 
 
-@pytest.mark.parametrize("batch_size", [0, 17, 2.5, True])
+@pytest.mark.parametrize("batch_size", [0, 33, 2.5, 32.0, True, False])
 def test_api_client_window_requires_an_integer_in_range(batch_client, batch_size):
     client, engine = batch_client
     assert send(client, request_body(["First."], batch_size=batch_size)).status_code == 422
@@ -570,3 +592,93 @@ def test_draft_text_is_decoded_at_most_twenty_times_per_second(batched, monkeypa
     assert reads == [(100,), (100, 101, 102, 103)]
     assert published == ["訳文0。", "訳文0。訳文1。訳文2。訳文3。"]
     assert result[0][1] == "訳文0。訳文1。訳文2。訳文3。"
+
+
+def test_wire_stream_previews_are_canonical_and_uid_mappings_never_cross(batched, monkeypatch):
+    pieces = {10: '<span id="plm-a">訳文', 11: "</span><math-", 12: "a/>。", 13: "別の<math-a/>。"}
+    monkeypatch.setattr(
+        batched.engine._tokenizer,
+        "decode",
+        lambda tokens: "".join(pieces[token] for token in tokens),
+    )
+    clock = [1.0]
+    monkeypatch.setattr("plamo_cp.engine.time.monotonic", lambda: clock[0])
+    batched.on_next = lambda: clock.__setitem__(0, clock[0] + 0.1)
+    batched.steps = [
+        ([], [event(41, 10)]),
+        ([], [event(41, 11), event(7, 13)]),
+        ([], [event(41, 12), event(7, 2, "stop")]),
+        ([], [event(41, 1, "stop")]),
+    ]
+    previews = {"first": [], "second": []}
+    parameters = {"source_lang": "en", "target_lang": "ja"}
+    waiting = deque(
+        [
+            TranslationWork(
+                "first",
+                "<plm-a>All</plm-a> [[PLM_19]].",
+                parameters,
+                progress=previews["first"].append,
+            ),
+            TranslationWork(
+                "second", "Other [[PLM_83]].", parameters, progress=previews["second"].append
+            ),
+        ]
+    )
+    results = list(
+        batched.engine.iter_work(
+            "2b",
+            lambda count: [waiting.popleft() for _ in range(min(count, len(waiting)))],
+            lambda: 2,
+        )
+    )
+    assert [(work.key, result) for work, result in results] == [
+        ("second", "別の[[PLM_83]]。"),
+        ("first", "<plm-a>訳文</plm-a>[[PLM_19]]。"),
+    ]
+    assert previews["first"] == [
+        "<plm-a>訳文",
+        "<plm-a>訳文</plm-a>",
+        "<plm-a>訳文</plm-a>[[PLM_19]]。",
+    ]
+    assert previews["second"] == ["別の[[PLM_83]]。"]
+    assert all(
+        "<math-" not in text and "<span" not in text
+        for values in previews.values()
+        for text in values
+    )
+
+
+def test_model_wire_is_decoded_and_verified_before_api_cache_write(batched, monkeypatch, tmp_path):
+    monkeypatch.setattr(batched.engine, "model_available", lambda model: True)
+    mapping = {10: '<span id="plm-a">すべて</span><math-a/>。', 11: "<math-z/>"}
+    monkeypatch.setattr(
+        batched.engine._tokenizer,
+        "decode",
+        lambda tokens: "".join(mapping[token] for token in tokens),
+    )
+    batched.steps = [
+        ([], [event(41, 10)]),
+        ([], [event(41, 1, "stop"), event(7, 11)]),
+        ([], [event(7, 2, "stop")]),
+    ]
+    app = create_app(batched.engine, tmp_path / "verified.sqlite3", tmp_path / "settings.json")
+    headers = {"X-Plamo-Client": "userscript"}
+    with TestClient(app, base_url="http://127.0.0.1") as client:
+        response = client.post(
+            "/api/translate",
+            headers=headers,
+            json={
+                "batch_size": 2,
+                "segments": [
+                    {"id": "good", "text": "<plm-a>All</plm-a> [[PLM_9]]."},
+                    {"id": "bad", "text": "Find [[PLM_82]]."},
+                ],
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["translations"] == [
+            {"id": "good", "text": "<plm-a>すべて</plm-a>[[PLM_9]]。"}
+        ]
+        assert response.json()["errors"][0]["id"] == "bad"
+        assert client.get("/api/cache").json()["entries"] == 1

@@ -8,8 +8,8 @@ from plamo_cp import windows_app
 
 def test_backend_command_for_frozen_application(monkeypatch):
     monkeypatch.setattr(sys, "frozen", True, raising=False)
-    monkeypatch.setattr(sys, "executable", "C:/Apps/PLaMo/PLaMo for CP.exe")
-    assert windows_app.backend_command() == ["C:/Apps/PLaMo/PLaMo for CP.exe", "--server-child"]
+    monkeypatch.setattr(sys, "executable", "C:/Apps/PLaMo/PLaMo for 競プロ.exe")
+    assert windows_app.backend_command() == ["C:/Apps/PLaMo/PLaMo for 競プロ.exe", "--server-child"]
 
 
 def test_backend_command_for_development(monkeypatch):

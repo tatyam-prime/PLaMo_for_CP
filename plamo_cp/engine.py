@@ -17,8 +17,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, ClassVar
 
+from .marker_codec import GENERAL_CONTEXT, PROBLEM_CONTEXT, prepare_model_input
+from .performance import LEGACY_QUIET_LEVEL, MAX_QUIET_LEVEL
+
 log = logging.getLogger(__name__)
-PROMPT_VERSION = "pfml3-cp-v10-glossary"
+PROMPT_VERSION = "pfml3-cp-v12-glossary"
 SUPPORTED_MODEL_IDS = ("0.8b", "2b", "8b")
 DEFAULT_MODEL_ID = "2b"
 PLACEHOLDER = re.compile(r"\[\[PLM_\d+\]\]|</?plm-[A-Za-z0-9]+>")
@@ -69,6 +72,7 @@ TERMS = {
     "sequence": "列",
     "visualizer": "ビジュアライザ",
     "forest": "森",
+    "node": "頂点",
 }
 
 
@@ -174,25 +178,11 @@ def translation_options(
     options: dict[str, Any] = {
         "source_lang": LANGUAGES[source_lang],
         "target_lang": LANGUAGES[target_lang],
-        "context": (
-            "This is a competitive programming problem statement. Preserve every condition, "
-            "quantifier, number and variable exactly. Tokens of the form [[PLM_0]] are "
-            "placeholders for original mathematics. Copy each placeholder "
-            "verbatim exactly once. Do not solve the problem or add explanations. "
-            "HTML tags mark formatting around words. Preserve each opening and closing "
-            "tag exactly, maintaining valid nesting. Translate the text inside tags normally."
-        ),
+        "context": PROBLEM_CONTEXT,
         "glossary": terms,
     }
     if document_type == "general":
-        options["context"] = (
-            "This is a general document. Translate the text faithfully without adding or "
-            "omitting information. Preserve every condition, quantifier, number and variable "
-            "exactly. Tokens of the form [[PLM_0]] are placeholders for original mathematics. "
-            "Copy each placeholder verbatim exactly once. HTML tags mark formatting around "
-            "words. Preserve each opening and closing tag exactly, maintaining valid nesting. "
-            "Translate the text inside tags normally."
-        )
+        options["context"] = GENERAL_CONTEXT
     if LANGUAGES[target_lang] == "ja":
         options["form"] = "plain"
     if surrounding:
@@ -308,7 +298,7 @@ class TranslationWork:
 class Engine:
     model_specs: ClassVar[dict] = {model: MODEL_SPECS[model] for model in SUPPORTED_MODEL_IDS}
     storage_model_specs = MODEL_SPECS
-    supported_batch_sizes = tuple(range(1, 17))
+    supported_batch_sizes = tuple(range(1, 33))
     supported_translation_previews = True
 
     def __init__(self, cache_dir: str | Path | None = None) -> None:
@@ -321,6 +311,67 @@ class Engine:
         self._tokenizer_cache: dict[str, Any] = {}
         self._loaded: str | None = None
         self._state = "idle"
+        self._quiet_condition = threading.Condition()
+        self._quiet_level = 0
+
+    @property
+    def quiet_level(self) -> int:
+        with self._quiet_condition:
+            return self._quiet_level
+
+    @property
+    def quiet_mode(self) -> bool:
+        return self.quiet_level > 0
+
+    def set_quiet_mode(self, enabled: bool) -> None:
+        if type(enabled) is not bool:
+            raise ValueError("静音モードの有効・無効を指定してください。")
+        self.set_quiet_level(LEGACY_QUIET_LEVEL if enabled else 0)
+
+    def set_quiet_level(self, level: int) -> None:
+        if type(level) is not int or not 0 <= level <= MAX_QUIET_LEVEL:
+            raise ValueError(f"静音モードは 0〜{MAX_QUIET_LEVEL} で指定してください。")
+        # Do not wait for the inference lock: toggles apply to the next step
+        # and disabling immediately wakes an already sleeping worker.
+        with self._quiet_condition:
+            self._quiet_level = level
+            self._quiet_condition.notify_all()
+
+    def _quiet_wait(self, seconds: float, cancelled, active=None) -> None:
+        # Space eight duty targets logarithmically from 100% to 20%. Scale
+        # both delay and cap, up to 1s at level 7; waits stay interruptible.
+        measured = min(0.25, max(0.0, seconds))
+        started = time.perf_counter()
+        with self._quiet_condition:
+            while self._quiet_level:
+                if cancelled.is_set():
+                    raise InterruptedError("翻訳を停止しました。")
+                if active is not None and not active():
+                    return
+                ratio = 5 ** (self._quiet_level / MAX_QUIET_LEVEL) - 1
+                remaining = started + measured * ratio - time.perf_counter()
+                if remaining <= 0:
+                    return
+                self._quiet_condition.wait(min(remaining, 0.02))
+
+    def _pace_quiet_step(self, started, cancelled, stream=None, active=None) -> None:
+        if started is None or not self.quiet_mode:
+            return
+        if cancelled.is_set():
+            raise InterruptedError("翻訳を停止しました。")
+        if active is not None and not active():
+            return
+        import mlx.core as mx
+
+        if stream is None:
+            # Serial stream_generate queues one token ahead on this exact
+            # thread-local stream. Sleeping only the Python reader would leave
+            # queued GPU work running and undercount the real compute time.
+            from mlx_lm.generate import generation_stream
+
+            stream = generation_stream
+        mx.synchronize(stream)
+        self._quiet_wait(time.perf_counter() - started, cancelled, active)
 
     @property
     def status(self) -> dict[str, Any]:
@@ -470,6 +521,8 @@ class Engine:
     def _prepare_prompt(self, text: str, options: dict[str, Any]) -> tuple[list[int], int]:
         template_options = dict(options)
         previous = list(template_options.pop("_history", []))
+        prepared = prepare_model_input(text, template_options, previous)
+        template_options, previous = prepared.options, prepared.history
         max_tokens = None
         while True:
             messages = []
@@ -480,7 +533,7 @@ class Engine:
                         {"role": "assistant", "content": pair["translation"]},
                     ]
                 )
-            messages.append({"role": "user", "content": text})
+            messages.append({"role": "user", "content": prepared.text})
             prompt = self._tokenizer.apply_chat_template(
                 messages,
                 **template_options,
@@ -519,11 +572,13 @@ class Engine:
         generator = None
         pending: dict[int, TranslationWork] = {}
         generated: dict[int, list[int]] = {}
+        codecs = {}
         detokenizers: dict[int, Any] = {}
         preview_times: dict[int, float] = {}
         preview_texts: dict[int, str] = {}
         preview_disabled: set[int] = set()
         loaded = False
+        generation_stream = None
 
         def discard_preview(uid):
             detokenizers.pop(uid, None)
@@ -549,6 +604,7 @@ class Engine:
                 text = preview_prefix(
                     decoder.text if decoder is not None else self._tokenizer.decode(generated[uid])
                 )
+                text = codecs[uid].decode(text, partial=True)
                 if text and text != preview_texts.get(uid):
                     work.progress(text)
                     preview_texts[uid] = text
@@ -570,6 +626,7 @@ class Engine:
                         for uid in removed:
                             work = pending.pop(uid)
                             generated.pop(uid)
+                            codecs.pop(uid)
                             discard_preview(uid)
                             yield work, InterruptedError("翻訳を停止しました。")
                     limit = max(1, int(capacity()))
@@ -594,6 +651,7 @@ class Engine:
                             options = translation_options(work.text, **parameters)
                             if previous:
                                 options["_history"] = previous
+                            codec = prepare_model_input(work.text, options, previous).codec
                         except (ValueError, TypeError) as error:
                             yield work, ValueError(str(error))
                             continue
@@ -614,6 +672,7 @@ class Engine:
                             from mlx_lm.generate import BatchGenerator
                             from mlx_lm.sample_utils import make_sampler
 
+                            generation_stream = mx.default_stream(mx.default_device())
                             generator = BatchGenerator(
                                 self._model,
                                 stop_tokens=[[token] for token in self._tokenizer.eos_token_ids],
@@ -621,7 +680,7 @@ class Engine:
                                 completion_batch_size=limit,
                                 prefill_batch_size=min(limit, prefill_batch_size),
                                 prefill_step_size=prefill_step_size,
-                                stream=mx.default_stream(mx.default_device()),
+                                stream=generation_stream,
                             )
                         uids = generator.insert([prompt], max_tokens=[budget])
                         if len(uids) != 1 or uids[0] in pending:
@@ -629,6 +688,7 @@ class Engine:
                         uid = uids[0]
                         pending[uid] = work
                         generated[uid] = []
+                        codecs[uid] = codec
                         if work.progress is not None:
                             try:
                                 detokenizers[uid] = self._tokenizer.detokenizer
@@ -642,7 +702,16 @@ class Engine:
                         if admitted:
                             continue
                         return
+                    started = time.perf_counter() if self.quiet_mode else None
                     prompt_events, responses = generator.next()
+                    self._pace_quiet_step(
+                        started,
+                        cancelled,
+                        generation_stream,
+                        active=lambda: any(
+                            not work.cancelled.is_set() for work in pending.values()
+                        ),
+                    )
                     if cancelled.is_set():
                         raise InterruptedError("翻訳を停止しました。")
                     if not prompt_events and not responses:
@@ -655,6 +724,7 @@ class Engine:
                             )
                         pending.clear()
                         generated.clear()
+                        codecs.clear()
                         detokenizers.clear()
                         preview_times.clear()
                         preview_texts.clear()
@@ -671,6 +741,7 @@ class Engine:
                             continue
                         pending.pop(response.uid)
                         tokens = generated.pop(response.uid)
+                        codec = codecs.pop(response.uid)
                         discard_preview(response.uid)
                         if work.cancelled.is_set():
                             yield work, InterruptedError("翻訳を停止しました。")
@@ -683,7 +754,7 @@ class Engine:
                             )
                         else:
                             try:
-                                translated = self._tokenizer.decode(tokens).strip()
+                                translated = codec.decode(self._tokenizer.decode(tokens).strip())
                                 check_placeholders(work.text, translated)
                             except ValueError as error:
                                 yield work, error
@@ -787,7 +858,14 @@ class Engine:
         parts: list[str] = []
         final = None
         try:
-            for response in stream:
+            iterator = iter(stream)
+            while True:
+                started = time.perf_counter() if self.quiet_mode else None
+                try:
+                    response = next(iterator)
+                except StopIteration:
+                    break
+                self._pace_quiet_step(started, cancelled)
                 if cancelled.is_set():
                     raise InterruptedError("翻訳を停止しました。")
                 parts.append(response.text)
@@ -796,4 +874,5 @@ class Engine:
             stream.close()
         if final is None or final.finish_reason != "stop":
             raise RuntimeError("訳文が生成上限に達しました。原文を保持し、段落を短くしてください。")
-        return "".join(parts).strip()
+        codec = prepare_model_input(text, options, options.get("_history")).codec
+        return codec.decode("".join(parts).strip())

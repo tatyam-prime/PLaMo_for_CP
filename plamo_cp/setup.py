@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from .engine import DEFAULT_MODEL_ID, MODEL_SPECS, SUPPORTED_MODEL_IDS, default_glossary
+from .performance import PerformanceSettings
 from .settings import DEFAULT_SETTINGS_PATH, SettingsStore
 
 logger = logging.getLogger(__name__)
@@ -67,6 +68,7 @@ class SetupController:
         self.engine, self.executor = engine, executor
         self.settings_path = Path(settings_path or DEFAULT_SETTINGS_PATH)
         self.settings = SettingsStore(self.settings_path)
+        self.performance = PerformanceSettings(engine, self.settings)
         self._lock = threading.Lock()
         self._cancelled = threading.Event()
         self._future = None
@@ -121,6 +123,7 @@ class SetupController:
         return {
             "application": "plamo-for-cp",
             "selected_model": self.selected_model,
+            **self.performance.snapshot(),
             "device": device,
             "models": models,
             "preparation": preparation,

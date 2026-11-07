@@ -294,11 +294,11 @@ def test_initial_glossary_snapshot_is_copied_and_never_starts_a_model(controller
     setup, engine = controller
     first = setup.snapshot()["default_glossary"]
     assert first[0] == {"source": "modular inverse", "target": "逆元"}
-    assert len(first) == 11
+    assert len(first) == 12
     first[0]["target"] = "changed"
     first.clear()
     second = setup.snapshot()["default_glossary"]
-    assert len(second) == 11 and second[0]["target"] == "逆元"
+    assert len(second) == 12 and second[0]["target"] == "逆元"
     assert engine.prepared == [] and engine.translated == []
 
 

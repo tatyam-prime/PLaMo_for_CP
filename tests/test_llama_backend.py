@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import json
 import threading
-import time
 import zipfile
 
 import httpx
@@ -21,8 +20,10 @@ def test_prompt_has_one_bos_and_translation_metadata():
     assert prompt.startswith("<|plamo:bos|><|plamo:tag|>dataset<|plamo:msg|>translation")
     assert prompt.count("<|plamo:bos|>") == 1
     assert "<|plamo:tag|>context<|plamo:msg|>" in prompt
-    assert "<|plamo:index|><plm-a><|plamo:item|><plm-a>" in prompt
-    assert "<|plamo:index|>[[PLM_0]]<|plamo:item|>[[PLM_0]]" in prompt
+    assert '<span id="plm-a">second smallest</span> integer <math-a/>.' in prompt
+    assert "<|plamo:index|><math-a/><|plamo:item|><math-a/>" in prompt
+    assert "[[PLM_0]]" not in prompt and "<plm-a>" not in prompt
+    assert '<|plamo:index|><span id="plm-a">' not in prompt
     assert "<|plamo:tag|>input<|plamo:key|>lang<|plamo:val|>en<|plamo:msg|>" in prompt
     assert prompt.endswith(
         "<|plamo:tag|>output<|plamo:key|>lang<|plamo:val|>ja"
@@ -44,7 +45,7 @@ def test_pfml_prompt_supports_chinese_and_indonesian_without_extra_message_bound
 ):
     prompt = backend.build_prompt("给定整数 [[PLM_0]]。", language, "Japanese")
     assert (
-        f"<|plamo:tag|>input<|plamo:key|>lang<|plamo:val|>{code}<|plamo:msg|>给定整数 [[PLM_0]]。"
+        f"<|plamo:tag|>input<|plamo:key|>lang<|plamo:val|>{code}<|plamo:msg|>给定整数 <math-a/>。"
         in prompt
     )
     assert prompt.count("<|plamo:bos|>") == 1
@@ -69,7 +70,7 @@ def test_omitted_dictionary_keeps_the_compact_canonical_default_prompt():
     text = "Find the <plm-a>smallest</plm-a> integer in the array [[PLM_0]]."
     prompt = backend.build_prompt(text, "English", "Japanese")
     assert hashlib.sha256(prompt.encode()).hexdigest() == (
-        "c18914a41605309d679dbb021ba04ad798bd8a14b6eb82bd70b5d8ad1f502aba"
+        "59732083820a80527718d53118be88d9c0352ee24e763cd34b4793b0b4ffd8f2"
     )
     assert prompt == backend.build_prompt(text, "English", "Japanese", document_type="problem")
     assert prompt == backend.build_prompt(text, "English", "Japanese", history=[])
@@ -124,8 +125,24 @@ def test_general_document_prompt_is_neutral_and_preserves_markup_glossary():
     assert "competitive programming" not in prompt
     assert "<|plamo:index|>edge<|plamo:item|>辺" not in prompt
     assert "<|plamo:index|>array<|plamo:item|>配列" not in prompt
-    assert "<|plamo:index|><plm-a><|plamo:item|><plm-a>" in prompt
-    assert "<|plamo:index|>[[PLM_0]]<|plamo:item|>[[PLM_0]]" in prompt
+    assert '<span id="plm-a">edge</span> in array <math-a/>.' in prompt
+    assert "<|plamo:index|><math-a/><|plamo:item|><math-a/>" in prompt
+    assert "[[PLM_0]]" not in prompt and "<plm-a>" not in prompt
+
+
+def test_model_prompt_keeps_lexical_terms_before_source_order_math_identities():
+    prompt = backend.build_prompt(
+        "Find <plm-a>an array [[PLM_9]]</plm-a> and [[PLM_2]].",
+        "English",
+        "Japanese",
+        glossary=[{"source": "array", "target": "配列"}],
+    )
+    math_a = "<|plamo:index|><math-a/><|plamo:item|><math-a/>"
+    math_b = "<|plamo:index|><math-b/><|plamo:item|><math-b/>"
+    lexical = "<|plamo:index|>array<|plamo:item|>配列"
+    assert prompt.index(lexical) < prompt.index(math_a) < prompt.index(math_b)
+    assert 'Find <span id="plm-a">an array <math-a/></span> and <math-b/>.' in prompt
+    assert "<|plamo:index|><plm-" not in prompt
 
 
 def test_prompt_rejects_control_tokens():
@@ -266,7 +283,42 @@ class FakeProcess:
         return 1
 
 
-def fake_engine(monkeypatch, *, content="[[PLM_0]] 個の整数。", stop_type="eos", truncated=False):
+class MockRequest:
+    """Keep the existing mock HTTP fixtures on the request-owned transport seam."""
+
+    def __init__(self, engine, cancelled):
+        self.engine, self.cancelled = engine, cancelled
+        self.aborted = threading.Event()
+        self.response = None
+
+    def check(self):
+        if self.aborted.is_set() or self.cancelled.is_set():
+            raise InterruptedError("翻訳を停止しました。")
+
+    def cancel(self):
+        self.aborted.set()
+        if self.response is not None:
+            self.response.close()
+
+    def post_json(self, path, payload):
+        self.check()
+        response = self.engine._client.post(path, json=payload)
+        response.raise_for_status()
+        self.check()
+        return response.json()
+
+    def events(self, path, payload):
+        with self.engine._client.stream("POST", path, json=payload) as response:
+            self.response = response
+            response.raise_for_status()
+            for line in response.iter_lines():
+                self.check()
+                if line.startswith("data:") and line[5:].strip() not in {"", "[DONE]"}:
+                    yield json.loads(line[5:])
+            self.check()
+
+
+def fake_engine(monkeypatch, *, content="<math-a/> 個の整数。", stop_type="eos", truncated=False):
     engine = backend.LlamaEngine()
     process = FakeProcess()
     engine._process = process
@@ -278,8 +330,19 @@ def fake_engine(monkeypatch, *, content="[[PLM_0]] 個の整数。", stop_type="
         calls.append((request.url.path, payload))
         if request.url.path == "/tokenize":
             return httpx.Response(200, json={"tokens": [1, 2, 3]})
-        event = {"content": content, "stop": True, "stop_type": stop_type, "truncated": truncated}
-        data = "data: " + json.dumps(event, ensure_ascii=False) + "\n\n"
+        chunks = content if isinstance(content, list) else [content]
+        events = [
+            {
+                "content": chunk,
+                "stop": index == len(chunks) - 1,
+                "stop_type": stop_type,
+                "truncated": truncated,
+            }
+            for index, chunk in enumerate(chunks)
+        ]
+        data = "".join(
+            "data: " + json.dumps(event, ensure_ascii=False) + "\n\n" for event in events
+        )
         return httpx.Response(200, text=data)
 
     engine._client = httpx.Client(
@@ -287,6 +350,7 @@ def fake_engine(monkeypatch, *, content="[[PLM_0]] 個の整数。", stop_type="
     )
     monkeypatch.setattr(engine, "model_available", lambda model: True)
     monkeypatch.setattr(engine, "prepare", lambda model, progress=None: None)
+    monkeypatch.setattr(engine, "_new_request", lambda cancelled: MockRequest(engine, cancelled))
     return engine, process, calls
 
 
@@ -307,6 +371,63 @@ def test_streaming_completion_and_generation_contract(monkeypatch):
     finally:
         engine.close()
     assert process.terminated
+
+
+def test_windows_sse_decodes_split_wire_tags_to_canonical_nested_markup(monkeypatch):
+    source = "<plm-a>Find <plm-b>the array</plm-b> [[PLM_9]]</plm-a> with [[PLM_2]]."
+    chunks = [
+        '<span id="plm-',
+        'a">',
+        '<span id="plm-b">配列</span><math-',
+        "a/>",
+        "</span>",
+        " と <math-b/>。",
+    ]
+    engine, _, calls = fake_engine(monkeypatch, content=chunks)
+    try:
+        assert engine.translate(source) == (
+            "<plm-a><plm-b>配列</plm-b>[[PLM_9]]</plm-a> と [[PLM_2]]。"
+        )
+        assert (
+            '<span id="plm-a">Find <span id="plm-b">the array</span> <math-a/></span>'
+            in calls[0][1]["content"]
+        )
+        assert engine.status["state"] == "idle"
+    finally:
+        engine.close()
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        '<span id="plm-a">配列 <math-b/></span>。',  # Unknown mathematical alias.
+        '<span id="plm-b">配列 <math-a/></span>。',  # Unknown formatting ID.
+        '<span id="plm-a">配列 [[PLM_0]]</span>。',  # Mixed canonical/model protocols.
+        "<plm-a>配列 <math-a/></plm-a>。",
+        '<span id="plm-a">配列 <math-a/><math-a/></span>。',
+        '<span id="plm-a">配列 <math-a/>。',
+        '<span id="plm-a">配列 <math-a/></span><math-',
+    ],
+)
+def test_windows_rejects_unknown_mixed_or_incomplete_model_markers(monkeypatch, content):
+    engine, _, _ = fake_engine(monkeypatch, content=content)
+    try:
+        with pytest.raises(ValueError, match="識別子"):
+            engine.translate("<plm-a>An array [[PLM_0]]</plm-a>.")
+        assert engine.status["state"] == "idle"
+    finally:
+        engine.close()
+
+
+def test_windows_literal_span_collision_preserves_the_canonical_protocol(monkeypatch):
+    source = "Keep the literal <span> and [[PLM_0]]."
+    engine, _, calls = fake_engine(monkeypatch, content="リテラル <span> と [[PLM_0]]。")
+    try:
+        assert engine.translate(source) == "リテラル <span> と [[PLM_0]]。"
+        assert source in calls[0][1]["content"]
+        assert "<|plamo:index|>[[PLM_0]]<|plamo:item|>[[PLM_0]]" in calls[0][1]["content"]
+    finally:
+        engine.close()
 
 
 def test_general_document_type_reaches_the_llama_prompt(monkeypatch):
@@ -420,26 +541,29 @@ def test_cancelled_before_request(monkeypatch):
         engine.close()
 
 
-def test_cancellation_interrupts_prefill_owned_process(monkeypatch):
+def test_cancellation_interrupts_tokenize_without_terminating_the_owned_process(monkeypatch):
     engine, process, _ = fake_engine(monkeypatch)
     cancelled = threading.Event()
 
-    def handle(request):
-        cancelled.set()
-        deadline = time.monotonic() + 2
-        while not process.terminated and time.monotonic() < deadline:
-            time.sleep(0.01)
-        raise httpx.ReadError("owned process stopped")
+    controls = []
 
-    engine._client.close()
-    engine._client = httpx.Client(
-        base_url="http://127.0.0.1:12345", transport=httpx.MockTransport(handle)
-    )
+    class BlockedRequest(MockRequest):
+        def post_json(self, _path, _payload):
+            cancelled.set()
+            assert self.aborted.wait(1)
+            self.check()
+
+    def create(token):
+        control = BlockedRequest(engine, token)
+        controls.append(control)
+        return control
+
+    monkeypatch.setattr(engine, "_new_request", create)
     try:
         with pytest.raises(InterruptedError):
             engine.translate("Hello.", cancelled=cancelled)
-        assert process.terminated
-        assert engine.status["loaded_model"] is None
+        assert controls[0].aborted.is_set() and not process.terminated
+        assert engine.status["loaded_model"] == "2b" and engine.status["state"] == "idle"
     finally:
         engine.close()
 
@@ -482,5 +606,258 @@ def test_windows_file_download_does_not_wait_for_or_stop_current_inference(monke
                 engine._lock.release()
         assert engine._loaded == "2b" and engine._process is process and not process.terminated
         assert engine._client is original_client and engine.status["state"] == "translating"
+    finally:
+        engine.close()
+
+
+@pytest.fixture
+def quiet_limits(monkeypatch):
+    from types import SimpleNamespace
+
+    from plamo_cp import windows_cpu_limit
+
+    state = SimpleNamespace(instances=[], fail_on=None, closed=[])
+
+    class Limit:
+        def __init__(self, process, configured_threads):
+            self.process, self.threads = process, configured_threads
+            self.enabled, self.calls, self.level_calls = False, [], []
+            self.level = 0
+            state.instances.append(self)
+
+        def set_level(self, level):
+            enabled = level > 0
+            self.calls.append(enabled)
+            self.level_calls.append(level)
+            if state.fail_on is enabled:
+                raise RuntimeError("native CPU limit failed")
+            self.enabled = enabled
+            self.level = level
+
+        def close(self):
+            state.closed.append(self.process.poll())
+
+    monkeypatch.setattr(windows_cpu_limit, "OwnedProcessCpuLimit", Limit)
+    return state
+
+
+def test_windows_quiet_mode_without_a_child_stores_only_future_intent(tmp_path, quiet_limits):
+    engine = backend.LlamaEngine(cache_dir=tmp_path)
+    try:
+        assert engine.quiet_mode is False
+        engine.set_quiet_mode(True)
+        assert engine.quiet_mode is True and engine.status["loaded_model"] is None
+        engine.set_quiet_mode(False)
+        assert engine.quiet_mode is False and quiet_limits.instances == []
+        with pytest.raises(ValueError):
+            engine.set_quiet_mode(1)
+    finally:
+        engine.close()
+
+
+def test_live_windows_quiet_toggle_caps_only_the_owned_child_without_the_inference_lock(
+    monkeypatch, quiet_limits
+):
+    from concurrent.futures import ThreadPoolExecutor
+
+    engine, process, calls = fake_engine(monkeypatch)
+    engine._state = "translating"
+    client = engine._client
+    engine._lock.acquire()
+    try:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(engine.set_quiet_mode, True).result(timeout=0.5)
+        limit = quiet_limits.instances[0]
+        assert limit.process is process and limit.enabled is True
+        assert limit.threads == engine._configured_threads
+        engine.set_quiet_mode(False)
+        assert limit.calls == [True, False] and engine.quiet_mode is False
+        assert engine._process is process and engine._client is client
+        assert engine._loaded == "2b" and engine._state == "translating" and calls == []
+    finally:
+        engine._lock.release()
+        engine.close()
+    assert quiet_limits.closed == [1]  # Cleanup follows the owned child termination.
+
+
+def test_failed_windows_toggle_preserves_the_applied_flag_and_can_recover(
+    monkeypatch, quiet_limits
+):
+    engine, process, _ = fake_engine(monkeypatch)
+    try:
+        quiet_limits.fail_on = True
+        with pytest.raises(RuntimeError, match="native"):
+            engine.set_quiet_mode(True)
+        assert engine.quiet_mode is False and not process.terminated
+        quiet_limits.fail_on = None
+        engine.set_quiet_mode(True)
+        quiet_limits.fail_on = False
+        with pytest.raises(RuntimeError, match="native"):
+            engine.set_quiet_mode(False)
+        assert engine.quiet_mode is True and engine._loaded == "2b"
+        # A child that has exited must not prevent OFF from recovering intent.
+        process.terminate()
+        engine.set_quiet_mode(False)
+        assert engine.quiet_mode is False and engine._cpu_limit is None
+    finally:
+        quiet_limits.fail_on = None
+        engine.close()
+
+
+def test_windows_quiet_prepare_aborts_its_child_if_the_cap_cannot_be_applied(
+    monkeypatch, tmp_path, quiet_limits
+):
+    monkeypatch.setattr(backend.Path, "home", lambda: tmp_path)
+    process = FakeProcess()
+    monkeypatch.setattr(backend.subprocess, "Popen", lambda *_, **__: process)
+    engine = backend.LlamaEngine(cache_dir=tmp_path)
+    engine.set_quiet_mode(True)
+    quiet_limits.fail_on = True
+    try:
+        with pytest.raises(RuntimeError, match="native"):
+            engine._start(tmp_path / "llama-server.exe", tmp_path / "weights.gguf", "2b", None)
+        assert process.terminated and quiet_limits.closed == [1]
+        assert engine._process is None and engine._client is None and engine._loaded is None
+        assert engine.quiet_mode is True  # Future intent remains explicit; no silent unlimited run.
+        engine.set_quiet_mode(False)
+        assert engine.quiet_mode is False
+    finally:
+        engine.close()
+
+
+def test_windows_quiet_cap_is_applied_before_model_health_is_reported(
+    monkeypatch, tmp_path, quiet_limits
+):
+    import io
+
+    monkeypatch.setattr(backend.Path, "home", lambda: tmp_path)
+    process = FakeProcess()
+    process.stdout = io.BytesIO(b"")
+    commands = []
+
+    def popen(arguments, **_):
+        commands.append(arguments)
+        return process
+
+    class Client:
+        def get(self, *_args, **_kwargs):
+            assert quiet_limits.instances[0].enabled is True
+            return httpx.Response(200)
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(backend.subprocess, "Popen", popen)
+    monkeypatch.setattr(backend.httpx, "Client", lambda **_: Client())
+    engine = backend.LlamaEngine(cache_dir=tmp_path)
+    engine.set_quiet_mode(True)
+    try:
+        engine._start(tmp_path / "llama-server.exe", tmp_path / "weights.gguf", "2b", None)
+        assert engine._loaded == "2b" and engine.quiet_mode is True
+        assert quiet_limits.instances[0].threads == int(
+            commands[0][commands[0].index("--threads") + 1]
+        )
+        for flag, expected in {
+            "--parallel": "32",
+            "--ctx-size": "32768",
+            "--kv-unified-per-slot": "32768",
+            "--batch-size": "256",
+            "--ubatch-size": "256",
+            "--cache-ram": "0",
+            "--gpu-layers": "0",
+        }.items():
+            assert commands[0][commands[0].index(flag) + 1] == expected
+        assert {"--kv-unified", "--cont-batching", "--no-context-shift"} <= set(commands[0])
+    finally:
+        engine.close()
+    assert quiet_limits.closed == [1]
+
+
+def test_live_windows_levels_apply_without_reload_and_fail_without_changing_the_level(
+    monkeypatch, quiet_limits
+):
+    engine, process, _ = fake_engine(monkeypatch)
+    try:
+        engine.set_quiet_level(backend.MAX_QUIET_LEVEL)
+        limit = quiet_limits.instances[0]
+        assert engine.quiet_level == backend.MAX_QUIET_LEVEL and limit.level_calls == [
+            backend.MAX_QUIET_LEVEL
+        ]
+        engine.set_quiet_level(2)
+        assert engine.quiet_level == 2 and limit.level == 2
+        quiet_limits.fail_on = True
+        with pytest.raises(RuntimeError, match="native"):
+            engine.set_quiet_level(3)
+        assert engine.quiet_level == 2 and limit.level == 2
+        quiet_limits.fail_on = None
+        engine.set_quiet_mode(True)
+        assert engine.quiet_level == backend.LEGACY_QUIET_LEVEL
+        engine.set_quiet_mode(False)
+        assert engine.quiet_level == 0 and engine.quiet_mode is False
+        assert engine._process is process and not process.terminated and engine._loaded == "2b"
+        with pytest.raises(ValueError):
+            engine.set_quiet_level(True)
+    finally:
+        quiet_limits.fail_on = None
+        engine.close()
+
+
+def test_native_iterator_publishes_bounded_canonical_previews_and_a_strict_final(monkeypatch):
+    from plamo_cp.engine import TranslationWork
+
+    source = "<plm-a>An integer [[PLM_0]]</plm-a>."
+    engine, process, _ = fake_engine(
+        monkeypatch,
+        content=['<span id="plm-a">整数 <math-', "a/>", "</span>。"],
+    )
+    previews = []
+    work = TranslationWork("work", source, {}, progress=previews.append)
+    pending = [work]
+    try:
+        results = list(
+            engine.iter_work("2b", lambda _: [pending.pop(0)] if pending else [], lambda: 32)
+        )
+        assert results == [(work, "<plm-a>整数 [[PLM_0]]</plm-a>。")]
+        assert previews == ["<plm-a>整数 "]  # Incomplete model tag is withheld.
+        assert all("<math-" not in preview and "<span" not in preview for preview in previews)
+        assert engine.supported_translation_previews is True
+        assert engine.supported_batch_sizes == tuple(range(1, 33))
+        assert engine.status["state"] == "idle" and not process.terminated
+    finally:
+        engine.close()
+
+
+@pytest.mark.parametrize("broken_callback", [False, True])
+def test_windows_preview_bound_or_callback_failure_never_changes_the_final(
+    monkeypatch, broken_callback
+):
+    from plamo_cp.engine import TranslationWork
+
+    translated = "訳" * 20000
+    engine, _, _ = fake_engine(monkeypatch, content=[translated, "。"])
+    previews = []
+
+    def publish(text):
+        previews.append(text)
+        if broken_callback:
+            raise RuntimeError("Browser preview callback failed")
+
+    work = TranslationWork("large", "The source.", {}, progress=publish)
+    pending = [work]
+    try:
+        assert list(
+            engine.iter_work("2b", lambda _: [pending.pop(0)] if pending else [], lambda: 32)
+        ) == [(work, translated + "。")]
+        assert len(previews) == 1 and len(previews[0]) == 16384
+    finally:
+        engine.close()
+
+
+def test_empty_native_cohort_does_not_prepare_and_always_restores_idle(monkeypatch):
+    engine, process, calls = fake_engine(monkeypatch)
+    monkeypatch.setattr(engine, "prepare", lambda *_: pytest.fail("Empty cohort must not load"))
+    try:
+        assert list(engine.iter_work("2b", lambda _: [], lambda: 32)) == []
+        assert engine.status["state"] == "idle" and not process.terminated and calls == []
     finally:
         engine.close()

@@ -18,6 +18,12 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=ROOT / "dist" / "windows")
     parser.add_argument("--runtime-dir", type=Path, default=ROOT / ".local/windows-runtime/llama")
     parser.add_argument(
+        "--native-runtime-dir", type=Path, default=ROOT / ".local/windows-native-runtime"
+    )
+    parser.add_argument(
+        "--without-native", action="store_true", help="Build only the verified CPU-server fallback"
+    )
+    parser.add_argument(
         "--installer", action="store_true", help="Also build a per-user installer with Inno Setup"
     )
     args = parser.parse_args()
@@ -34,8 +40,30 @@ def main() -> None:
         parser.error("The pinned Windows inference runtime failed verification.")
     # A model-free launch catches missing DLLs/VC runtime on the build machine.
     subprocess.run([str(runtime_executable), "--version"], check=True, timeout=30)
-    os.environ["PLAMO_WINDOWS_RUNTIME_DIR"] = str(args.runtime_dir.resolve())
     build = ROOT / ".local/windows-build"
+    environment = dict(os.environ, PLAMO_WINDOWS_RUNTIME_DIR=str(args.runtime_dir.resolve()))
+    environment.pop("PLAMO_NATIVE_RUNTIME_DIR", None)
+    environment.pop("PLAMO_STAGED_PACKAGE_ROOT", None)
+    pins = None
+    if not args.without_native:
+        from plamo_cp.llama_backend import runtime_arch
+        from scripts.build_llama_bridge import build_bridge
+        from scripts.prepare_native_runtime import (
+            create_pins,
+            prepare_runtime,
+            stage_python_package,
+        )
+        from scripts.smoke_native_runtime import smoke_runtime
+
+        native = prepare_runtime(args.native_runtime_dir, architecture=runtime_arch())
+        build_bridge(native, build / "bridge")
+        pins = create_pins(native, runtime_arch())
+        # No weights or inference: ensure exact ABI and CPU device discovery
+        # work even on a Windows CI runner without a Vulkan-capable GPU.
+        smoke_runtime(native, pins)
+        staged = stage_python_package(ROOT, build / "staged-source", pins)
+        environment["PLAMO_NATIVE_RUNTIME_DIR"] = str(native)
+        environment["PLAMO_STAGED_PACKAGE_ROOT"] = str(staged)
     subprocess.run(
         [
             sys.executable,
@@ -50,12 +78,20 @@ def main() -> None:
         ],
         cwd=ROOT,
         check=True,
+        env=environment,
     )
-    application = args.output / "PLaMo for CP"
+    application = args.output.absolute() / "PLaMo for 競プロ"
+    if pins is not None:
+        from plamo_cp.native_runtime import verify_native_runtime_directory
+
+        # PyInstaller reclassifies DLL data as binaries and may collect their
+        # dependencies. Check the actual output against the original embedded
+        # pins before distributing it; never regenerate trust from final bytes.
+        verify_native_runtime_directory(application / "_internal/native", pins)
     shutil.make_archive(
-        str(args.output / "PLaMo-for-CP-Windows"), "zip", args.output, application.name
+        str(args.output / "PLaMo-for-競プロ-Windows"), "zip", args.output, application.name
     )
-    print(application / "PLaMo for CP.exe")
+    print(application / "PLaMo for 競プロ.exe")
     if args.installer:
         compiler = shutil.which("ISCC.exe")
         if compiler is None:
@@ -76,7 +112,7 @@ def main() -> None:
             check=True,
             cwd=ROOT,
         )
-        print(args.output / "PLaMo-for-CP-Windows-Setup.exe")
+        print(args.output / "PLaMo-for-競プロ-Windows-Setup.exe")
 
 
 if __name__ == "__main__":
