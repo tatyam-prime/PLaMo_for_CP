@@ -12,8 +12,8 @@
 
 | パソコン | 配布ファイル | 導入方法 |
 | --- | --- | --- |
-| Mac（Apple Silicon） | `PLaMo-for-競プロ-macOS-AppleSilicon.zip` | 展開してアプリを「アプリケーション」へ移動 |
-| Windows 10 / 11（x64） | `PLaMo-for-競プロ-Windows-Setup.exe` | インストーラーを実行 |
+| Mac（Apple Silicon） | `PLaMo-for-CP-macOS-AppleSilicon.zip` | 展開してアプリを「アプリケーション」へ移動 |
+| Windows 10 / 11（x64） | `PLaMo-for-CP-Windows-Setup.exe` | インストーラーを実行 |
 
 **Mac は Apple Silicon 専用です。** 最低 macOS バージョンは同梱する Python・MLX によって変わるため、各リリースで確認してください。現ローカルビルドは macOS 27 以降向けです。**Windows 版は実機未検証です。**
 
