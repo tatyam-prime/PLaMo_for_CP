@@ -255,7 +255,11 @@ test('dashboard shows actual storage, selected versus loaded state, and never st
   assert.equal(await page.locator('.license-warning').evaluate(node => node.previousElementSibling.matches('section[aria-labelledby="storage-heading"]') && node.nextElementSibling.matches('section[aria-labelledby="model-heading"]')), true);
   assert.ok((await page.locator('a[href*="license"]').evaluateAll(links => links.map(link => link.href))).every(href => href === 'https://plamo.preferredai.jp/info/plamo-community-license-ja'));
   assert.equal(await page.locator('.license-warning li strong').count(), 1);
-  assert.equal(await page.locator('.license-warning li strong').textContent(), '訳文を公表する際には，PLaMo 3 Translate により翻訳されたことを明示すること．');
+  assert.equal(await page.locator('.license-warning li strong').textContent(), '通常の訳文公表では、PLaMo による翻訳である旨の表示は不要です。');
+  const licenseWarning = await page.locator('.license-warning').textContent();
+  assert.match(licenseWarning, /書籍・論文.*全部または実質的な部分/);
+  assert.match(licenseWarning, /訳文を使って学習したモデルには本契約の条件が適用/);
+  assert.match(licenseWarning, /第三者の著作権/);
   await poll(page);
   assert.equal(posts(control).length, 0);
   control.setup.models.find(model => model.id === '2b').compatible = false;
