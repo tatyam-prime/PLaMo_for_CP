@@ -10,7 +10,7 @@
 [Setup]
 AppId={{ED00503C-59D5-4F52-AF2D-4F87CB1D8255}
 AppName=PLaMo for 競プロ
-AppVersion=1.0.0
+AppVersion=1.0.1
 AppPublisher=PLaMo for 競プロ contributors
 DefaultDirName={localappdata}\Programs\PLaMo for 競プロ
 DefaultGroupName=PLaMo for 競プロ
