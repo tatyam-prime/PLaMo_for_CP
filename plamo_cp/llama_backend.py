@@ -58,21 +58,21 @@ RUNTIME_ASSETS = {
 }
 GGUF_MODELS: dict[str, dict[str, Any]] = {
     "0.8b": {
-        "revision": "03891e907db8a43c97d3a7c75add125cc6d1f96a",
-        "weight_bytes": 573116288,
-        "sha256": "3dbb09295bfd3350231ba0dba92bc72cb14111ef1b034e37dad39d581bd86b9c",
+        "revision": "e10c327b7a7ce84ffc427cb4b09360b781429fda",
+        "weight_bytes": 573126848,
+        "sha256": "70891ec70dc7ab4205745a38307867c2881b99239f20327927633abfe4bc9ec6",
         "min_memory_gb": 4,
     },
     "2b": {
-        "revision": "f2b4599dff9b3e45c62567eac15e83186b4cb64e",
-        "weight_bytes": 1807192480,
-        "sha256": "2c288ecc7ebfe60c3561726580da3583767f3c41ca3ef5c6825bf6c4cc060787",
+        "revision": "228a27cc0bb4f111219963848d50a3127c16ca73",
+        "weight_bytes": 1807203040,
+        "sha256": "1ffd9073afcc70e35ccc942428aa2b73d7aa2b9ea779bf504b775369e0276c13",
         "min_memory_gb": 8,
     },
     "8b": {
-        "revision": "c420296e9694ccb2455f038b3f29eee5a2200217",
-        "weight_bytes": 5280435168,
-        "sha256": "6b429549113ce0a61281ac72be195697241f89266f4247efec4893e4f580cf10",
+        "revision": "fccc6b15efc7d615189fa5df6a1a02ecd2dbc18f",
+        "weight_bytes": 5280445728,
+        "sha256": "94e5d3f91b421f7c8900ddaac27b11a19f7441426c954bbb25a2fd60a1640187",
         "min_memory_gb": 16,
     },
     "31b": {
