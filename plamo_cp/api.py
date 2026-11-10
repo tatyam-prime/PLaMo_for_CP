@@ -449,6 +449,7 @@ def create_app(
             "status": "ok",
             "app": "plamo-for-cp",
             "application": "plamo-for-cp",
+            "version": __version__,
             "selected_model": setup.selected_model,
             "userscript_version": await asyncio.to_thread(_userscript_version),
             "engine": engine.status,

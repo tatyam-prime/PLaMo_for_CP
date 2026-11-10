@@ -85,6 +85,7 @@ def test_health_and_model_sizes(client_and_engine):
     assert health["status"] == "ok"
     assert health["engine"] == engine.status
     assert health["app"] == "plamo-for-cp"
+    assert health["version"] == __version__
     assert health["selected_model"] == "2b"
     response = client.get("/api/models").json()
     assert {item["id"] for item in response["models"]} == {"0.8b", "2b", "8b"}

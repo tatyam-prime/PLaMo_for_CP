@@ -15,7 +15,7 @@ function snapshot() {
   ];
   return {
     setup: { application: 'plamo-for-cp', selected_model: '2b', quiet_level: 0, quiet_mode: false, device: { system: 'Windows', memory_gb: 16, supported: true }, models, preparation: { stage: 'idle', model: null, bytes_received: 0, error: null }, download: { stage: 'idle', model: null, bytes_received: 0, error: null } },
-    health: { app: 'plamo-for-cp', engine: { loaded_model: null, state: 'idle' } },
+    health: { app: 'plamo-for-cp', version: '1.0.1', engine: { loaded_model: null, state: 'idle' } },
     storage: { folder: 'C:\\Users\\競プロer\\Models', shared: false, models: [...models.map(model => ({ ...model, downloaded: model.available, on_disk_bytes: model.available ? 2 * 1024 ** 3 : 0 })), { id: '31b', on_disk_bytes: 0 }] },
     cache: { entries: 12, bytes: 512 * 1024, max_bytes: 1024 ** 2, retention_days: 7 },
   };
@@ -238,6 +238,8 @@ test('the former quiet-mode switch is displayed as its original 50 percent level
 test('dashboard shows actual storage, selected versus loaded state, and never starts downloads on render', async () => {
   const { page, control } = await fixture();
   assert.match(await page.title(), /アプリの管理/);
+  assert.equal(await page.locator('#app-version').textContent(), 'v1.0.1');
+  assert.equal(await page.locator('#app-version').isVisible(), true);
   assert.equal(await page.locator('#folder').textContent(), control.storage.folder);
   assert.equal(await page.locator('#selected-model').textContent(), '2B');
   assert.match(await page.locator('#engine-state').textContent(), /未読み込み/);
@@ -263,7 +265,9 @@ test('dashboard shows actual storage, selected versus loaded state, and never st
   await poll(page);
   assert.equal(posts(control).length, 0);
   control.setup.models.find(model => model.id === '2b').compatible = false;
+  control.health.version = '1.0.2';
   await poll(page);
+  assert.equal(await page.locator('#app-version').textContent(), 'v1.0.2');
   assert.equal(await row(page, '0.8b').locator('.recommended').isVisible(), true);
   assert.equal(await row(page, '2b').locator('.recommended').isVisible(), false);
   control.setup.models.find(model => model.id === '2b').compatible = true;

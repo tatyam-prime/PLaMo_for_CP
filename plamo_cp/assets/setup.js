@@ -1,6 +1,6 @@
 'use strict';
 
-const elements = Object.fromEntries(['connection', 'connection-error', 'engine-state', 'selected-model', 'device', 'message', 'message-title', 'message-detail', 'folder', 'folder-type', 'choose-folder', 'open-folder', 'previous-folder', 'models', 'preparation', 'state-title', 'state-detail', 'progress', 'download', 'download-title', 'download-detail', 'download-progress', 'cancel-download', 'cache-stats', 'cache-form', 'cache-kib', 'save-cache', 'clear-cache'].map(id => [id, document.getElementById(id)]));
+const elements = Object.fromEntries(['app-version', 'connection', 'connection-error', 'engine-state', 'selected-model', 'device', 'message', 'message-title', 'message-detail', 'folder', 'folder-type', 'choose-folder', 'open-folder', 'previous-folder', 'models', 'preparation', 'state-title', 'state-detail', 'progress', 'download', 'download-title', 'download-detail', 'download-progress', 'cancel-download', 'cache-stats', 'cache-form', 'cache-kib', 'save-cache', 'clear-cache'].map(id => [id, document.getElementById(id)]));
 const cacheCapacitiesKiB = [256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536];
 const modelNames = { '0.8b': '800M（0.8B）', '2b': '2B', '8b': '8B', '31b': '31B' };
 const descriptions = { '0.8b': '省メモリ・速度を優先するときに', '2b': '標準モデル・品質と容量のバランス', '8b': 'メモリに余裕のあるパソコン向け' };
@@ -109,6 +109,8 @@ function render() {
   renderUserscriptUpdate();
   if (!state) return;
   const { setup, health, storage, cache } = state;
+  elements['app-version'].hidden = !connected;
+  elements['app-version'].textContent = typeof health.version === 'string' && health.version ? `v${health.version}` : 'バージョン不明';
   const loaded = health.engine.loaded_model;
   elements['engine-state'].textContent = health.engine.state === 'translating' ? `翻訳中 · ${modelNames[loaded] || loaded || ''}` : health.engine.state === 'loading' ? 'モデルを読み込み中' : loaded ? `利用できます · ${modelNames[loaded] || loaded}` : '待機中 · モデル未読み込み';
   const engine = health.engine, native = engine.native;

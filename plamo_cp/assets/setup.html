@@ -9,6 +9,7 @@
   </style>
   <style>
     .quiet-option{display:flex;align-items:center;gap:8px;font-size:13px;color:#203244}.quiet-option select{margin-top:0}.performance{border-top:1px solid #e7ecf1;margin-top:12px;padding-top:12px}.summary dd{overflow-wrap:anywhere}#engine-detail{font-size:12px;font-weight:400;line-height:1.5;color:#66788a}
+    .app-version{font-size:12px;font-weight:400;color:#52667b;margin-left:8px;white-space:nowrap}
     .license-warning{background:#fff8e6;border:1px solid #e6ca82;border-left:4px solid #c79a32;border-radius:9px;padding:16px 20px;margin:18px 0;color:#5b491f;font-size:14px}.license-warning h2{font-size:16px;margin-bottom:8px}.license-warning p{margin:8px 0}.license-warning ul{margin:8px 0 0;padding-left:1.5em}.license-warning li{margin:5px 0}.license-warning a{color:#73520a;text-decoration:underline;text-underline-offset:2px}
   </style>
   <script src="/userscript-version.js" defer></script>
@@ -16,7 +17,7 @@
 </head>
 <body>
 <main class="shell">
-  <header><div class="brand">PLaMo for 競プロ</div><div id="connection" class="badge">接続を確認中…</div></header>
+  <header><div class="brand">PLaMo for 競プロ<span id="app-version" class="app-version" title="アプリのバージョン" hidden></span></div><div id="connection" class="badge">接続を確認中…</div></header>
   <h1>アプリの管理</h1>
   <p class="intro muted">このパソコンのモデル・保存先・訳文キャッシュを管理します。<br>翻訳ボタンや用語集など、ブラウザー側の設定もここで変更できます。</p>
   <div class="actions"><a class="button primary" href="/text">テキストを翻訳</a><span class="help">文章を貼り付けて、原文と日本語訳を並べて読めます。</span></div>
