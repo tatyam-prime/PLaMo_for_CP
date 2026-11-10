@@ -1,6 +1,6 @@
 [project]
 name = "plamo-for-cp"
-version = "1.0.1"
+version = "1.0.2"
 description = "Local PLaMo 3 Translate for competitive programming statements"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
