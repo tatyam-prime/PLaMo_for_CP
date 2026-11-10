@@ -482,6 +482,7 @@ class LlamaEngine:
             directory = snapshot_download(
                 spec["repo"],
                 revision=spec["revision"],
+                allow_patterns=[spec["filename"]],
                 local_files_only=True,
                 cache_dir=str(self.cache_dir),
             )

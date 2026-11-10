@@ -168,6 +168,46 @@ def test_official_manifests_are_immutable():
     assert len(backend.RUNTIME_ASSETS["x64"]["sha256"]) == 64
 
 
+@pytest.mark.parametrize("weight", [b"GGUF", b"bad!"])
+def test_gguf_only_snapshot_can_be_verified_without_other_repo_files(tmp_path, weight):
+    spec = {
+        **backend.GGUF_MODELS["0.8b"],
+        "repo": "official/test",
+        "revision": "a" * 40,
+        "filename": "model.gguf",
+        "weight_bytes": 4,
+        "sha256": hashlib.sha256(b"GGUF").hexdigest(),
+    }
+    repo = tmp_path / "models--official--test"
+    snapshot = repo / "snapshots" / spec["revision"]
+    snapshot.mkdir(parents=True)
+    path = snapshot / spec["filename"]
+    path.write_bytes(weight)
+    trees = repo / "trees"
+    trees.mkdir()
+    (trees / f"{spec['revision']}.json").write_text(
+        json.dumps(
+            {
+                "format_version": 1,
+                "files": {
+                    "model.gguf": {"size": 4, "blob_id": "b" * 40},
+                    "README.md": {"size": 10, "blob_id": "c" * 40},
+                },
+            }
+        )
+    )
+    engine = backend.LlamaEngine(cache_dir=tmp_path)
+    engine.model_specs = {"0.8b": spec}
+    try:
+        if weight == b"GGUF":
+            assert engine._verified_model("0.8b") == path
+        else:
+            with pytest.raises(RuntimeError, match="ファイル検証"):
+                engine._verified_model("0.8b")
+    finally:
+        engine.close()
+
+
 def test_archive_rejects_traversal(tmp_path):
     archive = tmp_path / "runtime.zip"
     with zipfile.ZipFile(archive, "w") as z:
