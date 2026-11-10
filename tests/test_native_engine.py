@@ -220,10 +220,13 @@ def test_close_interrupts_the_owner_without_waiting_for_a_completed_translation(
     assert native._process is None and native.status["state"] == "idle"
 
 
+@pytest.mark.parametrize("initial, requested", [(0, 7), (7, 0)])
 def test_failed_native_load_uses_verified_cpu_backend_once_with_exact_quiet_intent(
-    monkeypatch, tmp_path
+    monkeypatch, tmp_path, initial, requested
 ):
     calls = []
+    entered = threading.Event()
+    release = threading.Event()
 
     class CPU:
         def __init__(self, directory):
@@ -237,6 +240,8 @@ def test_failed_native_load_uses_verified_cpu_backend_once_with_exact_quiet_inte
 
         def prepare(self, model, _progress=None):
             if self.status["loaded_model"] != model:
+                entered.set()
+                assert release.wait(2)
                 calls.append(("cpu", model))
                 self.status["loaded_model"] = model
 
@@ -257,15 +262,23 @@ def test_failed_native_load_uses_verified_cpu_backend_once_with_exact_quiet_inte
     native = parent.NativeEngine(runtime, cache_dir=tmp_path)
     monkeypatch.setattr(native, "_verified_model", lambda *_: tmp_path / "model.gguf")
     monkeypatch.setattr(native, "_start_native", fail)
-    native.set_quiet_level(3)
+    native.set_quiet_level(initial)
     try:
-        native.prepare("2b")
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(native.prepare, "2b")
+            try:
+                assert entered.wait(2)
+                native.set_quiet_level(requested)
+            finally:
+                release.set()
+            future.result(timeout=2)
         native.prepare("2b")
         assert calls == [("gpu", "failed"), ("cpu", "2b")]
-        assert native._fallback.level == 3 and native.status["backend"] == "llama.cpp"
+        assert native._fallback.level == native.quiet_level == requested
+        assert native.status["backend"] == "llama.cpp"
         assert "CPU" in native.status["native_fallback_reason"]
-        native.set_quiet_level(7)
-        assert native._fallback.level == 7 and native.quiet_level == 7
+        native.set_quiet_level(3)
+        assert native._fallback.level == 3 and native.quiet_level == 3
     finally:
         native.close()
 

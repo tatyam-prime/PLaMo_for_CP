@@ -202,11 +202,14 @@ class NativeEngine(LlamaEngine):
         fallback.set_quiet_level(self.quiet_level)
         try:
             fallback.prepare(model, progress)
+            # 読み込み中に変わった設定を反映し、設定変更と競合せずに切り替える。
+            with self._quiet_lock:
+                fallback.set_quiet_level(self._quiet_level)
+                self._fallback = fallback
+                self._loaded = fallback.status["loaded_model"]
         except BaseException:
             fallback.close()
             raise
-        self._fallback = fallback
-        self._loaded = fallback.status["loaded_model"]
 
     def set_cache_dir(self, cache_dir):
         super().set_cache_dir(cache_dir)
